@@ -102,7 +102,7 @@ DS.AdapterPopulatedRecordArray = DS.RecordArray.extend({
 
 
 (function() {
-var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, guidFor = Ember.guidFor;
 
 var Set = function() {
   this.hash = {};
@@ -229,7 +229,7 @@ DS.ManyArrayStateManager = Ember.StateManager.extend({
   init: function() {
     this._super();
     this.dirty = new Set();
-    this.counter = get(this, 'manyArray.length');
+    this.counter = getPath(this, 'manyArray.length');
   },
 
   decrement: function(count) {
@@ -248,7 +248,7 @@ DS.ManyArrayStateManager = Ember.StateManager.extend({
 
 
 (function() {
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, setPath = Ember.setPath;
 
 DS.ManyArray = DS.RecordArray.extend({
   init: function() {
@@ -260,11 +260,11 @@ DS.ManyArray = DS.RecordArray.extend({
   parentRecord: null,
 
   isDirty: Ember.computed(function() {
-    return get(this, 'stateManager.currentState.isDirty');
+    return getPath(this, 'stateManager.currentState.isDirty');
   }).property('stateManager.currentState').cacheable(),
 
   isLoaded: Ember.computed(function() {
-    return get(this, 'stateManager.currentState.isLoaded');
+    return getPath(this, 'stateManager.currentState.isLoaded');
   }).property('stateManager.currentState').cacheable(),
 
   send: function(event, context) {
@@ -381,7 +381,7 @@ DS.ManyArray = DS.RecordArray.extend({
 
 
 (function() {
-var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt,
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt,
     removeObject = Ember.EnumerableUtils.removeObject;
 
 /**
@@ -513,7 +513,7 @@ DS.Transaction = Ember.Object.extend({
     Ember.assert("Once a record has changed, you cannot move it into a different transaction", !get(record, 'isDirty'));
 
     var recordTransaction = get(record, 'transaction'),
-        defaultTransaction = get(this, 'store.defaultTransaction');
+        defaultTransaction = getPath(this, 'store.defaultTransaction');
 
     Ember.assert("Models cannot belong to more than one transaction at a time.", recordTransaction === defaultTransaction);
 
@@ -625,7 +625,7 @@ DS.Transaction = Ember.Object.extend({
     @param {DS.Model} record
   */
   remove: function(record) {
-    var defaultTransaction = get(this, 'store.defaultTransaction');
+    var defaultTransaction = getPath(this, 'store.defaultTransaction');
     defaultTransaction.adoptRecord(record);
   },
 
@@ -879,7 +879,7 @@ DS.Transaction = Ember.Object.extend({
 
 (function() {
 /*globals Ember*/
-var get = Ember.get, set = Ember.set, fmt = Ember.String.fmt;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, fmt = Ember.String.fmt;
 
 var DATA_PROXY = {
   get: function(name) {
@@ -1012,7 +1012,7 @@ DS.Store = Ember.Object.extend({
   _adapter: Ember.computed(function() {
     var adapter = get(this, 'adapter');
     if (typeof adapter === 'string') {
-      return get(this, adapter, false) || get(window, adapter);
+      return getPath(this, adapter, false) || getPath(window, adapter);
     }
     return adapter;
   }).property('adapter').cacheable(),
@@ -1385,10 +1385,6 @@ DS.Store = Ember.Object.extend({
     this.registerRecordArray(array, type, filter);
 
     return array;
-  },
-
-  recordIsLoaded: function(type, id) {
-    return !Ember.none(this.typeMapFor(type).idToCid[id]);
   },
 
   // ............
@@ -1834,7 +1830,7 @@ DS.Store = Ember.Object.extend({
 
 
 (function() {
-var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, guidFor = Ember.guidFor;
 
 /**
   This file encapsulates the various states that a record can transition
@@ -1863,7 +1859,7 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor;
   string. You can determine a record's current state by getting its manager's
   current state path:
 
-        record.get('stateManager.currentState.path');
+        record.getPath('stateManager.currentState.path');
         //=> "created.uncommitted"
 
   The `DS.Model` states are themselves stateless. What we mean is that,
@@ -1949,7 +1945,7 @@ var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor;
   state in a more user-friendly way than examining its state path. For example,
   instead of doing this:
 
-      var statePath = record.get('stateManager.currentState.path');
+      var statePath = record.getPath('stateManager.currentState.path');
       if (statePath === 'created.inFlight') {
         doSomething();
       }
@@ -2391,7 +2387,7 @@ var DirtyState = DS.State.extend({
           errors = get(record, 'errors'),
           key = context.key;
 
-      set(errors, key, null);
+      delete errors[key];
 
       if (!hasDefinedProperties(errors)) {
         manager.send('becameValid');
@@ -2836,10 +2832,10 @@ DataProxy.prototype = {
 
 
 (function() {
-var get = Ember.get, set = Ember.set, none = Ember.none;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath, none = Ember.none;
 
 var retrieveFromCurrentState = Ember.computed(function(key) {
-  return get(get(this, 'stateManager.currentState'), key);
+  return get(getPath(this, 'stateManager.currentState'), key);
 }).property('stateManager.currentState').cacheable();
 
 DS.Model = Ember.Object.extend(Ember.Evented, {
@@ -3156,7 +3152,7 @@ DS.Model = Ember.Object.extend(Ember.Evented, {
     also call methods with the given name.
   */
   trigger: function(name) {
-    Ember.tryInvoke(this, name, [].slice.call(arguments, 1));
+    this[name].apply(this, [].slice.call(arguments, 1));
     this._super.apply(this, arguments);
   }
 });
@@ -3176,7 +3172,6 @@ var storeAlias = function(methodName) {
 };
 
 DS.Model.reopenClass({
-  isLoaded: storeAlias('recordIsLoaded'),
   find: storeAlias('find'),
   filter: storeAlias('filter'),
 
@@ -3194,7 +3189,7 @@ DS.Model.reopenClass({
 
 
 (function() {
-var get = Ember.get;
+var get = Ember.get, getPath = Ember.getPath;
 DS.Model.reopenClass({
   attributes: Ember.computed(function() {
     var map = Ember.Map.create();
@@ -3365,7 +3360,7 @@ DS.attr.transforms = {
 
 
 (function() {
-var get = Ember.get, set = Ember.set,
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath,
     none = Ember.none;
 
 var embeddedFindRecord = function(store, type, data, key, one) {
@@ -3390,7 +3385,7 @@ var hasAssociation = function(type, options, one) {
         store = get(this, 'store');
 
     if (typeof type === 'string') {
-      type = get(this, type, false) || get(window, type);
+      type = getPath(this, type, false) || getPath(window, type);
     }
 
     if (arguments.length === 2) {
@@ -3428,7 +3423,7 @@ DS.belongsTo = function(type, options) {
 
 
 (function() {
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 var embeddedFindRecord = function(store, type, data, key) {
   var association = get(data, key);
   return association ? store.loadMany(type, association).ids : [];
@@ -3452,7 +3447,7 @@ var hasAssociation = function(type, options) {
         ids, id, association;
 
     if (typeof type === 'string') {
-      type = get(this, type, false) || get(window, type);
+      type = getPath(this, type, false) || getPath(window, type);
     }
 
     key = options.key || get(this, 'namingConvention').keyToJSONKey(key);
@@ -3474,7 +3469,7 @@ DS.hasMany = function(type, options) {
 
 
 (function() {
-var get = Ember.get;
+var get = Ember.get, getPath = Ember.getPath;
 
 DS.Model.reopenClass({
   typeForAssociation: function(name) {
@@ -3491,7 +3486,7 @@ DS.Model.reopenClass({
             typeList = map.get(type);
 
         if (typeof type === 'string') {
-          type = get(this, type, false) || get(window, type);
+          type = getPath(this, type, false) || getPath(window, type);
           meta.type = type;
         }
 
@@ -3516,7 +3511,7 @@ DS.Model.reopenClass({
         type = meta.type;
 
         if (typeof type === 'string') {
-          type = get(this, type, false) || get(window, type);
+          type = getPath(this, type, false) || getPath(window, type);
           meta.type = type;
         }
 
@@ -3704,137 +3699,33 @@ Ember.onLoad('application', function(app) {
 
 
 (function() {
-var get = Ember.get;
-
-DS.FixtureAdapter = DS.Adapter.extend({
-
-  simulateRemoteResponse: true,
-
-  latency: 50,
-
-  /*
-    Implement this method in order to provide data associated with a type
-  */
-  fixturesForType: function(type) {
-    return type.FIXTURES ? Ember.A(type.FIXTURES) : null;
-  },
-
-  /*
-    Implement this method in order to query fixtures data
-  */
-  queryFixtures: function(fixtures, query) {
-    return fixtures;
-  },
-
-  /*
-    Implement this method in order to provide provide json for CRUD methods
-  */
-  mockJSON: function(type, record) {
-    return record.toJSON({associations: true});
-  },
-
-  /*
-    Adapter methods
-  */
-  generateIdForRecord: function(store, record) {
-    return Ember.guidFor(record);
-  },
-
+DS.fixtureAdapter = DS.Adapter.create({
   find: function(store, type, id) {
-    var fixtures = this.fixturesForType(type);
+    var fixtures = type.FIXTURES;
 
     Ember.assert("Unable to find fixtures for model type "+type.toString(), !!fixtures);
+    if (fixtures.hasLoaded) { return; }
 
-    if (fixtures) {
-      fixtures = fixtures.findProperty('id', id);
-    }
-
-    if (fixtures) {
-      this.simulateRemoteCall(function() {
-        store.load(type, fixtures);
-      }, store, type);
-    }
+    setTimeout(function() {
+      store.loadMany(type, fixtures);
+      fixtures.hasLoaded = true;
+    }, 300);
   },
 
-  findMany: function(store, type, ids) {
-    var fixtures = this.fixturesForType(type);
-
-    Ember.assert("Unable to find fixtures for model type "+type.toString(), !!fixtures);
-
-    if (fixtures) {
-      fixtures = fixtures.filter(function(item) {
-        return ids.indexOf(item.id) !== -1;
-      });
-    }
-  
-    if (fixtures) {
-      this.simulateRemoteCall(function() {
-        store.loadMany(type, fixtures);
-      }, store, type);
-    }
+  findMany: function() {
+    this.find.apply(this, arguments);
   },
 
   findAll: function(store, type) {
-    var fixtures = this.fixturesForType(type);
+    var fixtures = type.FIXTURES;
 
     Ember.assert("Unable to find fixtures for model type "+type.toString(), !!fixtures);
 
-    this.simulateRemoteCall(function() {
-      store.loadMany(type, fixtures);
-    }, store, type);
-  },
-
-  findQuery: function(store, type, query, array) {
-    var fixtures = this.fixturesForType(type);
-    
-    Ember.assert("Unable to find fixtures for model type "+type.toString(), !!fixtures);
-
-    fixtures = this.queryFixtures(fixtures, query);
-
-    if (fixtures) {
-      this.simulateRemoteCall(function() {
-        array.load(fixtures);
-      }, store, type);
-    }
-  },
-
-  createRecord: function(store, type, record) {
-    var fixture = this.mockJSON(type, record);
-
-    fixture.id = this.generateIdForRecord(store, record);
-
-    this.simulateRemoteCall(function() {
-      store.didCreateRecord(record, fixture);
-    }, store, type, record);
-  },
-
-  updateRecord: function(store, type, record) {
-    var fixture = this.mockJSON(type, record);
-
-    this.simulateRemoteCall(function() {
-      store.didUpdateRecord(record, fixture);
-    }, store, type, record);
-  },
-
-  deleteRecord: function(store, type, record) {
-    this.simulateRemoteCall(function() {
-      store.didDeleteRecord(record);
-    }, store, type, record);
-  },
-
-  /*
-    @private
-  */
-  simulateRemoteCall: function(callback, store, type, record) {
-    if (get(this, 'simulateRemoteResponse')) {
-      setTimeout(callback, get(this, 'latency'));
-    } else {
-      callback();
-    }
+    var ids = fixtures.map(function(item, index, self){ return item.id; });
+    store.loadMany(type, ids, fixtures);
   }
-});
 
-DS.fixtureAdapter = DS.FixtureAdapter.create();
+});
 
 })();
 
@@ -3843,7 +3734,7 @@ DS.fixtureAdapter = DS.FixtureAdapter.create();
 (function() {
 /*global jQuery*/
 
-var get = Ember.get, set = Ember.set;
+var get = Ember.get, set = Ember.set, getPath = Ember.getPath;
 
 DS.RESTAdapter = DS.Adapter.extend({
   bulkCommit: false,
@@ -4092,7 +3983,7 @@ DS.RESTAdapter = DS.Adapter.extend({
         sideloadedType = get(mappings, prop);
 
         if (typeof sideloadedType === 'string') {
-          sideloadedType = get(window, sideloadedType);
+          sideloadedType = getPath(window, sideloadedType);
         }
 
         Ember.assert("Your server returned a hash with the key " + prop + " but you have no mapping for it", !!sideloadedType);
