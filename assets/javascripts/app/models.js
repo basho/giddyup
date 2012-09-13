@@ -6,7 +6,7 @@ GiddyUp.Scorecard = DS.Model.extend({
 
 GiddyUp.TestResult = DS.Model.extend({
   test: DS.attr('string'),
-  platform: DS.attr('string')
-  status: DS.attr('boolean')
+  platform: DS.attr('string'),
+  status: DS.attr('boolean'),
   log_url: DS.attr('string')
 });
