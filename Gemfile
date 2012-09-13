@@ -10,3 +10,11 @@ gem 'fog'
 gem 'pg'
 gem 'rake'
 gem 'thin'
+
+group :assets do
+  gem 'rake-pipeline', github: 'livingsocial/rake-pipeline'
+  gem 'rake-pipeline-web-filters', github: 'wycats/rake-pipeline-web-filters'
+
+  gem 'uglifier'
+  gem 'tilt'
+end
