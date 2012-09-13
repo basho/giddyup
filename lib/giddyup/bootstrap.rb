@@ -11,7 +11,7 @@ db_configuration = {
   :password => dburl.password,
   :database => dburl.path.split("/").last
 }
-                                        
+
 ActiveRecord::Base.establish_connection(db_configuration)
 
 ### S3 SETUP
@@ -20,6 +20,10 @@ s3config = {
   :aws_access_key_id => ENV['S3_AKID'],
   :aws_secret_access_key => ENV['S3_SECRET']
 }
+
+if host = ENV['S3_HOST']
+  s3config.merge!({:host => host })
+end
 
 GiddyUp::S3 = Fog::Storage.new(s3config)
 GiddyUp::LogBucket = ENV['S3_BUCKET']
