@@ -1,5 +1,5 @@
 class TestResultSerializer < ActiveModel::Serializer
-  attributes :id, :result, :author, :log_url, :test, :platform, :backend, :backend_shortname
+  attributes :id, :result, :author, :log_url, :test, :platform, :tags
 
   def test
     test_result.test.name
@@ -7,14 +7,6 @@ class TestResultSerializer < ActiveModel::Serializer
 
   def platform
     test_result.platform.name
-  end
-
-  def backend
-    test_result.backend.name
-  end
-
-  def backend_shortname
-    test_result.backend.shortname
   end
 end
 
@@ -25,5 +17,9 @@ class ScorecardSerializer < ActiveModel::Serializer
   
   def project
     scorecard.project.name
+  end
+
+  def include_test_results?
+    scope == :single
   end
 end

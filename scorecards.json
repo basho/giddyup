@@ -1,0 +1,17 @@
+{
+  "scorecards":[
+    {"id": 1,
+     "name":"riak-1.2.1-7-deadbeef 2012-09-12",
+     "project":"riak",
+     "test_results": [1, 2, 3, 4, 5, 6]
+    }
+  ],
+  "test_results":[
+    {"id":1,
+     "test":"verify_build_cluster",
+     "platform":"ubuntu1204-64",
+     "status":true,
+     "log_url":"http://basho-giddyup.s3.amazonaws.com/1.txt"
+    }
+  ]
+}

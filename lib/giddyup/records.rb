@@ -10,26 +10,15 @@ class Test < ActiveRecord::Base
 end
 
 class TestResult < ActiveRecord::Base
-  # result boolean -- did it pass or not
+  # status boolean -- did it pass or not
   # author string -- who ran it
   # test_id
   # platform_id
   # scorecard_id
-  default_scope joins(:test, :platform, :backend).
-    order('test.name ASC, platform.position ASC, backend.name ASC')
+  default_scope includes(:test, :platform)
   belongs_to :test
   belongs_to :platform
-  belongs_to :backend
   belongs_to :scorecard
-end
-
-class Backend < ActiveRecord::Base
-  # name string -- 'bitcask' or 'leveldb'
-  default_scope order(:name)
-  
-  def shortname
-    name[0..1].upcase
-  end
 end
 
 class Project < ActiveRecord::Base
