@@ -6,7 +6,9 @@ end
 
 class Test < ActiveRecord::Base
   # name string
+  # tags text
   default_scope order(:name)
+  serialize :tags, Hash
 end
 
 class TestResult < ActiveRecord::Base
