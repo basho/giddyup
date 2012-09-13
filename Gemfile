@@ -12,8 +12,8 @@ gem 'rake'
 gem 'thin'
 
 group :assets do
-  gem 'rake-pipeline', github: 'livingsocial/rake-pipeline'
-  gem 'rake-pipeline-web-filters', github: 'wycats/rake-pipeline-web-filters'
+  gem 'rake-pipeline', :git => 'git://github.com/livingsocial/rake-pipeline.git'
+  gem 'rake-pipeline-web-filters', :git => 'git://github.com/wycats/rake-pipeline-web-filters.git'
 
   gem 'uglifier'
   gem 'tilt'
