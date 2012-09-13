@@ -1,0 +1,61 @@
+require 'rake-pipeline-web-filters'
+require 'uglifier'
+
+output 'public/javascripts'
+input 'assets/javascripts' do
+
+  match 'vendor/**/*.js' do
+    files = %w(
+      vendor/minispade.js
+      vendor/jquery.js
+      vendor/handlebars.js
+      vendor/ember.js
+      vendor/ember-data.js
+    )
+    concat files, 'vendor.js'
+  end
+
+  match '**/*.hbs' do
+    handlebars(
+      :key_name_proc => proc { |input|
+        input.path.sub(%r(^app/templates/), '').sub(/\.hbs$/, '')
+      }
+    )
+    concat 'app/templates.js'
+  end
+
+  match '{app,config,lib}/**/*.js' do
+    minispade(
+      string: true,
+      rewrite_requires: true,
+      module_id_generator: proc { |input|
+        input.path.sub(%r(^(app|config|lib)/), '').sub(/\.js$/, '')
+      }
+    )
+    concat 'application.js'
+  end
+end
+
+output 'public/stylesheets'
+input 'assets/javascripts/spec' do
+  match '**/*.css' do
+    copy 'spec.css'
+  end
+end
+input 'assets/stylesheets' do
+  match '**/*.css' do
+    files = %w(
+      vendor/bootstrap.css
+    )
+    concat files, 'application.css'
+  end
+end
+
+output 'public'
+input 'assets' do
+  match '*.erb' do
+    tilt do |input|
+      input.sub /\.erb$/, ''
+    end
+  end
+end
