@@ -15,5 +15,5 @@ use Rack::Rewrite do
 end
 
 use Rake::Pipeline::Middleware, "Assetfile"
-use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/css", "/js", "/images"], :root => "public"
+use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/css", "/javascripts", "/images"], :root => "public"
 run GiddyUp::Application.adapter

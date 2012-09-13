@@ -11,7 +11,8 @@
      "test":"verify_build_cluster",
      "platform":"ubuntu1204-64",
      "status":true,
-     "log_url":"http://basho-giddyup.s3.amazonaws.com/1.txt"
+     "log_url":"http://basho-giddyup.s3.amazonaws.com/1.txt",
+     "tags":{"backend":"bitcask"}
     }
   ]
 }

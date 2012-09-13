@@ -3,7 +3,6 @@ source :rubygems
 gem 'bundler', "~> 1.2.0"
 gem 'webmachine'
 gem 'rack'
-gem 'foreman'
 gem 'activerecord', :require => 'active_record'
 gem 'active_model_serializers'
 gem 'oj'

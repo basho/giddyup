@@ -18,3 +18,6 @@ _yardoc
 doc/
 public/javascripts
 public/stylesheets
+
+# Foreman local dev
+.env
