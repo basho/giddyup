@@ -11,6 +11,7 @@ gem 'fog'
 gem 'pg'
 gem 'rake'
 gem 'thin'
+gem 'rack-rewrite'
 
 group :assets do
   gem 'rake-pipeline', :git => 'git://github.com/livingsocial/rake-pipeline.git'
