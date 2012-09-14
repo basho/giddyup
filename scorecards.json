@@ -8,7 +8,9 @@
   ],
   "test_results":[
     {"id":1,
-     "test":"verify_build_cluster",
+     "test":{"id":1,
+             "name":"verify_build_cluster",
+             "tags":{"backend":"bitcask"}},
      "platform":"ubuntu1204-64",
      "status":true,
      "log_url":"http://basho-giddyup.s3.amazonaws.com/1.txt",
