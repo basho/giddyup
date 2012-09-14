@@ -7,6 +7,7 @@ module GiddyUp
   end
 end
 
+require 'giddyup/hstore'
 require 'giddyup/records'
 require 'giddyup/serializers'
 require 'giddyup/resources'

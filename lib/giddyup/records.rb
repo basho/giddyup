@@ -1,3 +1,12 @@
+class << ActiveRecord::Base
+  # PostgreSQL-specific method for retrieving the next id in the
+  # sequence. This is not transactional, so rolled-back transactions
+  # could leave "holes" in the sequence.
+  def next_id
+    connection.select_value("SELECT nextval(#{connection.quote(sequence_name)})").to_i
+  end
+end
+
 class Platform < ActiveRecord::Base
   # name string
   # position integer
@@ -6,9 +15,9 @@ end
 
 class Test < ActiveRecord::Base
   # name string
-  # tags text
+  # tags hstore
   default_scope order(:name)
-  serialize :tags, Hash
+  serialize :tags, HstoreSerializer
 end
 
 class TestResult < ActiveRecord::Base
