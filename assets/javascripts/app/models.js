@@ -1,3 +1,14 @@
+GiddyUp.Project = DS.Model.extend({
+  primaryKey: 'name',
+  name: DS.attr('string'),
+  tests: DS.hasMany('GiddyUp.Test', { embedded: true })
+});
+
+GiddyUp.Test = DS.Model.extend({
+  name: DS.attr('string')
+  // tags
+});
+
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.attr('string'),
