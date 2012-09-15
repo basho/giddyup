@@ -1,0 +1,11 @@
+{
+  "project":{
+    "name":"riak",
+    "tests":[
+      {"id":1, "name":"verify_build_cluster",
+       "tags":{"platform":"ubuntu-1004-64"}},
+      {"id":2, "name":"secondary_index_tests",
+       "tags":{"backend":"eleveldb", "platform":"ubuntu-1004-64"}}
+    ]
+  }
+}

@@ -1,13 +1,5 @@
 class TestResultSerializer < ActiveModel::Serializer
-  attributes :id, :result, :author, :log_url, :test, :platform, :tags
-
-  def test
-    test_result.test.name
-  end
-
-  def platform
-    test_result.platform.name
-  end
+  attributes :id, :result, :author, :log_url, :test_id, :scorecard_id
 end
 
 class ScorecardSerializer < ActiveModel::Serializer

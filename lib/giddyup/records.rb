@@ -7,12 +7,6 @@ class << ActiveRecord::Base
   end
 end
 
-class Platform < ActiveRecord::Base
-  # name string
-  # position integer
-  default_scope order(:position)
-end
-
 class Test < ActiveRecord::Base
   # name string
   # tags hstore
