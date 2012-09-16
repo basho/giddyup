@@ -1,3 +1,14 @@
-Welcome!
-
-{{outlet}}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span5">
+      <div class="well sidebar-nav">
+        {{outlet sidebar}}
+      </div>
+    </div>
+    <div class="span7">
+      <div class="well sidebar-nav">
+        {{outlet}}
+      </div>
+    </div>
+  </div>
+</div>

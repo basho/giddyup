@@ -2,6 +2,10 @@ GiddyUp.ApplicationView = Ember.View.extend({
   templateName: 'application'
 });
 
-GiddyUp.ScorecardsView = Ember.View.extend({
-  templateName: 'scorecards'
+GiddyUp.ProjectsView = Ember.View.extend({
+  templateName: 'projects'
+});
+
+GiddyUp.ProjectView = Ember.View.extend({
+  templateName: 'project'
 });
