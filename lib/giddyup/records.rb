@@ -20,16 +20,15 @@ class TestResult < ActiveRecord::Base
   # test_id
   # platform_id
   # scorecard_id
-  default_scope includes(:test, :platform)
+  default_scope includes(:test)
   belongs_to :test
-  belongs_to :platform
   belongs_to :scorecard
 end
 
 class Project < ActiveRecord::Base
   # name string -- 'riak' or 'riak_ee' or 'riak_cs'
+  default_scope includes(:tests, :scorecards)
   has_many :scorecards
-  has_and_belongs_to_many :platforms
   has_and_belongs_to_many :tests
 end
 
