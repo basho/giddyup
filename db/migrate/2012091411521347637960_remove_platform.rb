@@ -1,6 +1,6 @@
 class RemovePlatform < ActiveRecord::Migration
   def change
-    remove_table :platforms
-    remove_table :platforms_tests
+    drop_table :platforms
+    drop_table :platforms_projects
   end
 end
