@@ -45,7 +45,12 @@ ActiveRecord::Schema.define(:version => 2012091411521347637960) do
 
   add_index "test_results", ["scorecard_id"], :name => "index_test_results_on_scorecard_id"
 
-# Could not dump table "tests" because of following StandardError
-#   Unknown type 'hstore' for column 'tags'
+  create_table "tests", :force => true do |t|
+    t.string "name"
+    t.hstore "tags"
+  end
+
+  add_index "tests", ["name"], :name => "index_tests_on_name"
+  add_index "tests", ["tags"], :name => "tests_tags_index"
 
 end

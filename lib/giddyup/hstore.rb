@@ -1,3 +1,4 @@
+require 'active_record/connection_adapters/postgresql_adapter'
 # activerecord-postgres-hstore expects you want Rails.
 # active_record_hstore_serializer adds methods to String and Hash,
 # which is unnecessary.
@@ -95,6 +96,22 @@ module ActiveRecord
 
     end
 
+    class Table
+
+      # Adds hstore type for migrations. So you can add columns to a table like:
+      #   change_table :people do |t|
+      #     ...
+      #     t.hstore :info
+      #     ...
+      #   end
+      def hstore(*args)
+        options = args.extract_options!
+        column_names = args
+        column_names.each { |name| column(name, 'hstore', options) }
+      end
+
+    end
+    
     class PostgreSQLColumn < Column
       # Does the type casting from hstore columns using String#from_hstore or Hash#from_hstore.
       def type_cast_code_with_hstore(var_name)
@@ -111,10 +128,8 @@ module ActiveRecord
     end
 
     class PostgreSQLAdapter < AbstractAdapter
-      def native_database_types_with_hstore
-        native_database_types_without_hstore.merge({:hstore => { :name => "hstore" }})
-      end
-
+      NATIVE_DATABASE_TYPES[:hstore] = {:name => "hstore"} unless NATIVE_DATABASE_TYPES.include?(:hstore)
+      
       # Quotes correctly a hstore column value.
       def quote_with_hstore(value, column = nil)
         if value && column && column.sql_type == 'hstore'
@@ -125,7 +140,6 @@ module ActiveRecord
       end
 
       alias_method_chain :quote, :hstore
-      alias_method_chain :native_database_types, :hstore
     end
   end
 end
