@@ -14,12 +14,22 @@ namespace :assets do
   end
 end
 
-
 namespace :db do
   task :migrate => :environment do
     ActiveRecord::Migration.verbose = ENV["VERBOSE"] ? ENV["VERBOSE"] == "true" : true
     ActiveRecord::Migrator.migrate([Pathname.new('db/migrate')], ENV["VERSION"] ? ENV["VERSION"].to_i : nil) do |migration|
       ENV["SCOPE"].blank? || (ENV["SCOPE"] == migration.scope)
+    end
+    Rake::Task['db:schema:dump'].invoke
+  end
+
+  namespace :schema do
+    task :dump => :environment do
+      require 'active_record/schema_dumper'
+      filename = ENV['SCHEMA'] || "db/schema.rb"
+      File.open(filename, "w:utf-8") do |file|
+        ActiveRecord::SchemaDumper.dump(ActiveRecord::Base.connection, file)
+      end
     end
   end
 end
