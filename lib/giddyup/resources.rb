@@ -86,13 +86,20 @@ module GiddyUp
     end
 
     def to_json
-      ActiveModel::ArraySerializer.new(Project.all, {:root => "projects"}).to_json
+      ActiveModel::ArraySerializer.new(Project.all, {
+                                         :scope => :list,
+                                         :root => "projects"
+                                       }).to_json
     end
   end
 
   class ProjectResource < Resource
     def resource_exists?
-      @project = Project.find_by_name(request.path_info[:name])
+      query = Project.where(:name => request.path_info[:name])
+      if !request.query.empty?
+        query = query.where(['tests.tags::hstore @> ?', HstoreSerializer.dump(request.query)])
+      end
+      @project = query.first
       @project.present?
     end
 
@@ -105,7 +112,7 @@ module GiddyUp
     end
   end
 
-  Application.routes do
+  Application.routes do    
     add ['test_results'], TestResultResource
     add ['projects'], ProjectsListResource
     add ['projects', :name], ProjectResource
