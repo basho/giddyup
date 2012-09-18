@@ -23,9 +23,12 @@ namespace :db do
     Rake::Task['db:schema:dump'].invoke
   end
 
+  task :seed => :migrate do
+    load 'db/seed.rb'
+  end
+
   namespace :schema do
     task :dump => :environment do
-      puts "#{ActiveRecord::Base.connection.native_database_types.inspect}"
       require 'active_record/schema_dumper'
       filename = ENV['SCHEMA'] || "db/schema.rb"
       File.open(filename, "w:utf-8") do |file|

@@ -7,12 +7,14 @@ module HstoreSerializer
 
   def load(text)
     return text if Hash === text
+    return {} if text.nil?
     raise ArgumentError unless String === text
     from_hstore(text)
   end
 
   def dump(value)
     return value if String === value
+    value = {} if value.nil?
     raise ArgumentError unless Hash === value
     to_hstore(value)
   end
