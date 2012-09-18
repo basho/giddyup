@@ -47,3 +47,13 @@ riak_tests.each do |t|
     projects['riak_ee'].tests << test
   end
 end
+
+## Special handling for 2i
+platforms.each do |p|
+  test1 = Test.create(:name => "secondary_index_tests", :tags => {'platform' => p, 'backend' => 'memory'})
+  test2 = Test.create(:name => "secondary_index_tests", :tags => {'platform' => p, 'backend' => 'eleveldb'})
+  projects['riak'].tests << test1
+  projects['riak'].tests << test2
+  projects['riak_ee'].tests << test1
+  projects['riak_ee'].tests << test2
+end
