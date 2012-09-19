@@ -40,12 +40,24 @@ module GiddyUp
       super
     end
 
-    def content_types_accepted
-      [["application/json", :accept_json],
-       ["multipart/form-data", :accept_multipart]]
+    def allowed_methods
+      %W[GET HEAD POST OPTIONS]
     end
 
-    def resource_exists?; false; end
+    def content_types_provided
+      [["application/json", :to_json]]
+    end
+
+    def content_types_accepted
+      [["application/json", :accept_json]]
+    end
+
+    def resource_exists?
+      return false unless request.path_info[:id]
+      @test_result = TestResult.find(request.path_info[:id])
+      @test_result.present?
+    end
+
     def post_is_create?; true; end
     def allow_missing_post?; true; end
 
@@ -54,8 +66,8 @@ module GiddyUp
       URI.join(request.base_uri.to_s, "/test_results/#{@context.id}")
     end
 
-    def allowed_methods
-      ['POST']
+    def to_json
+      TestResultSerializer.new(@test_result).to_json
     end
 
     def accept_json
@@ -63,18 +75,6 @@ module GiddyUp
         data = MultiJson.load(request.body.to_s)
       rescue
         raise Webmachine::MalformedRequest, "Invalid JSON body"
-      end
-      @context.create_test_result(data)
-    end
-
-    def accept_multipart
-      begin
-        parser = Rack::Multipart::Parser.new('CONTENT_TYPE' => request.content_type,
-                                             'CONTENT_LENGTH' => request.content_length,
-                                             'rack.input' => StringIO.new(request.body.to_s))
-        data = parser.parse
-      rescue
-        raise Webmachine::MalformedRequest, "Invalid multipart body"
       end
       @context.create_test_result(data)
     end
@@ -112,9 +112,10 @@ module GiddyUp
     end
   end
 
-  Application.routes do    
+  Application.routes do
+    add ['test_results', :id], TestResultResource
     add ['test_results'], TestResultResource
-    add ['projects'], ProjectsListResource
     add ['projects', :name], ProjectResource
+    add ['projects'], ProjectsListResource
   end
 end
