@@ -10,5 +10,6 @@ end
 require 'giddyup/hstore'
 require 'giddyup/records'
 require 'giddyup/serializers'
+require 'giddyup/contexts'
 require 'giddyup/resources'
 require 'giddyup/bootstrap'

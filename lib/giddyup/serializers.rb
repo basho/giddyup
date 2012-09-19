@@ -9,7 +9,7 @@ class ProjectSerializer < ActiveModel::Serializer
 end
 
 class TestResultSerializer < ActiveModel::Serializer
-  attributes :id, :result, :author, :log_url, :test_id, :scorecard_id
+  attributes :status, :log_url, :test_id, :scorecard_id
 end
 
 class ScorecardSerializer < ActiveModel::Serializer

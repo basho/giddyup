@@ -23,6 +23,21 @@ class TestResult < ActiveRecord::Base
   default_scope includes(:test)
   belongs_to :test
   belongs_to :scorecard
+
+  def status=(val)
+    case val
+    when TrueClass, FalseClass
+      self[:status] = val
+    when /pass/i
+      self[:status] = true
+    else
+      self[:status] = false
+    end
+  end
+
+  def log_url
+    GiddyUp::S3.directories.get(GiddyUp::LogBucket).files.new(:key => "#{id}.log").public_url
+  end
 end
 
 class Project < ActiveRecord::Base
