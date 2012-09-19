@@ -5,6 +5,7 @@ end
 platforms = %w{
   ubuntu-1004-32
   ubuntu-1004-64
+  ubuntu-1104-64
   ubuntu-1204-64
   fedora-15-64
   centos-5-64

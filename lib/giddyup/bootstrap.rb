@@ -22,7 +22,13 @@ s3config = {
 }
 
 if host = ENV['S3_HOST']
-  s3config.merge!({:host => host })
+  s3config[:host] = host
+end
+if port = ENV['S3_PORT']
+  s3config[:port] = port
+end
+if scheme = ENV['S3_SCHEME']
+  s3config[:scheme] = scheme
 end
 
 GiddyUp::S3 = Fog::Storage.new(s3config)
