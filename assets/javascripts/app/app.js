@@ -11,6 +11,6 @@ require('templates');
 require('views');
 
 // TODO: Not required by ember-latest.
-$(document).ready(function() {
-  GiddyUp.initialize(GiddyUp.Router.create());
-});
+// $(document).ready(function() {
+//   GiddyUp.initialize(GiddyUp.Router.create());
+// });
