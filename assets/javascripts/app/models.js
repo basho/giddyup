@@ -22,30 +22,3 @@ GiddyUp.Test = DS.Model.extend({
   name: DS.attr('string')
   // TODO: tags
 });
-
-// Test data.
-
-GiddyUp.store.load(GiddyUp.Project, {
-  "name":"riak",
-  "tests":[
-    {"id":1, "name":"verify_build_cluster",
-     "tags":{"platform":"ubuntu-1004-64"}},
-    {"id":2, "name":"secondary_index_tests",
-    "tags":{"backend":"eleveldb", "platform":"ubuntu-1004-64"}}
-  ]
-});
-
-GiddyUp.store.load(GiddyUp.Project, {
-  "name":"riak_ee",
-  "tests":[
-    {"id":3, "name":"enterprise_maven_test",
-     "tags":{"platform":"ubuntu-1004-64"}},
-    {"id":4, "name":"enterprise_soap_test",
-    "tags":{"backend":"eleveldb", "platform":"ubuntu-1004-64"}}
-  ]
-});
-
-GiddyUp.store.load(GiddyUp.Project, {
-  "name":"stanchion",
-  "tests":[]
-});

@@ -1,7 +1,4 @@
-GiddyUp.Adapter = DS.RESTAdapter.extend({
-  findAll: function() { },
-  find: function() { }
-});
+GiddyUp.Adapter = DS.RESTAdapter.extend();
 
 GiddyUp.Store = DS.Store.extend({
   revision: 4,
