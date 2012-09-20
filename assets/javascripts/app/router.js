@@ -11,7 +11,7 @@ GiddyUp.Router = Ember.Router.extend({
       route: '/projects',
 
       connectOutlets: function(router) {
-        router.get('applicationController').connectOutlet('sidebar', 'projects', GiddyUp.Project.find());
+        router.get('applicationController').connectOutlet('projects', 'projects', GiddyUp.Project.find());
       },
 
       index: Ember.Route.extend({
@@ -22,6 +22,7 @@ GiddyUp.Router = Ember.Router.extend({
         route: '/:project_id',
 
         connectOutlets: function(router, context) {
+          router.get('applicationController').connectOutlet('scorecards', 'scorecards', context.scorecards);
           router.get('applicationController').connectOutlet('project', context);
         }
       }),
