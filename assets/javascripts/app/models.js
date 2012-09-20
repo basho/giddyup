@@ -1,3 +1,14 @@
+// Hack to allow the 'tags' field on Test, which is an hstore column
+// in postgresql.
+DS.attr.transforms.hash = {
+  from: function(serialized) {
+    return Ember.none(serialized) ? null : serialized;
+  },
+  to: function(deserialized) {
+    return Ember.none(deserialized) ? null : deserialized;
+  }
+}
+
 GiddyUp.Project = DS.Model.extend({
   primaryKey: 'name',
   name: DS.attr('string'),
@@ -7,18 +18,19 @@ GiddyUp.Project = DS.Model.extend({
 
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
-  project: DS.attr('string'),
+  project: DS.belongsTo('GiddyUp.Project'),
   test_results: DS.hasMany('GiddyUp.TestResult', { key: 'test_result_ids' })
 });
 
 GiddyUp.TestResult = DS.Model.extend({
   test: DS.belongsTo('GiddyUp.Test'),
-  platform: DS.attr('string'),
+  scorecard: DS.belongsTo('GiddyUp.Scorecard'),
   status: DS.attr('boolean'),
-  log_url: DS.attr('string')
+  log_url: DS.attr('string'),
+  created_at: DS.attr('date')
 });
 
 GiddyUp.Test = DS.Model.extend({
-  name: DS.attr('string')
-  // TODO: tags
+  name: DS.attr('string'),
+  tags: DS.attr('hash')
 });

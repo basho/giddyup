@@ -11,6 +11,10 @@ module GiddyUp
       end
     end
 
+    def content_types_provided
+      [['application/json', :to_json]]
+    end
+
     def finish_request
       # See seancribbs/webmachine-ruby#68
       unless [204, 205, 304].include?(response.code)
@@ -43,10 +47,6 @@ module GiddyUp
 
     def allowed_methods
       %W[GET HEAD POST OPTIONS]
-    end
-
-    def content_types_provided
-      [["application/json", :to_json]]
     end
 
     def content_types_accepted
@@ -82,10 +82,6 @@ module GiddyUp
   end
 
   class ProjectsListResource < Resource
-    def content_types_provided
-      [['application/json', :to_json]]
-    end
-
     def to_json
       ActiveModel::ArraySerializer.new(Project.all, {
                                          :scope => :list,
@@ -104,16 +100,24 @@ module GiddyUp
       @project.present?
     end
 
-    def content_types_provided
-      [['application/json', :to_json]]
-    end
-
     def to_json
       ProjectSerializer.new(@project, {:scope => :single}).to_json
     end
   end
 
+  class ScorecardResource < Resource
+    def resource_exists?
+      @scorecard = Scorecard.find(request.path_info[:id])
+      @scorecard.present?
+    end
+
+    def to_json
+      ScorecardSerializer.new(@scorecard, {}).to_json
+    end
+  end
+
   Application.routes do
+    add ['scorecards', :id], ScorecardResource
     add ['test_results', :id], TestResultResource
     add ['test_results'], TestResultResource
     add ['projects', :name], ProjectResource

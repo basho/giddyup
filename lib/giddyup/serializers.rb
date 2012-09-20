@@ -1,27 +1,17 @@
 class ProjectSerializer < ActiveModel::Serializer
-  attributes :name
+  attributes :name, :scorecard_ids
   has_many :tests
-  has_many :scorecards
-
-  def include_scorecards?
-    scope == :single
-  end
 end
 
 class TestResultSerializer < ActiveModel::Serializer
-  attributes :status, :log_url, :test_id, :scorecard_id
+  attributes :id, :status, :log_url, :test_id, :scorecard_id, :created_at
 end
 
 class ScorecardSerializer < ActiveModel::Serializer
-  embed :ids, :include => true
-  attributes :id, :name, :project
-  has_many :test_results
+  attributes :id, :name, :project, :test_result_ids
 
   def project
+    # We key the project off the name
     scorecard.project.name
-  end
-
-  def include_test_results?
-    scope == :single
   end
 end
