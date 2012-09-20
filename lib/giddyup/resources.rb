@@ -5,6 +5,7 @@ module GiddyUp
     include Webmachine::Resource::Authentication
 
     def is_authorized?(auth)
+      return true unless %W{PUT POST DELETE}.include?(request.method)
       basic_auth(auth, "GiddyUp") do |user, pass|
         user == AUTH_USER && pass == AUTH_PASSWORD
       end
