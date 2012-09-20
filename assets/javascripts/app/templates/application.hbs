@@ -1,3 +1,19 @@
-Welcome!
-
-{{outlet}}
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span3">
+      <div class="well sidebar-nav">
+        {{outlet projects}}
+      </div>
+    </div>
+    <div class="span3">
+      <div class="well sidebar-nav">
+        {{outlet scorecards}}
+      </div>
+    </div>
+    <div class="span6">
+      <div class="well sidebar-nav">
+        {{outlet}}
+      </div>
+    </div>
+  </div>
+</div>

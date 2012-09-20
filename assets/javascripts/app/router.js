@@ -2,14 +2,30 @@ GiddyUp.Router = Ember.Router.extend({
   root: Ember.Route.extend({
     index: Ember.Route.extend({
       route: '/',
-      redirectsTo: 'scorecards'
+      redirectsTo: 'projects.index'
     }),
 
-    scorecards: Ember.Route.extend({
-      route: '/scorecards',
+    showProject: Ember.Router.transitionTo('projects.show'),
+
+    projects: Ember.Route.extend({
+      route: '/projects',
+
       connectOutlets: function(router) {
-        router.get('applicationController').connectOutlet('scorecards');
-      }
+        router.get('applicationController').connectOutlet('projects', 'projects', GiddyUp.Project.find());
+      },
+
+      index: Ember.Route.extend({
+        route: '/'
+      }),
+
+      show: Ember.Route.extend({
+        route: '/:project_id',
+
+        connectOutlets: function(router, context) {
+          router.get('applicationController').connectOutlet('scorecards', 'scorecards', context.scorecards);
+          router.get('applicationController').connectOutlet('project', context);
+        }
+      }),
     })
   })
 });
