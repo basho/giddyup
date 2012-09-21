@@ -39,8 +39,9 @@ GiddyUp.Router = Ember.Router.extend({
           route: '/scorecards/:scorecard_id',
           connectOutlets: function(router, context) {
             context.set('isActive', true);
-            router.get('applicationController').
-              connectOutlet('testResults', context.get('test_results'))
+            router.get('applicationController').connectOutlet({outletName:'testResults',
+                                                               name:'testResults',
+                                                               context: context.get('test_results')})
           },
           exit: function(router) {
             router.get('applicationController').set('testResults', null);

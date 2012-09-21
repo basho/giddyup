@@ -5,16 +5,27 @@
   <tbody>
     {{#each controller}}
       <tr>
-        <td>{{test.name}}
+        <td>
           {{#if status}}
             <span class="label label-success">Pass</span>
             {{else}}
             <span class="label label-important">Fail</span>
           {{/if}}
+          {{test.name}}          
         </td>
-        <td>{{test.tags.platform}}</td>
-        <td>{{test.tags.backend}}</td>
-        <td><a target="_blank" {{bindAttr href=log_url}}>Log</a></td>
+        <td>
+          {{test.tags.platform}}
+        </td>
+        <td>
+          {{#if test.tags.backend}}
+            <b>{{test.tags.backend}}</b>
+            {{else}}
+            (backend not set)
+          {{/if}}
+        </td>
+        <td>
+          <a class="btn" target="_blank" {{bindAttr href="log_url"}}>Log</a>
+        </td>
       </tr>
     {{/each}}
   </tbody>

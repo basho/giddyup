@@ -15,5 +15,5 @@ GiddyUp.ProjectView = Ember.View.extend({
 });
 
 GiddyUp.TestResultsView = Ember.View.extend({
-  templateName: 'test_results'
+  templateName: 'testResults'
 });
