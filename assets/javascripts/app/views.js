@@ -13,3 +13,7 @@ GiddyUp.ScorecardsView = Ember.View.extend({
 GiddyUp.ProjectView = Ember.View.extend({
   templateName: 'project'
 });
+
+GiddyUp.TestResultsView = Ember.View.extend({
+  templateName: 'test_results'
+});

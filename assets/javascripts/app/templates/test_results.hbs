@@ -1,0 +1,21 @@
+<table class="table table-striped">
+  <thead>
+    <tr><th>Name</th><th>Platform</th><th>Backend</th><th>Log</th></tr>
+  </thead>
+  <tbody>
+    {{#each controller}}
+      <tr>
+        <td>{{test.name}}
+          {{#if status}}
+            <span class="label label-success">Pass</span>
+            {{else}}
+            <span class="label label-important">Fail</span>
+          {{/if}}
+        </td>
+        <td>{{test.tags.platform}}</td>
+        <td>{{test.tags.backend}}</td>
+        <td><a target="_blank" {{bindAttr href=log_url}}>Log</a></td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

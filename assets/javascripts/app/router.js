@@ -6,6 +6,7 @@ GiddyUp.Router = Ember.Router.extend({
     }),
 
     showProject: Ember.Router.transitionTo('projects.show'),
+    showScorecard: Ember.Router.transitionTo('projects.show.scorecard'),
 
     projects: Ember.Route.extend({
       route: '/projects',
@@ -28,12 +29,25 @@ GiddyUp.Router = Ember.Router.extend({
           router.get('applicationController').connectOutlet({outletName:'scorecards',
                                                              name:'scorecards',
                                                              context: context.get('scorecards')});
-          router.get('applicationController').connectOutlet('project', context);
         },
         exit: function(router) {
           GiddyUp.Project.find().setEach('isActive', false);
-        }
-      }),
+          router.get('applicationController').set('scorecards', null);
+        },
+
+        scorecard: Ember.Route.extend({
+          route: '/scorecards/:scorecard_id',
+          connectOutlets: function(router, context) {
+            context.set('isActive', true);
+            router.get('applicationController').
+              connectOutlet('testResults', context.get('test_results'))
+          },
+          exit: function(router) {
+            router.get('applicationController').set('testResults', null);
+            GiddyUp.Scorecard.find().setEach('isActive', false);
+          }
+        })
+      })
     })
   })
 });
