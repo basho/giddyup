@@ -1,3 +1,19 @@
-Welcome!
+<div class="container-fluid">  
+  <div class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="#">GiddyUp</a>
+      {{outlet projects}}
+    </div>
+  </div>
 
-{{outlet}}
+  <div class="row-fluid">
+    <div class="span2">
+      <div class="well">
+        {{outlet scorecards}}
+      </div>
+    </div>
+    <div class="span10">
+      {{outlet testResults}}
+    </div>
+  </div>
+</div>

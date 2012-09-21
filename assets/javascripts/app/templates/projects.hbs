@@ -1,0 +1,8 @@
+<ul class="nav">
+  {{#each controller}}
+  <li {{bindAttr class="isActive:active"}}>
+    <a {{action showProject href=true}}>{{name}}</a>
+  </li>
+  {{/each}}
+</ul>
+
