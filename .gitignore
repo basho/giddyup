@@ -21,3 +21,6 @@ public/stylesheets
 
 # Foreman local dev
 .env
+
+# RVM
+.rvmrc
