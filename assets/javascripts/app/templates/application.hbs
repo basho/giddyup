@@ -1,16 +1,18 @@
-<div class="container-fluid">
-  <div class="row-fluid">
-    <div class="span3">
-      <div class="well sidebar-nav">
-        {{outlet projects}}
-      </div>
+<div class="container-fluid">  
+  <div class="navbar">
+    <div class="navbar-inner">
+      <a class="brand" href="#">GiddyUp</a>
+      {{outlet projects}}
     </div>
-    <div class="span3">
+  </div>
+
+  <div class="row-fluid">
+    <div class="span2">
       <div class="well sidebar-nav">
         {{outlet scorecards}}
       </div>
     </div>
-    <div class="span6">
+    <div class="span10">
       <div class="well sidebar-nav">
         {{outlet}}
       </div>
