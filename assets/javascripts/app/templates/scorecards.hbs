@@ -1,10 +1,13 @@
-<ul class="nav nav-list">
-  <li class="nav-header">Scorecards</li>
-  {{#each controller}}
-  <li {{bindAttr class="isActive:active"}}>
-    <a {{action showScorecard href=true}}>
-      {{name}}
-    </a>
-  </li>
-  {{/each}}
-</ul>
+<div class="navbar">
+  <div class="navbar-inner">
+    <ul class="nav">
+      {{#each controller}}
+        <li {{bindAttr class="isActive:active"}}>
+          <a {{action showScorecard href=true}}>
+            {{name}}
+          </a>
+        </li>
+      {{/each}}
+    </ul>
+  </div>
+</div>

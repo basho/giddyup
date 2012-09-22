@@ -1,0 +1,26 @@
+<table class="table table-striped">
+  <thead>
+    <tr>
+      <th>&nbsp;</th>
+      {{#each platform in controller.content.project.platforms}}
+        <th>{{platform}}</th>
+      {{/each}}
+    </tr>
+  </thead>
+  <tbody>
+    {{#each test in controller.content.cells}}
+      <tr>
+        <td>{{test.firstObject.name}}</td>
+        {{#each cell in test}}
+          <td>
+            {{#each cell.subcells}}
+              {{#view GiddyUp.ScorecardSubcellView contentBinding="this"}}
+              {{view.backendAbbr}} {{view.percent}}
+              {{/view}}&nbsp;
+            {{/each}}
+          </td>
+        {{/each}}
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
