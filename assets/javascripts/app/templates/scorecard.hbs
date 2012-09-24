@@ -1,3 +1,4 @@
+{{#if view.isLoaded}}
 <table class="table table-striped">
   <thead>
     <tr>
@@ -14,9 +15,7 @@
         {{#each cell in test}}
           <td>
             {{#each cell.subcells}}
-              {{#view GiddyUp.ScorecardSubcellView contentBinding="this"}}
-              {{view.backendAbbr}} {{view.percent}}
-              {{/view}}&nbsp;
+              {{#view GiddyUp.ScorecardSubcellView contentBinding="this" titleBinding="percent"}}{{view.backendAbbr}}{{/view}}&nbsp;
             {{/each}}
           </td>
         {{/each}}
@@ -24,3 +23,9 @@
     {{/each}}
   </tbody>
 </table>
+{{else}}
+<div class="alert alert-info">
+  <strong>Loading test results...</strong>
+  Please wait.
+</div>
+{{/if}}

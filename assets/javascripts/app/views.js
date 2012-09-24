@@ -3,27 +3,34 @@ GiddyUp.ApplicationView = Ember.View.extend({
 });
 
 GiddyUp.ProjectsView = Ember.View.extend({
-  templateName: 'projects'
+  templateName: 'projects',
+  isLoadedBinding: 'controller.@each.isLoaded'
 });
 
 GiddyUp.ScorecardsView = Ember.View.extend({
-  templateName: 'scorecards'
-});
-
-GiddyUp.ProjectView = Ember.View.extend({
-  templateName: 'project'
+  templateName: 'scorecards',
+  isLoadedBinding: 'controller.content.isLoaded'
 });
 
 GiddyUp.ScorecardView = Ember.View.extend({
-  templateName: 'scorecard'
+  templateName: 'scorecard',
+  isLoaded: function(){
+    var result = this.get('controller.content.isLoaded') &&
+      this.get('controller.content.test_results').getEach('isLoaded').
+      every(function(l){ return l; });
+    return result;
+  }.property('controller.content.isLoaded',
+             'controller.content.test_results.@each.isLoaded')
 });
 
 GiddyUp.ScorecardSubcellView = Ember.View.extend({
   tagName: 'span',
   labelClass: 'badge',
   classNameBindings: ['labelClass', 'statusClass'],
+  attributeBindings: ['title'],
+  titleBinding: 'percent',
   statusClass: function(){
-    var status = this.getPath('content.status');
+    var status = this.get('content.status');
     if(status.total === 0)
       return '';
     else if(status.passing === status.total)
@@ -32,13 +39,13 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
       return 'badge-important';
     else
       return 'badge-warning';
-  }.property().volatile(),
+  }.property('content.status'),
   percent: function(){
-    var status = this.getPath('content.status');
+    var status = this.get('content.status');
     return status.percent.toFixed(1).toString() + "%";
-  }.property().volatile(),
+  }.property('content.status'),
   backendAbbr: function(){
-    var backend = this.getPath('content.test.backend');
+    var backend = this.get('content.test.backend');
     switch(backend){
     case 'bitcask':
       return 'B';
@@ -50,7 +57,7 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
       return 'M';
       break;
     default:
-      return null;
+      return 'U';
     }
-  }.property()
+  }.property('content.test.backend')
 });

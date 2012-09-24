@@ -5,16 +5,14 @@ GiddyUp.Router = Ember.Router.extend({
       redirectsTo: 'projects.index'
     }),
 
-    showProject: Ember.Router.transitionTo('projects.show'),
-    showScorecard: Ember.Router.transitionTo('projects.show.scorecard'),
+    showProject: Ember.Router.transitionTo('projects.show.index'),
+    showScorecard: Ember.Router.transitionTo('projects.show.scorecard.show'),
 
     projects: Ember.Route.extend({
       route: '/projects',
 
       connectOutlets: function(router) {
-        router.get('applicationController').connectOutlet({name:'projects',
-                                                           outletName:'projects',
-                                                           context: GiddyUp.Project.find()});
+        router.get('applicationController').connectOutlet('projects', 'projects', GiddyUp.Project.find());
       },
 
       index: Ember.Route.extend({
@@ -23,29 +21,39 @@ GiddyUp.Router = Ember.Router.extend({
 
       show: Ember.Route.extend({
         route: '/:project_id',
+
         connectOutlets: function(router, context) {
-          context.set('isActive', true);
-          router.get('applicationController').connectOutlet({outletName:'scorecards',
-                                                             name:'scorecards',
-                                                             context: context.get('scorecards')});
-        },
-        exit: function(router) {
-          GiddyUp.Project.find().setEach('isActive', false);
-          router.get('applicationController').set('scorecards', null);
+          router.get('applicationController').
+            connectOutlet('scorecards', 'scorecards', context.get('scorecards'));
         },
 
-        scorecard: Ember.Route.extend({
-          route: '/scorecards/:scorecard_id',
-          connectOutlets: function(router, context) {
-            context.set('isActive', true);
-            router.get('applicationController').connectOutlet({outletName:'scorecard',
-                                                               name:'scorecard',
-                                                               context: context})
-          },
-          exit: function(router) {
-            router.get('applicationController').set('scorecard', null);
-            GiddyUp.Scorecard.find().setEach('isActive', false);
+        exit: function(router){
+          if(!Ember.none(router.get('applicationController.scorecards'))){
+            router.get('applicationController').disconnectOutlet('scorecards');
           }
+        },
+
+        index: Ember.Route.extend({ route: '/' }),
+
+        scorecard: Ember.Route.extend({
+          route: '/scorecards',
+
+          index: Ember.Route.extend({ route: '/' }),
+
+          show: Ember.Route.extend({
+            route: '/:scorecard_id',
+
+            connectOutlets: function(router, context) {
+              // console.log(context);
+              router.get('applicationController').connectOutlet('scorecard','scorecard', context);
+            },
+
+            exit: function(router){
+              if(!Ember.none(router.get('applicationController.scorecard'))){
+                router.get('applicationController').disconnectOutlet('scorecard');
+              }
+            }
+          })
         })
       })
     })
