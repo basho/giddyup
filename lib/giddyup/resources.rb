@@ -37,6 +37,12 @@ module GiddyUp
   class Resource < Webmachine::Resource
     include Webmachine::Resource::Authentication
 
+    def encodings_provided
+      { 'gzip' => :encode_gzip,
+        'deflate' => :encode_deflate,
+        'identity' => :encode_identity }
+    end
+
     def is_authorized?(auth)
       return true unless %W{PUT POST DELETE}.include?(request.method)
       basic_auth(auth, "GiddyUp") do |user, pass|
