@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 2012092011261348154787) do
+ActiveRecord::Schema.define(:version => 2012100511261348154787) do
 
   create_table "projects", :force => true do |t|
     t.string "name"
@@ -40,6 +40,7 @@ ActiveRecord::Schema.define(:version => 2012092011261348154787) do
     t.integer  "scorecard_id"
     t.datetime "created_at",   :null => false
     t.datetime "updated_at",   :null => false
+    t.string   "log_url"
   end
 
   add_index "test_results", ["scorecard_id"], :name => "index_test_results_on_scorecard_id"
