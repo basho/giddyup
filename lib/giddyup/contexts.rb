@@ -16,7 +16,7 @@ module GiddyUp
         project = Project.find_by_name(data['project'])
         @test_result.scorecard = project.scorecards.find_or_create_by_name(data['version'])
         if log = create_log(data['log'])
-          @test_result.update_attribute(:log_url, log.public_url)
+          @test_result.log_url = log.public_url
         end
         @test_result.save!
         true
