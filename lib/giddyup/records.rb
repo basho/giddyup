@@ -34,10 +34,6 @@ class TestResult < ActiveRecord::Base
       self[:status] = false
     end
   end
-
-  def log_url
-    GiddyUp::S3.directories.get(GiddyUp::LogBucket).files.new(:key => "#{id}.log").public_url
-  end
 end
 
 class Project < ActiveRecord::Base
