@@ -27,6 +27,14 @@ namespace :db do
     load 'db/seed.rb'
   end
 
+  task :backfill_log_url => :environment do
+    TestResult.where('log_url IS NULL').each do |result|
+      puts "Backfilling test result: #{result.id}."
+      result.log_url = GiddyUp::S3.directories.get(GiddyUp::LogBucket).files.new(:key => "#{result.id}.log").public_url
+      result.save
+    end
+  end
+
   namespace :schema do
     task :dump => :environment do
       require 'active_record/schema_dumper'
