@@ -15,8 +15,10 @@ module GiddyUp
         @test_result.status = data['status']
         project = Project.find_by_name(data['project'])
         @test_result.scorecard = project.scorecards.find_or_create_by_name(data['version'])
+        if log = create_log(data['log'])
+          @test_result.update_attribute(:log_url, log.public_url)
+        end
         @test_result.save!
-        create_log data['log']
         true
       rescue
         false
@@ -31,6 +33,7 @@ module GiddyUp
       file.body = data
       file.content_type = "text/plain"
       file.save
+      file
     end
   end
 end
