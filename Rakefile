@@ -30,8 +30,13 @@ namespace :db do
   task :backfill_log_url => :environment do
     TestResult.where('log_url IS NULL').each do |result|
       puts "Backfilling test result: #{result.id}."
-      result.log_url = GiddyUp::S3.directories.get(GiddyUp::LogBucket).files.new(:key => "#{result.id}.log").public_url
-      result.save
+      begin
+        result.log_url = GiddyUp::S3.directories.get(GiddyUp::LogBucket).files.new(:key => "#{result.id}.log").public_url
+      rescue Excon::Errors::Error => e
+        puts "  Failed! #{e.message.split(/\n/).first}"
+      else        
+        result.save
+      end
     end
   end
 
