@@ -121,6 +121,18 @@ module GiddyUp
     end
   end
 
+  class LogResource < Resource
+    def resource_exists?
+      return false unless request.path_info[:id]
+      @test_result = TestResult.find(request.path_info[:id])
+      @test_result.present?
+    end
+
+    def to_json
+      LogSerializer.new(@test_result).to_json
+    end
+  end
+
   class TestResultsResource < Resource
     def resource_exists?
       begin
@@ -190,6 +202,7 @@ module GiddyUp
   Application.routes do
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
+    add ['logs', :id], LogResource
     add ['test_results', :id], TestResultResource
     add ['test_results'], TestResultResource do |request|
       request.post?

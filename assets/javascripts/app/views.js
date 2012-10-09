@@ -23,6 +23,14 @@ GiddyUp.ScorecardView = Ember.View.extend({
              'controller.content.test_results.@each.isLoaded')
 });
 
+GiddyUp.TestResultsView = Ember.View.extend({
+  templateName: 'test_results'
+});
+
+GiddyUp.TestResultView = Ember.View.extend({
+  templateName: 'test_result'
+});
+
 GiddyUp.ScorecardSubcellView = Ember.View.extend({
   tagName: 'span',
   labelClass: 'badge',

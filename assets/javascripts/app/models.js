@@ -48,11 +48,21 @@ GiddyUp.Scorecard = DS.Model.extend({
 GiddyUp.TestResult = DS.Model.extend({
   test: function(){
     var id = this.get('test_id');
+    var tests;
+
     if(Ember.none(id)){
       return null;
     }
-    return this.get('scorecard.project.tests').findProperty('id', id);
+
+    tests = this.get('scorecard.project.tests');
+
+    if(tests) {
+      return tests.findProperty('id', id);
+    } else {
+      return [];
+    }
   }.property('test_id').cacheable(),
+
   test_id: DS.attr('number'),
   scorecard: DS.belongsTo('GiddyUp.Scorecard'),
   status: DS.attr('boolean'),
@@ -68,6 +78,10 @@ GiddyUp.Test = DS.Model.extend({
   tags: DS.attr('hash'),
   platform: function(){ return this.get('tags').platform; }.property('tags'),
   backend: function(){ return this.get('tags').backend; }.property('tags')
+});
+
+GiddyUp.Log = DS.Model.extend({
+  content: DS.attr('string')
 });
 
 GiddyUp.ScorecardCell = Ember.Object.extend({
@@ -106,7 +120,7 @@ GiddyUp.ScorecardSubcell = Ember.Object.extend({
     var results = this.get('scorecard.test_results');
     var filteredResults = results.filterProperty('test_id', id);
     return filteredResults;
-  }.property('scorecard.test_results.isLoaded'),
+  }.property('scorecard.test_results.isLoaded', 'scorecard.test_results.@each.isLoaded'),
   status: function(){
     var tr = this.get('test_results');
     var total = tr.length;
@@ -118,4 +132,37 @@ GiddyUp.ScorecardSubcell = Ember.Object.extend({
       percent: (total === 0) ? 0.0 : (passing / total) * 100
     };
   }.property('test_results')
+});
+
+GiddyUp.ScorecardSubcellRouterProxy = Ember.Object.extend({
+  test_results: function() {
+    var name = this.get('test.name');
+    var backend = this.get('test.backend');
+    var platform = this.get('test.platform');
+    var tests = this.get('scorecard.project.tests');
+
+    var selectedTest;
+    var selectedResults;
+
+    if(tests) {
+      selectedTest = tests.find(function(test){
+        if(test.get('backend')) {
+          return test.get('name') === name &&
+                 test.get('platform') === platform &&
+                 test.get('backend') === backend;
+        } else {
+          return test.get('name') === name &&
+                 test.get('platform') === platform;
+        }
+      });
+
+      selectedResults = this.get('scorecard.test_results').filter(function(test_result) {
+        return test_result.get('test') == selectedTest;
+      });
+
+      return selectedResults;
+    } else {
+      return [];
+    }
+  }.property('scorecard.test_results.isLoaded', 'scorecard.test_results.@each.isLoaded')
 });
