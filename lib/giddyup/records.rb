@@ -34,6 +34,12 @@ class TestResult < ActiveRecord::Base
       self[:status] = false
     end
   end
+
+  def content
+    Excon.get(log_url).body
+  rescue Excon::Errors::Error
+    ""
+  end
 end
 
 class Project < ActiveRecord::Base

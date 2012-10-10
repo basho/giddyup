@@ -1,0 +1,10 @@
+.badge a {
+  color: white;
+}
+
+pre {
+  background-color: black;
+  color: white;
+  height: 200px;
+  overflow: scroll;
+}
