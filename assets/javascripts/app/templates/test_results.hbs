@@ -1,6 +1,9 @@
 <div class="row-fluid">
   <div class="span4 well">
-    <ul>
+    <ul class="nav nav-list">
+      <li class="nav-header">
+        {{controller.test.platform}} / {{controller.test.name}} / {{controller.test.backend}}
+      </li>
       {{#each controller.test_results}}
         <li><a {{action showTestResult this href=true}}>{{created_at}}</a></li>
       {{/each}}
