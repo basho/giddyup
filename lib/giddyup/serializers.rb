@@ -3,6 +3,10 @@ class ProjectSerializer < ActiveModel::Serializer
   has_many :tests
 end
 
+class LogSerializer < ActiveModel::Serializer
+  attributes :id, :content
+end
+
 class TestResultSerializer < ActiveModel::Serializer
   attributes :id, :status, :log_url, :test_id, :scorecard_id, :created_at
 end

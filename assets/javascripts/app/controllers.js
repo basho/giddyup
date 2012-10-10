@@ -7,3 +7,7 @@ GiddyUp.ScorecardsController = Ember.ArrayController.extend();
 GiddyUp.ProjectController = Ember.ObjectController.extend();
 
 GiddyUp.ScorecardController = Ember.ObjectController.extend();
+
+GiddyUp.TestResultsController = Ember.ObjectController.extend();
+
+GiddyUp.TestResultController = Ember.ObjectController.extend();
