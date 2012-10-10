@@ -7,12 +7,11 @@
       {{#each controller.test_results}}
       <li class="test-result">
         {{#if success}}
-          <span class="btn btn-success pull-right">Success</span>
+        <a {{action showTestResult this href=true}}><span class="label label-success">Success</span> Test Result: {{id}}</a>
         {{/if}}
         {{#if failure}}
-          <span class="btn btn-danger pull-right">Failure</span>
+        <a {{action showTestResult this href=true}}><span class="label label-important">Failure</span> Test Result: {{id}}</a>
         {{/if}}
-        <a {{action showTestResult this href=true}}>Test Run #{{id}}</a>
       </li>
       {{/each}}
     </ul>
