@@ -8,3 +8,7 @@ pre {
   height: 200px;
   overflow: scroll;
 }
+
+.test-result {
+  height: 40px;
+}

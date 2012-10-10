@@ -65,7 +65,17 @@ GiddyUp.TestResult = DS.Model.extend({
 
   test_id: DS.attr('number'),
   scorecard: DS.belongsTo('GiddyUp.Scorecard'),
+
   status: DS.attr('boolean'),
+
+  success: function() {
+    return this.get('status') === true;
+  }.property('status'),
+
+  failure: function() {
+    return this.get('status') === false;
+  }.property('status'),
+
   log_url: DS.attr('string'),
   created_at: DS.attr('date'),
   platformBinding: 'test.platform',
