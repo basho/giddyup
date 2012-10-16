@@ -32,6 +32,7 @@ GiddyUp.Router = Ember.Router.extend({
 
         exit: function(router){
           if(!Ember.none(router.get('applicationController.scorecards'))){
+            router.get('projectsController').set('selectedItem', undefined);
             router.get('applicationController').disconnectOutlet('scorecards');
           }
         },
@@ -56,6 +57,7 @@ GiddyUp.Router = Ember.Router.extend({
             },
 
             exit: function(router) {
+              router.get('scorecardsController').set('selectedItem', undefined);
               router.get('applicationController').disconnectOutlet('scorecard');
             },
 
