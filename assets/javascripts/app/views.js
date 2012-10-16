@@ -69,3 +69,29 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
     }
   }.property('content.test.backend')
 });
+
+GiddyUp.CollectionView = Ember.CollectionView.extend({
+  tagName: 'ul',
+  classNames: ['nav']
+});
+
+GiddyUp.Selectable = Ember.Mixin.create({
+  tagName: 'li',
+  classNameBindings: ['isActive:active'],
+
+  isActive: function() {
+    return this.get('controller.selectedItem') == this.get('content');
+  }.property('controller.selectedItem')
+});
+
+GiddyUp.ProjectsCollectionView = GiddyUp.CollectionView.extend({
+  itemViewClass: Ember.View.extend(GiddyUp.Selectable, {
+    templateName: 'projects_collection_item_view'
+  })
+});
+
+GiddyUp.ScorecardsCollectionView = GiddyUp.CollectionView.extend({
+  itemViewClass: Ember.View.extend(GiddyUp.Selectable, {
+    templateName: 'scorecards_collection_item_view'
+  })
+});

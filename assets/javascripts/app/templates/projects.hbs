@@ -1,11 +1,5 @@
 {{#if view.isLoaded}}
-<ul class="nav">
-  {{#each controller}}
-  <li {{bindAttr class="isActive:active"}}>
-    <a {{action showProject this href=true}}>{{name}}</a>
-  </li>
-  {{/each}}
-</ul>
+  {{view GiddyUp.ProjectsCollectionView contentBinding="controller"}}
 {{else}}
 <p class="navbar-text">Loading...</p>
 {{/if}}

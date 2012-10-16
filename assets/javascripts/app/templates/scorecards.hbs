@@ -2,13 +2,7 @@
 <div class="navbar">
   <div class="navbar-inner">
     <ul class="nav">
-      {{#each controller}}
-        <li {{bindAttr class="isActive:active"}}>
-          <a {{action showScorecard this href=true}}>
-            {{name}}
-          </a>
-        </li>
-      {{/each}}
+      {{view GiddyUp.ScorecardsCollectionView contentBinding="controller"}}
     </ul>
   </div>
 </div>
