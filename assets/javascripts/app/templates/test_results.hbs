@@ -16,7 +16,9 @@
       {{/each}}
     </ul>
   </div>
-  <div class="span9">
-    <pre>{{outlet testResult}}</pre>
-  </div>
+  {{#if controller.testResult}}
+    <div class="span9">{{outlet testResult}}</div>
+  {{else}}
+    <div class="span9 well">Select a test result to view a log of its test run.</div>
+  {{/if}}
 </div>
