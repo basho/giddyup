@@ -2,9 +2,17 @@
   color: white;
 }
 
+pre.abridged {
+  height: 200px;
+  overflow: scroll;
+}
+
+pre.unabridged {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
 pre {
   background-color: black;
   color: white;
-  height: 200px;
-  overflow: scroll;
 }

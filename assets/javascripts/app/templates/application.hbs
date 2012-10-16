@@ -1,11 +1,15 @@
 <div class="container-fluid">
-  <div class="navbar" style="margin-bottom:0">
-    <div class="navbar-inner">
-      <a class="brand" href="#">GiddyUp</a>
-      {{outlet projects}}
+  {{#if chromeless}}
+    {{outlet log}}
+  {{else}}
+    <div class="navbar" style="margin-bottom:0">
+      <div class="navbar-inner">
+        <a class="brand" href="#">GiddyUp</a>
+        {{outlet projects}}
+      </div>
     </div>
-  </div>
-  {{outlet scorecards}}
-  {{outlet testResults}}
-  {{outlet scorecard}}
+    {{outlet scorecards}}
+    {{outlet testResults}}
+    {{outlet scorecard}}
+  {{/if}}
 </div>
