@@ -95,3 +95,7 @@ GiddyUp.ScorecardsCollectionView = GiddyUp.CollectionView.extend({
     templateName: 'scorecards_collection_item_view'
   })
 });
+
+GiddyUp.LogView = Ember.View.extend({
+  templateName: 'log'
+});

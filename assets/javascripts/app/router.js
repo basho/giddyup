@@ -6,6 +6,27 @@ GiddyUp.Router = Ember.Router.extend({
     }),
 
     showProject: Ember.Router.transitionTo('projects.show.index'),
+    showLog: Ember.Router.transitionTo('logs.show'),
+
+    logs: Ember.Route.extend({
+      route: '/logs',
+
+      connectOutlets: function(router) {
+        router.get('applicationController').set('chromeless', true);
+      },
+
+      exit: function(router) {
+        router.get('applicationController').set('chromeless', false);
+      },
+
+      show: Ember.Route.extend({
+        route: '/:log_id',
+
+        connectOutlets: function(router, context) {
+          router.get('applicationController').connectOutlet('log', 'log', context);
+        }
+      })
+    }),
 
     projects: Ember.Route.extend({
       route: '/projects',

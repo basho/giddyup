@@ -91,7 +91,12 @@ GiddyUp.Test = DS.Model.extend({
 });
 
 GiddyUp.Log = DS.Model.extend({
-  content: DS.attr('string')
+  content: DS.attr('string'),
+
+  directPath: function() {
+    var router = GiddyUp.get('router');
+    return router.urlForEvent('showLog', this);
+  }.property()
 });
 
 GiddyUp.ScorecardCell = Ember.Object.extend({
