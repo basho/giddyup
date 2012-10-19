@@ -612,7 +612,7 @@ a:hover {
 .container-fluid {
   padding-right: 20px;
   padding-left: 20px;
-  padding-top: 20px;
+  padding-top: 30px;
   *zoom: 1;
 }
 
@@ -1892,6 +1892,7 @@ table {
 
 .table th {
   font-weight: bold;
+  font-size: 11pt;
 }
 
 .table thead th {
@@ -3856,9 +3857,14 @@ input[type="submit"].btn.btn-mini {
 
 .nav-list > .active > a,
 .nav-list > .active > a:hover {
-  color: #ffffff;
-  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
-  background-color: #0088cc;
+  color: #3a87ad;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
+  background-color: #e1eff6;
+  padding: 4px 15px 6px;
+  border: 1px solid #bde3eb;
+  -webkit-border-radius: 4px;
+     -moz-border-radius: 4px;
+          border-radius: 4px;
 }
 
 .nav-list [class^="icon-"] {

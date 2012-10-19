@@ -13,9 +13,30 @@ pre.unabridged {
 }
 
 pre {
-  background-color: #333333;
+  background: url('/images/console.jpg') left top repeat #333333;
   color: white;
+  line-height: 2;
   -webkit-box-shadow: inset 0 3px 15px #1d1d1d;
      -moz-box-shadow: inset 0 3px 15px #1d1d1d;
           box-shadow: inset 0 3px 15px #1d1d1d;
+}
+
+
+.scorecards {
+  border-top: 0;
+}
+
+
+.cowboy {
+  position: absolute;
+  right: 20px;
+  top: 15px;
+}
+
+.navbar {
+  padding-right: 100px;
+}
+
+.table-striped {
+  margin-top: 30px;
 }
