@@ -4,7 +4,7 @@
 
 pre.abridged {
   height: 200px;
-  overflow: scroll;
+  overflow: auto;
 }
 
 pre.unabridged {
@@ -13,6 +13,9 @@ pre.unabridged {
 }
 
 pre {
-  background-color: black;
+  background-color: #333333;
   color: white;
+  -webkit-box-shadow: inset 0 3px 15px #1d1d1d;
+     -moz-box-shadow: inset 0 3px 15px #1d1d1d;
+          box-shadow: inset 0 3px 15px #1d1d1d;
 }
