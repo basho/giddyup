@@ -8,11 +8,21 @@ GiddyUp is the visual scorecard for [riak_test](http://github.com/basho/riak_tes
 
 ## Bootstrapping and Configuration
 
-1. Migrate your database using ```bundle exec rake db:migrate```
-2. Seed your database with the default set of tests, platforms and
-   backend combinations using ```bundle exec rake db:seed```
-3. Create a ```.env``` file with the following environment variables:
+### You'll need postgres to get this working locally. Here's how!
+1. Install Postgres. e.g. ```brew install postgresql```
+2. Initialize Postgres ```initdb /usr/local/var/postgres -E utf8```
+3. Start Postgres: ```pg_ctl -D /usr/local/var/postgres -l /usr/local/var/postgres/server.log start```
+4. Create your dev database ```createdb giddyup_dev```
+5. Test it out: ```psql -h localhost giddyup_dev```
+
+Also, install this: get the [heroku-toolbelt](https://toolbelt.heroku.com)
+
+### Here's how you get it running
+1. Create a ```.env``` file with the following environment variables:
    ```DATABASE_URL```, ```S3_AKID```, ```S3_BUCKET``` and ```S3_SECRET```.
+2. Migrate your database using ```foreman run rake db:migrate```
+3. Seed your database with the default set of tests, platforms and
+   backend combinations using ```foreman run rake db:seed```
 4. Start your application with ```foreman start```
 
 ## Screenshot
