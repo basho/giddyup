@@ -131,12 +131,14 @@ GiddyUp.Router = Ember.Router.extend({
                 route: '/:test_result_id',
 
                 connectOutlets: function(router, context) {
+                  router.get('testResultsController').set('selectedItem', context);
                   router.get('testResultsController').
                     connectOutlet('testResult','testResult', GiddyUp.Log.find(context.get('id')));
                 },
 
                 exit: function(router) {
                   router.get('testResultsController').disconnectOutlet('testResult');
+                  router.get('testResultsController').set('selectedItem', undefined);
                 }
               })
             })
