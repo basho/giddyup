@@ -6,54 +6,7 @@
  * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Designed and built with all the love in the world @twitter by @mdo and @fat.
- *
- * THIS FILE HAS BEEN MODIFIED FOR USE WITH BASHO GIDDY UP.
- *
  */
-
-/*
- * Custom fonts
- */
-@font-face {
-  font-family: 'noticia';
-  src: url('/fonts/noticiatext-italic-webfont-eot.eot');
-  src: url('/fonts/noticiatext-italic-webfont-eot.eot?#iefix') format('embedded-opentype'),
-       url('/fonts/noticiatext-italic-webfont-woff.woff') format('woff'),
-       url('/fonts/noticiatext-italic-webfont-ttf.ttf') format('truetype'),
-       url('/fonts/noticiatext-italic-webfont-svg.svg#noticia_textitalic') format('svg');
-  font-weight: normal;
-  font-style: italic;
-}
-@font-face {
-  font-family: 'noticia';
-  src: url('/fonts/noticiatext-regular-webfont-eot.eot');
-  src: url('/fonts/noticiatext-regular-webfont-eot.eot?#iefix') format('embedded-opentype'),
-       url('/fonts/noticiatext-regular-webfont-woff.woff') format('woff'),
-       url('/fonts/noticiatext-regular-webfont-ttf.ttf') format('truetype'),
-       url('/fonts/noticiatext-regular-webfont-svg.svg#noticia_textregular') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'titillium';
-  src: url('/fonts/titilliumtext25l001-webfont-eot.eot');
-  src: url('/fonts/titilliumtext25l001-webfont-eot.eot?#iefix') format('embedded-opentype'),
-       url('/fonts/titilliumtext25l001-webfont-woff.woff') format('woff'),
-       url('/fonts/titilliumtext25l001-webfont-ttf.ttf') format('truetype'),
-       url('/fonts/titilliumtext25l001-webfont-svg.svg#titilliumtext25l600_wt') format('svg');
-  font-weight: bold;
-  font-style: normal;
-}
-@font-face {
-  font-family: 'titillium';
-  src: url('/fonts/titilliumtext25l004-webfont-eot.eot');
-  src: url('/fonts/titilliumtext25l004-webfont-eot.eot?#iefix') format('embedded-opentype'),
-       url('/fonts/titilliumtext25l004-webfont-woff.woff') format('woff'),
-       url('/fonts/titilliumtext25l004-webfont-ttf.ttf') format('truetype'),
-       url('/fonts/titilliumtext25l004-webfont-svg.svg#titilliumtext25l1_wt') format('svg');
-  font-weight: normal;
-  font-style: normal;
-}
 
 article,
 aside,
@@ -206,15 +159,15 @@ textarea {
 
 body {
   margin: 0;
-  font-family: "titillium", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 20px;
   color: #333333;
+  background-color: #ffffff;
 }
 
 a {
   color: #0088cc;
-  font-weight: bold;
   text-decoration: none;
 }
 
@@ -612,7 +565,6 @@ a:hover {
 .container-fluid {
   padding-right: 20px;
   padding-left: 20px;
-  padding-top: 30px;
   *zoom: 1;
 }
 
@@ -915,7 +867,7 @@ code {
 
 pre {
   display: block;
-  padding: 10px 15px;
+  padding: 9.5px;
   margin: 0 0 10px;
   font-size: 13px;
   line-height: 20px;
@@ -925,6 +877,7 @@ pre {
   white-space: pre-wrap;
   background-color: #f5f5f5;
   border: 1px solid #ccc;
+  border: 1px solid rgba(0, 0, 0, 0.15);
   -webkit-border-radius: 4px;
      -moz-border-radius: 4px;
           border-radius: 4px;
@@ -987,7 +940,7 @@ input,
 button,
 select,
 textarea {
-  font-family: "titillium", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 label {
@@ -1892,7 +1845,6 @@ table {
 
 .table th {
   font-weight: bold;
-  font-size: 11pt;
 }
 
 .table thead th {
@@ -1998,13 +1950,6 @@ table {
 .table-striped tbody tr:nth-child(odd) td,
 .table-striped tbody tr:nth-child(odd) th {
   background-color: #f9f9f9;
-}
-
-.table-striped tbody {
-  border-left: 1px solid #d8d9da;
-  border-right: 1px solid #d8d9da;
-  border-bottom: 1px solid #d8d9da;
-  -webkit-box-shadow: 0 0 5px #000;
 }
 
 .table-hover tbody tr:hover td,
@@ -3857,14 +3802,9 @@ input[type="submit"].btn.btn-mini {
 
 .nav-list > .active > a,
 .nav-list > .active > a:hover {
-  color: #3a87ad;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
-  background-color: #e1eff6;
-  padding: 4px 15px 6px;
-  border: 1px solid #bde3eb;
-  -webkit-border-radius: 4px;
-     -moz-border-radius: 4px;
-          border-radius: 4px;
+  color: #ffffff;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+  background-color: #0088cc;
 }
 
 .nav-list [class^="icon-"] {
@@ -4205,7 +4145,7 @@ input[type="submit"].btn.btn-mini {
 .navbar {
   *position: relative;
   *z-index: 2;
-  margin: 0 0 20px;
+  margin-bottom: 20px;
   overflow: visible;
   color: #777777;
 }
@@ -4354,7 +4294,7 @@ input[type="submit"].btn.btn-mini {
 .navbar-search .search-query {
   padding: 4px 14px;
   margin-bottom: 0;
-  font-family: "titillium", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-size: 13px;
   font-weight: normal;
   line-height: 1;
@@ -4469,7 +4409,6 @@ input[type="submit"].btn.btn-mini {
 .navbar .nav > .active > a:hover,
 .navbar .nav > .active > a:focus {
   color: #555555;
-  font-weight: bold;
   text-decoration: none;
   background-color: #e5e5e5;
   -webkit-box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.125);
@@ -5346,8 +5285,7 @@ a.thumbnail:hover {
 }
 
 .label {
-  padding: 4px 12px 5px;
-  margin-right: 5px;
+  padding: 1px 4px 2px;
   -webkit-border-radius: 3px;
      -moz-border-radius: 3px;
           border-radius: 3px;
