@@ -12,27 +12,21 @@ DS.attr.transforms.hash = {
 GiddyUp.Project = DS.Model.extend({
   primaryKey: 'name',
   name: DS.attr('string'),
-  tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
-  scorecards: DS.hasMany('GiddyUp.Scorecard', { key: 'scorecard_ids' }),
-  platforms: function(){
-    return this.get('tests').getEach('platform').sort().uniq();
-  }.property('tests').cacheable(),
-  testNames: function(){
-    return this.get('tests').getEach('name').sort().uniq();
-  }.property('tests').cacheable()
+  scorecards: DS.hasMany('GiddyUp.Scorecard', { key: 'scorecard_ids' })
 });
 
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
-  project: DS.belongsTo('GiddyUp.Project', {key: 'project'}),
+  project: DS.belongsTo('GiddyUp.Project', { key: 'project' }),
   test_results: DS.hasMany('GiddyUp.TestResult', { key: 'test_result_ids' }),
+  tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
   cells: function(){
     if(!this.get('project.isLoaded')){
       return [];
     }
     var scorecard = this;
-    var platforms = this.get('project.platforms');
-    var testNames = this.get('project.testNames');
+    var platforms = this.get('platforms');
+    var testNames = this.get('testNames');
     return testNames.map(function(name){
       return platforms.map(function(platform){
         return GiddyUp.ScorecardCell.create({
@@ -42,7 +36,13 @@ GiddyUp.Scorecard = DS.Model.extend({
         });
       });
     })
-  }.property('project.isLoaded')
+  }.property('project.isLoaded'),
+  platforms: function(){
+    return this.get('tests').getEach('platform').sort().uniq();
+  }.property('tests').cacheable(),
+  testNames: function(){
+    return this.get('tests').getEach('name').sort().uniq();
+  }.property('tests').cacheable()
 });
 
 GiddyUp.TestResult = DS.Model.extend({
@@ -54,7 +54,7 @@ GiddyUp.TestResult = DS.Model.extend({
       return null;
     }
 
-    tests = this.get('scorecard.project.tests');
+    tests = this.get('scorecard.tests');
 
     if(tests) {
       return tests.findProperty('id', id);
@@ -86,8 +86,8 @@ GiddyUp.TestResult = DS.Model.extend({
 GiddyUp.Test = DS.Model.extend({
   name: DS.attr('string'),
   tags: DS.attr('hash'),
-  platform: function(){ return this.get('tags').platform; }.property('tags'),
-  backend: function(){ return this.get('tags').backend; }.property('tags')
+  platform: function(){ return this.get('tags.platform'); }.property('tags'),
+  backend: function(){ return this.get('tags.backend'); }.property('tags')
 });
 
 GiddyUp.Log = DS.Model.extend({
@@ -111,7 +111,7 @@ GiddyUp.ScorecardCell = Ember.Object.extend({
     var platform = this.get('platform');
     var scorecard = this.get('scorecard');
     var cell = this;
-    var tests = scorecard.get('project.tests').filter(function(test){
+    var tests = scorecard.get('tests').filter(function(test){
       return test.get('name') === name && test.get('platform') === platform;
     });
     return tests.map(function(test){
@@ -154,7 +154,7 @@ GiddyUp.ScorecardSubcellRouterProxy = Ember.Object.extend({
     var name = this.get('test.name');
     var backend = this.get('test.backend');
     var platform = this.get('test.platform');
-    var tests = this.get('scorecard.project.tests');
+    var tests = this.get('scorecard.tests');
 
     var selectedTest;
     var selectedResults;
