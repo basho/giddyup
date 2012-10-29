@@ -13,7 +13,7 @@ platforms = %w{
   solaris-10u9-64
   freebsd-9-64
   smartos-64
-  os-x
+  osx-64
 }
 
 backends = %w{
