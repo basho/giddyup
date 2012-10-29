@@ -91,7 +91,7 @@ GiddyUp.Test = DS.Model.extend({
 });
 
 GiddyUp.Log = DS.Model.extend({
-  content: DS.attr('string'),
+  body: DS.attr('string'),
 
   directPath: function() {
     var router = GiddyUp.get('router');

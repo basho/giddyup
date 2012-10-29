@@ -35,7 +35,7 @@ class TestResult < ActiveRecord::Base
     end
   end
 
-  def content
+  def body
     Excon.get(log_url).body
   rescue Excon::Errors::Error
     ""
