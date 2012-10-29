@@ -13,6 +13,7 @@ platforms = %w{
   solaris-10u9-64
   freebsd-9-64
   smartos-64
+  osx-64
 }
 
 backends = %w{
@@ -43,18 +44,26 @@ riak_tests = %w{
 
 riak_tests.each do |t|
   platforms.each do |p|
-    test = Test.create(:name => t, :tags => {'platform' => p})
-    projects['riak'].tests << test
-    projects['riak_ee'].tests << test
+    tags = { 'platform' => p }
+
+    unless Test.where(:name => t).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+      test = Test.create(:name => t, :tags => tags)
+      projects['riak'].tests << test
+      projects['riak_ee'].tests << test
+    end
   end
 end
 
 ## Special handling for 2i
 platforms.each do |p|
-  test1 = Test.create(:name => "secondary_index_tests", :tags => {'platform' => p, 'backend' => 'memory'})
-  test2 = Test.create(:name => "secondary_index_tests", :tags => {'platform' => p, 'backend' => 'eleveldb'})
-  projects['riak'].tests << test1
-  projects['riak'].tests << test2
-  projects['riak_ee'].tests << test1
-  projects['riak_ee'].tests << test2
+  ['eleveldb', 'memory'].each do |b|
+    t = "secondary_index_tests"
+    tags = { 'platform' => p, 'backend' => b }
+
+    unless Test.where(:name => t).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+      test = Test.create(:name => t, :tags => tags)
+      projects['riak'].tests << test
+      projects['riak_ee'].tests << test
+    end
+  end
 end
