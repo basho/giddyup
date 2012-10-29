@@ -4,7 +4,7 @@ class ProjectSerializer < ActiveModel::Serializer
 end
 
 class LogSerializer < ActiveModel::Serializer
-  attributes :id, :content
+  attributes :id, :body
 end
 
 class TestResultSerializer < ActiveModel::Serializer
