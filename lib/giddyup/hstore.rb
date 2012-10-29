@@ -116,8 +116,8 @@ module ActiveRecord
     
     class PostgreSQLColumn < Column
       # Does the type casting from hstore columns using String#from_hstore or Hash#from_hstore.
-      def type_cast_code_with_hstore(var_name)
-        type == :hstore ? "#{var_name}.from_hstore" : type_cast_code_without_hstore(var_name)
+      def type_cast_code_with_hstore(var_name)r
+        type == :hstore ? "HstoreSerializer.load(#{var_name})" : type_cast_code_without_hstore(var_name)
       end
 
       # Adds the hstore type for the column.
