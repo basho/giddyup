@@ -160,6 +160,9 @@ module GiddyUp
   class ProjectResource < Resource
     def resource_exists?
       query = Project.where(:name => request.path_info[:name])
+      if version = request.query.delete('version')
+        query = Test.for_version(version, query)
+      end
       if !request.query.empty?
         query = query.where(['tests.tags::hstore @> ?', HstoreSerializer.dump(request.query)])
       end
