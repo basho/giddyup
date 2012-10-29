@@ -136,7 +136,7 @@ module ActiveRecord
       def quote_with_hstore(value, column = nil)
         if value && column && column.sql_type == 'hstore'
           raise HstoreTypeMismatch, "#{column.name} must have a Hash or a valid hstore value (#{value})" unless HstoreSerializer.valid?(value)
-          return quote_without_hstore(value.to_hstore, column)
+          return quote_without_hstore(HstoreSerializer.dump(value), column)
         end
         quote_without_hstore(value,column)
       end
