@@ -159,19 +159,22 @@ module GiddyUp
 
   class ProjectResource < Resource
     def resource_exists?
-      query = Project.where(:name => request.path_info[:name])
-      if version = request.query.delete('version')
-        query = Test.for_version(version, query)
-      end
+      scope = Project.where(:name => request.path_info[:name])
       if !request.query.empty?
-        query = query.where(['tests.tags::hstore @> ?', HstoreSerializer.dump(request.query)])
+        query = request.query.dup
+        scope = scope.includes(:tests)
+        if version = query.delete('version')
+          scope = Test.for_version(version, scope)
+        end
+        scope = scope.where(['tests.tags::hstore @> ?', HstoreSerializer.dump(query)])
       end
-      @project = query.first
+      @project = scope.first
       @project.present?
     end
 
     def to_json
-      ProjectSerializer.new(@project, {:scope => :single}).to_json
+      options = request.query.empty? ? {} : {:scope => :filtered}
+      ProjectSerializer.new(@project, options).to_json
     end
   end
 

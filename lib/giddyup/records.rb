@@ -53,7 +53,7 @@ end
 class Project < ActiveRecord::Base
   # name string -- 'riak' or 'riak_ee' or 'riak_cs'
   validates_uniqueness_of :name
-  default_scope includes(:tests, :scorecards)
+  default_scope includes(:scorecards)
   has_many :scorecards
   has_and_belongs_to_many :tests
 end
