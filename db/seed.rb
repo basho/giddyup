@@ -8,6 +8,7 @@ platforms = %w{
   ubuntu-1104-64
   ubuntu-1204-64
   fedora-15-64
+  fedora-17-64
   centos-5-64
   centos-6-64
   solaris-10u9-64
