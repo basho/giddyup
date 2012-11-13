@@ -24,20 +24,25 @@ backends = %w{
 }
 
 riak_tests = %w{
+  basic_command_line
+  client_java_verify
+  client_ruby_verify
   gh_riak_core_154
   gh_riak_core_155
   gh_riak_core_176
+  loaded_upgrade
   mapred_verify_rt
+  partition_repair
   riaknostic_rt
   rolling_capabilities
   rt_basic_test
-  upgrade
   verify_basic_upgrade
   verify_build_cluster
   verify_capabilities
   verify_claimant
   verify_down
   verify_leave
+  verify_listkeys
   verify_riak_lager
   verify_riak_stats
   verify_staged_clustering
