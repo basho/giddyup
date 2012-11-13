@@ -1,4 +1,4 @@
-projects = %w{riak riak_ee riak_cs stanchion}.inject({}) do |hash, key|
+$projects = %w{riak riak_ee riak_cs stanchion}.inject({}) do |hash, key|
   hash.merge key => Project.find_or_create_by_name(key)
 end
 
@@ -26,7 +26,6 @@ backends = %w{
 riak_tests = %w{
   basic_command_line
   client_java_verify
-  client_ruby_verify
   gh_riak_core_154
   gh_riak_core_155
   gh_riak_core_176
@@ -48,28 +47,31 @@ riak_tests = %w{
   verify_staged_clustering
 }
 
+def create_riak_test(name, *args)
+  tags = args.pop || {}
+  projects = args.first || %w{riak riak_ee}
+  unless Test.where(:name => name).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+    test = Test.create(:name => name, :tags => tags)
+    projects.each do |p|
+      $projects[p].tests << test
+    end
+  end
+end
+
 riak_tests.each do |t|
   platforms.each do |p|
-    tags = { 'platform' => p }
-
-    unless Test.where(:name => t).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
-      test = Test.create(:name => t, :tags => tags)
-      projects['riak'].tests << test
-      projects['riak_ee'].tests << test
-    end
+    create_riak_test t, 'platform' => p
   end
 end
 
 ## Special handling for 2i
 platforms.each do |p|
   ['eleveldb', 'memory'].each do |b|
-    t = "secondary_index_tests"
-    tags = { 'platform' => p, 'backend' => b }
-
-    unless Test.where(:name => t).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
-      test = Test.create(:name => t, :tags => tags)
-      projects['riak'].tests << test
-      projects['riak_ee'].tests << test
-    end
+    create_riak_test "secondary_index_tests", 'platform' => p, 'backend' => b
   end
+end
+
+## Special handling for Ruby tests
+platforms.each do |p|
+  create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
 end
