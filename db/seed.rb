@@ -81,3 +81,8 @@ platforms.each do |p|
     create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b
   end
 end
+
+## Riak 1.3 features
+platforms.each do |p|
+  create_riak_test "verify_reset_bucket_props", 'platform' => p, 'min_version' => '1.3.0'
+end
