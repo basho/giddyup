@@ -29,7 +29,6 @@ riak_tests = %w{
   gh_riak_core_154
   gh_riak_core_155
   gh_riak_core_176
-  loaded_upgrade
   mapred_verify_rt
   partition_repair
   riaknostic_rt
@@ -74,4 +73,11 @@ end
 ## Special handling for Ruby tests
 platforms.each do |p|
   create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
+end
+
+## Test loaded_upgrade on only persistent backends
+platforms.each do |p|
+  %w{bitcask eleveldb}.each do |b|
+    create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b
+  end
 end
