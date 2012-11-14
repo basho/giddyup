@@ -1,4 +1,4 @@
-projects = %w{riak riak_ee riak_cs stanchion}.inject({}) do |hash, key|
+$projects = %w{riak riak_ee riak_cs stanchion}.inject({}) do |hash, key|
   hash.merge key => Project.find_or_create_by_name(key)
 end
 
@@ -24,47 +24,65 @@ backends = %w{
 }
 
 riak_tests = %w{
+  basic_command_line
+  client_java_verify
   gh_riak_core_154
   gh_riak_core_155
   gh_riak_core_176
   mapred_verify_rt
+  partition_repair
   riaknostic_rt
   rolling_capabilities
   rt_basic_test
-  upgrade
   verify_basic_upgrade
   verify_build_cluster
   verify_capabilities
   verify_claimant
   verify_down
   verify_leave
+  verify_listkeys
   verify_riak_lager
   verify_riak_stats
   verify_staged_clustering
 }
 
+def create_riak_test(name, *args)
+  tags = args.pop || {}
+  projects = args.first || %w{riak riak_ee}
+  unless Test.where(:name => name).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+    test = Test.create(:name => name, :tags => tags)
+    projects.each do |p|
+      $projects[p].tests << test
+    end
+  end
+end
+
 riak_tests.each do |t|
   platforms.each do |p|
-    tags = { 'platform' => p }
-
-    unless Test.where(:name => t).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
-      test = Test.create(:name => t, :tags => tags)
-      projects['riak'].tests << test
-      projects['riak_ee'].tests << test
-    end
+    create_riak_test t, 'platform' => p
   end
 end
 
 ## Special handling for 2i
 platforms.each do |p|
   ['eleveldb', 'memory'].each do |b|
-    t = "secondary_index_tests"
-    tags = { 'platform' => p, 'backend' => b }
-
-    unless Test.where(:name => t).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
-      test = Test.create(:name => t, :tags => tags)
-      projects['riak'].tests << test
-      projects['riak_ee'].tests << test
-    end
+    create_riak_test "secondary_index_tests", 'platform' => p, 'backend' => b
   end
+end
+
+## Special handling for Ruby tests
+platforms.each do |p|
+  create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
+end
+
+## Test loaded_upgrade on only persistent backends
+platforms.each do |p|
+  %w{bitcask eleveldb}.each do |b|
+    create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b
+  end
+end
+
+## Riak 1.3 features
+platforms.each do |p|
+  create_riak_test "verify_reset_bucket_props", 'platform' => p, 'min_version' => '1.3.0'
 end
