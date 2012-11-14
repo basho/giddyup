@@ -124,29 +124,50 @@ GiddyUp.ScorecardCell = Ember.Object.extend({
   }.property('isLoaded')
 });
 
+GiddyUp.ScorecardSubcellStatus = Ember.Object.extend({
+  subcell: null,
+
+  total: function(){
+    return this.get('subcell.test_results').length;
+  }.property('subcell.test_results'),
+
+  numPassing: function(){
+    return this.get('subcell.test_results').
+      filterProperty('status',true).length;
+  }.property('subcell.test_results.@each.status'),
+
+  numFailing: function(){
+    return this.get('total') - this.get('numPassing');
+  }.property('total', 'numPassing'),
+
+  percent: function(){
+    if(this.get('total') === 0)
+      return 0.0;
+    else
+      return (this.get('numPassing') / this.get('total')) * 100;
+  }.property('total', 'numPassing'),
+
+  latestBinding: 'subcell.test_results.firstObject.status'
+});
+
 GiddyUp.ScorecardSubcell = Ember.Object.extend({
   cell: null,
   scorecard: null,
   test: null,
   test_results: function(){
-    // if(!this.get('scorecard.test_results.isLoaded'))
-    //   return [];
     var id = this.get('test.id');
     var results = this.get('scorecard.test_results');
     var filteredResults = results.filterProperty('test_id', id);
-    return filteredResults;
+    var sortedResults = filteredResults.sort(function(a,b){
+      at = a.get('created_at')
+      bt = b.get('created_at')
+      return (at < bt) ? -1 : ((bt < at) ? 1 : 0);
+    }).reverse(); // Sort in reverse order by created_at timestamp
+    return sortedResults;
   }.property('scorecard.test_results.isLoaded', 'scorecard.test_results.@each.isLoaded'),
   status: function(){
-    var tr = this.get('test_results');
-    var total = tr.length;
-    var passing = tr.filterProperty('status', true).length;
-    return {
-      total: total,
-      passing: passing,
-      failing: total - passing,
-      percent: (total === 0) ? 0.0 : (passing / total) * 100
-    };
-  }.property('test_results')
+    return GiddyUp.ScorecardSubcellStatus.create({subcell: this});
+  }.property()
 });
 
 GiddyUp.ScorecardSubcellRouterProxy = Ember.Object.extend({
