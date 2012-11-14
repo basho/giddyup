@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 2012111316281352842088) do
+ActiveRecord::Schema.define(:version => 2012111418271352935658) do
 
   create_table "projects", :force => true do |t|
     t.string "name"
@@ -41,6 +41,7 @@ ActiveRecord::Schema.define(:version => 2012111316281352842088) do
     t.datetime "created_at",   :null => false
     t.datetime "updated_at",   :null => false
     t.string   "log_url"
+    t.string   "long_version"
   end
 
   add_index "test_results", ["scorecard_id"], :name => "index_test_results_on_scorecard_id"
