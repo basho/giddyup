@@ -12,7 +12,7 @@ class LogSerializer < ActiveModel::Serializer
 end
 
 class TestResultSerializer < ActiveModel::Serializer
-  attributes :id, :status, :log_url, :test_id, :scorecard_id, :created_at
+  attributes :id, :status, :log_url, :test_id, :scorecard_id, :created_at, :long_version
 end
 
 class ScorecardSerializer < ActiveModel::Serializer
