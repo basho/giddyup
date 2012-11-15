@@ -77,7 +77,8 @@ GiddyUp.TestResult = DS.Model.extend({
   }.property('status'),
 
   log_url: DS.attr('string'),
-  created_at: DS.attr('date'),
+  created_at: DS.attr('date'),,
+  long_version: DS.attr('string'),
   platformBinding: 'test.platform',
   backendBinding: 'test.backend',
   nameBinding: 'test.name'
