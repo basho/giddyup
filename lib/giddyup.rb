@@ -5,6 +5,17 @@ module GiddyUp
       config.adapter = :Rack
     end
   end
+
+  VERSION_REGEX = /\d+\.\d+\.\d+\w*/
+
+  def self.version(version_string)
+    strict = normalize_version(version_string)
+    strict.blank? ? version_string : strict
+  end
+
+  def self.normalize_version(version_string)
+    version_string[VERSION_REGEX, 0]
+  end
 end
 
 require 'giddyup/hstore'

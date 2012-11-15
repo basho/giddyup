@@ -36,21 +36,21 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
   labelClass: 'badge',
   classNameBindings: ['labelClass', 'statusClass'],
   attributeBindings: ['title'],
-  titleBinding: 'percent',
   statusClass: function(){
     var status = this.get('content.status');
-    if(status.total === 0)
+    if(status.get('total') === 0)
       return '';
-    else if(status.passing === status.total)
+    else if(status.get('latest'))
       return 'badge-success';
-    else if(status.failing === status.total)
-      return 'badge-important';
     else
-      return 'badge-warning';
+      return 'badge-important';
   }.property('content.status'),
-  percent: function(){
-    var status = this.get('content.status');
-    return status.percent.toFixed(1).toString() + "%";
+  title: function(){
+    var percent = this.get('content.status.percent');
+    if(percent !== null || percent !== undefined)
+      return percent.toFixed(1).toString() + "%";
+    else
+      return "0%";
   }.property('content.status'),
   backendAbbr: function(){
     var backend = this.get('content.test.backend');

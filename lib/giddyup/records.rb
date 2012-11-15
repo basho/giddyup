@@ -13,10 +13,8 @@ class Test < ActiveRecord::Base
   default_scope order(:name)
   serialize :tags, HstoreSerializer
 
-  VERSION_REGEX = /\d+\.\d+\.\d+\w*/
-
   def self.for_version(version, scope = self)
-    version = version[VERSION_REGEX, 0]
+    version = GiddyUp.normalize_version(version)
     scope.where(["((NOT exist(tests.tags::hstore, 'min_version')) OR (tests.tags::hstore -> ARRAY['min_version'] <= ARRAY[?]))", version]).
       where(["((NOT exist(tests.tags::hstore, 'max_version')) OR (tests.tags::hstore -> ARRAY['max_version'] >= ARRAY[?]))", version])
   end

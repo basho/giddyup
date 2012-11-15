@@ -13,8 +13,10 @@ module GiddyUp
       begin
         @test_result.test_id = data['test_id'] || data['id']
         @test_result.status = data['status']
+        @test_result.long_version = data['version']
         project = Project.find_by_name(data['project'])
-        @test_result.scorecard = project.scorecards.find_or_create_by_name(data['version'])
+        version = GiddyUp.version(data['version'])
+        @test_result.scorecard = project.scorecards.find_or_create_by_name(version)
         if log = create_log(data['log'])
           @test_result.log_url = log.public_url
         end
