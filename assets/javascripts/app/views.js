@@ -47,7 +47,7 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
   }.property('content.status'),
   title: function(){
     var percent = this.get('content.status.percent');
-    if(percent != null || percent != undefined)
+    if(percent !== null || percent !== undefined)
       return percent.toFixed(1).toString() + "%";
     else
       return "0%";

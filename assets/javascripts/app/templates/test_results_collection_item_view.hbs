@@ -1,8 +1,8 @@
 {{#with view.content}}
   {{#if success}}
-  <a {{action showTestResult this href=true}}><span class="label label-success">Success</span> Test Result: {{id}} {{long_version}}</a>
+  <a {{action showTestResult this href=true}}><span class="label label-success">Success</span> Test Result: {{long_version}}</a>
   {{/if}}
   {{#if failure}}
-  <a {{action showTestResult this href=true}}><span class="label label-important">Failure</span> Test Result: {{id}} {{long_version}}</a>
+  <a {{action showTestResult this href=true}}><span class="label label-important">Failure</span> Test Result: {{long_version}}</a>
   {{/if}}
 {{/with}}
