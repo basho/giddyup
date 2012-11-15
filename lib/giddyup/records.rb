@@ -15,12 +15,8 @@ class Test < ActiveRecord::Base
 
   def self.for_version(version, scope = self)
     version = GiddyUp.normalize_version(version)
-    if version.present?
-      scope.where(["((NOT exist(tests.tags::hstore, 'min_version')) OR (tests.tags::hstore -> ARRAY['min_version'] <= ARRAY[?]))", version]).
+    scope.where(["((NOT exist(tests.tags::hstore, 'min_version')) OR (tests.tags::hstore -> ARRAY['min_version'] <= ARRAY[?]))", version]).
       where(["((NOT exist(tests.tags::hstore, 'max_version')) OR (tests.tags::hstore -> ARRAY['max_version'] >= ARRAY[?]))", version])
-    else
-      scope
-    end
   end
 end
 
