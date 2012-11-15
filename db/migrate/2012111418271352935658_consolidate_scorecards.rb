@@ -15,7 +15,7 @@ class ConsolidateScorecards < ActiveRecord::Migration
     say_with_time "Consolidating scorecards" do
       Project.all.each do |project|
         project.scorecards.each do |scorecard|
-          normalized_version = scorecard.name[Test::VERSION_REGEX, 0]
+          normalized_version = GiddyUp.normalize_version(scorecard.name)
           if normalized_version.blank?
             say("#{project.name}: #{scorecard.name} SKIP", true)
             next
