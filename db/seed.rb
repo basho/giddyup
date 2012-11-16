@@ -80,7 +80,7 @@ end
 ## Test upgrades on only persistent backends, from two different versions
 platforms.each do |p|
   %w{bitcask eleveldb}.each do |b|
-    %{previous legacy}.each do |v|
+    %w{previous legacy}.each do |v|
       create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
       create_riak_test "verify_basic_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
     end
