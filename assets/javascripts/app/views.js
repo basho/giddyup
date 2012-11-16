@@ -52,24 +52,36 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
     else
       return "0%";
   }.property('content.status'),
-  backendAbbr: function(){
+  abbr: function(){
     var backend = this.get('content.test.backend');
+    var upgrade_version = this.get('content.test.upgrade_version');
+    var abbr = ''
+    switch(upgrade_version){
+    case 'previous':
+      abbr = '-1'; break;
+    case 'legacy':
+      abbr = '-2'; break;
+    default:
+      break;
+    }
     switch(backend){
     case 'bitcask':
-      return 'B';
+      abbr = 'B' + abbr;
       break;
     case 'eleveldb':
-      return 'L';
+      abbr = 'L' + abbr;
       break;
     case 'memory':
-      return 'M';
+      abbr = 'M'+abbr;
       break;
     default:
-      return 'U';
+      break;
     }
-
-    return true;
-  }.property('content.test.backend')
+    if(abbr.length === 0)
+      return 'U';
+    else
+      return abbr;
+  }.property('content.test.backend', 'content.test.upgrade_version')
 });
 
 GiddyUp.CollectionView = Ember.CollectionView.extend({
