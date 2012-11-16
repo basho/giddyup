@@ -50,6 +50,9 @@ def create_riak_test(name, *args)
   tags = args.pop || {}
   projects = args.first || %w{riak riak_ee}
   unless Test.where(:name => name).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+    if tags['platform'] =~ /fedora-15/
+      tags['max_version'] = '1.2.99'
+    end
     test = Test.create(:name => name, :tags => tags)
     projects.each do |p|
       $projects[p].tests << test
@@ -84,5 +87,6 @@ end
 
 ## Riak 1.3 features
 platforms.each do |p|
+  next if p =~ /fedora-15/
   create_riak_test "verify_reset_bucket_props", 'platform' => p, 'min_version' => '1.3.0'
 end
