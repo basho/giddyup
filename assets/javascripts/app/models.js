@@ -108,8 +108,8 @@ var propertyComparator = function() {
   return function(a,b){
     for(i = 0; i < fields.length; i++){
       var field = fields[i];
-      av = a.get(field);
-      bv = b.get(field);
+      var av = a.get(field);
+      var bv = b.get(field);
       if(av < bv) return -1;
       if(bv < av) return 1;
     }
