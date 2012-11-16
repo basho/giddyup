@@ -34,7 +34,6 @@ riak_tests = %w{
   riaknostic_rt
   rolling_capabilities
   rt_basic_test
-  verify_basic_upgrade
   verify_build_cluster
   verify_capabilities
   verify_claimant
@@ -73,15 +72,18 @@ platforms.each do |p|
   end
 end
 
-## Special handling for Ruby tests
+## Special handling for Ruby tests, memory only
 platforms.each do |p|
   create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
 end
 
-## Test loaded_upgrade on only persistent backends
+## Test upgrades on only persistent backends, from two different versions
 platforms.each do |p|
   %w{bitcask eleveldb}.each do |b|
-    create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b
+    %{previous legacy}.each do |v|
+      create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
+      create_riak_test "verify_basic_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
+    end
   end
 end
 
