@@ -77,7 +77,7 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
     default:
       break;
     }
-    if(abbr.length == 0)
+    if(abbr.length === 0)
       return 'U';
     else
       return abbr;
