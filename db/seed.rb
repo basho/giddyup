@@ -34,7 +34,6 @@ riak_tests = %w{
   riaknostic_rt
   rolling_capabilities
   rt_basic_test
-  verify_basic_upgrade
   verify_build_cluster
   verify_capabilities
   verify_claimant
@@ -50,6 +49,9 @@ def create_riak_test(name, *args)
   tags = args.pop || {}
   projects = args.first || %w{riak riak_ee}
   unless Test.where(:name => name).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+    if tags['platform'] =~ /fedora-15/
+      tags['max_version'] = '1.2.99'
+    end
     test = Test.create(:name => name, :tags => tags)
     projects.each do |p|
       $projects[p].tests << test
@@ -70,19 +72,23 @@ platforms.each do |p|
   end
 end
 
-## Special handling for Ruby tests
+## Special handling for Ruby tests, memory only
 platforms.each do |p|
   create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
 end
 
-## Test loaded_upgrade on only persistent backends
+## Test upgrades on only persistent backends, from two different versions
 platforms.each do |p|
   %w{bitcask eleveldb}.each do |b|
-    create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b
+    %w{previous legacy}.each do |v|
+      create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
+      create_riak_test "verify_basic_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
+    end
   end
 end
 
 ## Riak 1.3 features
 platforms.each do |p|
+  next if p =~ /fedora-15/
   create_riak_test "verify_reset_bucket_props", 'platform' => p, 'min_version' => '1.3.0'
 end

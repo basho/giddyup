@@ -88,7 +88,10 @@ GiddyUp.Test = DS.Model.extend({
   name: DS.attr('string'),
   tags: DS.attr('hash'),
   platform: function(){ return this.get('tags.platform'); }.property('tags'),
-  backend: function(){ return this.get('tags.backend'); }.property('tags')
+  backend: function(){ return this.get('tags.backend'); }.property('tags'),
+  upgrade_version: function(){
+    return this.get('tags.upgrade_version')
+  }.property('tags')
 });
 
 GiddyUp.Log = DS.Model.extend({
