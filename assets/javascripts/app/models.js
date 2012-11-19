@@ -9,6 +9,21 @@ DS.attr.transforms.hash = {
   }
 };
 
+// Sorts Ember objects in an Array by the given properties.
+GiddyUp.propertyComparator = function() {
+  var fields = arguments;
+  return function(a,b){
+    for(var i = 0; i < fields.length; i++){
+      var field = fields[i];
+      var av = a.get(field);
+      var bv = b.get(field);
+      if(av < bv) return -1;
+      if(bv < av) return 1;
+    }
+    return 0;
+  }
+};
+
 GiddyUp.Project = DS.Model.extend({
   primaryKey: 'name',
   name: DS.attr('string'),
@@ -117,7 +132,7 @@ GiddyUp.ScorecardCell = Ember.Object.extend({
     var cell = this;
     var tests = scorecard.get('tests').filter(function(test){
       return test.get('name') === name && test.get('platform') === platform;
-    });
+    }).sort(GiddyUp.propertyComparator('backend', 'upgrade_version'));
     return tests.map(function(test){
       return GiddyUp.ScorecardSubcell.create({
         cell: cell,

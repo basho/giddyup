@@ -15,7 +15,7 @@
         {{#each cell in test}}
           <td>
             {{#each cell.subcells}}
-              {{#view GiddyUp.ScorecardSubcellView contentBinding="this" titleBinding="percent"}}<a {{action showTestResults this href=true}}>{{view.abbr}}</a>{{/view}}
+              <div>{{#view GiddyUp.ScorecardSubcellView contentBinding="this"}}<a {{action showTestResults this href=true}}>{{view.abbr}}</a>{{/view}}</div>
             {{/each}}
           </td>
         {{/each}}
