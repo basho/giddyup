@@ -24,7 +24,16 @@ GiddyUp.ScorecardView = Ember.View.extend({
 });
 
 GiddyUp.TestResultsView = Ember.View.extend({
-  templateName: 'test_results'
+  templateName: 'test_results',
+  nameBinding: 'controller.test.name',
+  platformBinding: 'controller.test.platform',
+  backend: function(){
+    var backend = this.get('controller.test.backend');
+    if(backend === undefined)
+      return 'undefined';
+    else
+      return backend.toString();
+  }.property('controller.test.backend')
 });
 
 GiddyUp.TestResultView = Ember.View.extend({
