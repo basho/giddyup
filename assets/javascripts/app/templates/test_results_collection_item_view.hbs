@@ -1,7 +1,7 @@
 {{#with view}}
   {{#if success}}
-  <a {{action showTestResult this href=true}}><span class="label label-success">Success</span> {{time_ago}} [{{long_version}}]</a>
+  <a {{action showTestResult this href=true}}><span class="label label-success">Success</span> {{timeAgo}} [{{versionString}}]</a>
   {{else}}
-  <a {{action showTestResult this href=true}}><span class="label label-important">Failure</span> {{time_ago}} [{{long_version}}]</a>
+  <a {{action showTestResult this href=true}}><span class="label label-important">Failure</span> {{timeAgo}} [{{versionString}}]</a>
   {{/if}}
 {{/with}}

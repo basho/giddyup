@@ -145,9 +145,9 @@ GiddyUp.TestResultsCollectionView = GiddyUp.CollectionView.extend({
   classNames: ['nav', 'nav-list'],
   itemViewClass: Ember.View.extend(GiddyUp.Selectable, {
     templateName: 'test_results_collection_item_view',
-    long_versionBinding: 'content.long_version',
+    versionStringBinding: 'content.long_version',
     successBinding: 'content.success',
-    time_ago: function(){
+    timeAgo: function(){
       return GiddyUp.prettyDate(this.get('content.created_at'));
     }.property('content.created_at')
   })
