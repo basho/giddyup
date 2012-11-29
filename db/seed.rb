@@ -79,8 +79,6 @@ platforms.each do |p|
   create_riak_test "client_python_verify", 'platform' => p, 'backend' => 'eleveldb'
 end
 
-## Special handling for Python tests
-
 ## Test upgrades on only persistent backends, from two different versions
 platforms.each do |p|
   %w{previous legacy}.each do |v|
