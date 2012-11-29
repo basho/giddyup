@@ -1,8 +1,7 @@
 <div class="row-fluid">
   {{#with view}}
-  <h4>{{name}} / {{platform}} / {{backend}} backend</h4>
+  <h4>{{name}} / {{platform}} / {{backend}} backend <a class="btn btn-mini" {{action showScorecard controller.scorecard.content href=true}}>&times;&nbsp; Hide results</a></h4>
   {{/with}}
-  <a {{action showScorecard controller.scorecard.content href=true}}>Close</a>
 </div>
 
 <div class="row-fluid">
