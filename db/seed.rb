@@ -35,8 +35,10 @@ riak_tests = %w{
   rolling_capabilities
   rt_basic_test
   verify_build_cluster
+  verify_busy_dist_port
   verify_capabilities
   verify_claimant
+  verify_commit_hooks
   verify_down
   verify_leave
   verify_listkeys
@@ -72,18 +74,19 @@ platforms.each do |p|
   end
 end
 
-## Special handling for Ruby tests, memory only
+## Special handling for Ruby and Python tests
 platforms.each do |p|
   create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
+  create_riak_test "client_python_verify", 'platform' => p, 'backend' => 'eleveldb'
 end
 
 ## Test upgrades on only persistent backends, from two different versions
 platforms.each do |p|
-  %w{bitcask eleveldb}.each do |b|
-    %w{previous legacy}.each do |v|
+  %w{previous legacy}.each do |v|
+    %w{bitcask eleveldb}.each do |b|
       create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
-      create_riak_test "verify_basic_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
     end
+    create_riak_test "verify_basic_upgrade", 'platform' => p, 'upgrade_version' => v
   end
 end
 
