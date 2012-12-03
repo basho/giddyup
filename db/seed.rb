@@ -35,6 +35,7 @@ riak_tests = %w{
   rolling_capabilities
   rt_basic_test
   verify_build_cluster
+  verify_busy_dist_port
   verify_capabilities
   verify_claimant
   verify_commit_hooks
