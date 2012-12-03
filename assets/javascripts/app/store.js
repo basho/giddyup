@@ -1,4 +1,4 @@
-GiddyUp.Adapter = DS.RESTAdapter.extend();
+// GiddyUp.Adapter = DS.RESTAdapter.extend();
 
 GiddyUp.Store = DS.Store.extend({
   revision: 4,

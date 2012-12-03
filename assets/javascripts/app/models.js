@@ -221,3 +221,7 @@ GiddyUp.ScorecardSubcellRouterProxy = Ember.Object.extend({
     }
   }.property('scorecard.test_results.isLoaded', 'scorecard.test_results.@each.isLoaded')
 });
+
+
+// Immutability!
+GiddyUp.TestResult.immutable = GiddyUp.Log.immutable = true;
