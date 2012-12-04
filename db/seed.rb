@@ -83,10 +83,14 @@ end
 ## Test upgrades on only persistent backends, from two different versions
 platforms.each do |p|
   %w{previous legacy}.each do |v|
+    # FreeBSD was not supported before 1.2, so don't run legacy
+    # upgrades until 1.4
+    tags = (p =~ /freebsd/ && v == 'legacy') ? {'min_version' => '1.4.0'} : {}
+
     %w{bitcask eleveldb}.each do |b|
-      create_riak_test "loaded_upgrade", 'platform' => p, 'backend' => b, 'upgrade_version' => v
+      create_riak_test "loaded_upgrade", tags.merge('platform' => p, 'backend' => b, 'upgrade_version' => v)
     end
-    create_riak_test "verify_basic_upgrade", 'platform' => p, 'upgrade_version' => v
+    create_riak_test "verify_basic_upgrade", tags.merge('platform' => p, 'upgrade_version' => v)
   end
 end
 
