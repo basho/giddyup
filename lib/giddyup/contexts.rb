@@ -1,3 +1,4 @@
+require 'json'
 module GiddyUp
   # Context that creates a test result
   class CreateTestResult
@@ -33,7 +34,7 @@ module GiddyUp
         :id => id, :data => TestResultSerializer.new(@test_result).to_json
       }
 
-      $redis.publish "test_results", message
+      $redis.publish "test_results", JSON.generate(message)
     end
 
     def create_log(data)
