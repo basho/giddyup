@@ -75,7 +75,7 @@ module GiddyUp
     end
   end
 
-  class LiveResource < Webmachine::Resource
+  class StreamingResource < Webmachine::Resource
     def initialize
       response.headers['Connection']    ||= 'keep-alive'
       response.headers['Cache-Control'] ||= 'no-cache'
@@ -88,14 +88,17 @@ module GiddyUp
     def content_types_provided
       [['text/event-stream', :to_event]]
     end
+  end
 
+  class LiveResource < StreamingResource
     def to_event
       Fiber.new do |f|
         $redis.subscribe("test_results") do |on|
           on.message do |channel, msg|
             message = JSON.parse(msg)
-            id = message["id"]
-            data = JSON.generate(message["data"])
+            id      = message["id"]
+            data    = JSON.generate(message["data"])
+
             Fiber.yield "id: #{id}\nevent: test_result\ndata: #{data}\n\n"
           end
         end
