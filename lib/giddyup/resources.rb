@@ -73,6 +73,27 @@ module GiddyUp
     end
   end
 
+  class LiveResource < Webmachine::Resource
+    def allowed_methods
+      %W[GET]
+    end
+
+    def content_types_provided
+      [['text/event-stream', :to_event]]
+    end
+
+    def to_event
+      Fiber.new do |f|
+        $redis.subscribe("test_results") do |on|
+          on.message do |channel, msg|
+            data = JSON.parse(msg)
+            Fiber.yield "id: #{data[:id]}\nevent: test_result\ndata: #{data[:data]}\n\n"
+          end
+        end
+      end
+    end
+  end
+
   # Allows posting of a new test result (or fetching an existing
   # result). This should be in JSON or multipart/form-data, depending
   # on the contents of the log data and the capabilities of the
@@ -206,6 +227,7 @@ module GiddyUp
   end
 
   Application.routes do
+    add ['live'], LiveResource
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
     add ['logs', :id], LogResource
