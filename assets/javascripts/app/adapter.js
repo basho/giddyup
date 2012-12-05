@@ -15,10 +15,12 @@ var states = {
     },
 
     becameMissed: function(manager){
+      console.log('Some records missed, transitioning to loadingRemote!');
       manager.transitionTo('loadingRemote');
     },
 
     becameLoaded: function(manager){
+      console.log('All records present, transitioning to clean!');
       manager.transitionTo('clean');
     }
   }),
@@ -28,10 +30,12 @@ var states = {
     isCacheChecked: true,
 
     enter: function(manager){
-      var ids = manager.get('missed'),
-          findManyRemote = manager.get('findManyRemote');
+      var ids = manager.get('missing'),
+          findManyRemote = manager.findManyRemote;
 
-      findRemote(ids);
+      console.log('Loading remote ids: ' + ids.toString());
+
+      findManyRemote.call(null, ids);
       manager.transitionTo('clean');
     }
   }),
@@ -53,13 +57,13 @@ GiddyUp.CachedRecordFetchingManager = Ember.StateManager.extend({
   init: function(){
     this._super();
     this.counter = this.get('expected.length');
-    this.missing = Ember.A([]);
+    this.missing = [];
   },
 
   missed: function(record) {
     this.counter -= 1;
     this.missing.push(record);
-    if(counter === 0){
+    if(this.counter === 0){
       this.send('becameMissed');
     }
   },
@@ -67,7 +71,7 @@ GiddyUp.CachedRecordFetchingManager = Ember.StateManager.extend({
   found: function(record) {
     this.counter -= 1;
 
-    if(counter === 0){
+    if(this.counter === 0){
       if(this.missing.length === 0) {
         this.send('becameLoaded');
       } else {
@@ -77,6 +81,20 @@ GiddyUp.CachedRecordFetchingManager = Ember.StateManager.extend({
   }
 });
 
+GiddyUp.ProxyStore = Ember.Object.extend({
+  store: null,
+  adapter: null,
+  load: function(type, object){
+    var store = this.get('store'),
+        adapter = this.get('adapter');
+    adapter.loadValue(store, type, object);
+  },
+  loadMany: function(type, objects){
+    var store = this.get('store'),
+        adapter = this.get('adapter');
+    adapter.loadValue(store, type, objects);
+  }
+});
 
 // Implements an adapter that caches immutable records locally in the
 // Indexed DB API.
@@ -88,11 +106,11 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
     var self = this,
         name = this.get('name');
 
-    var request = indexedDB.open(name, 1);
+    var request = indexedDB.open(name, 2);
 
     request.addEventListener('upgradeneeded', function(event){
       console.log("Setting dat object store");
-      request.result.createObjectStore(name, {keyPath: 'id'});
+      request.result.createObjectStore(name, {autoIncrement: false});
     });
 
     request.addEventListener('error', function(event){
@@ -114,17 +132,18 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
     if(type.immutable !== true){
       console.log("Not immutable, find with REST: " + type.toString() + ":" + id);
       // Non-immutable record types get sent directly.
-      findRemote(store, type, id);
+      findRemote.call(this, store, type, id);
     } else {
       // Immutable record types check locally first.
       var db = this.get('db'),
           dbId = [type.toString(), id],
           self = this,
-          name = this.get('name');
+          name = this.get('name'),
+          typeName = type.toString();
 
       var dbTransaction = db.transaction([name]);
       var dbStore = dbTransaction.objectStore(name);
-      var request = dbStore.get(id);
+      var request = dbStore.get([typeName, id]);
 
       request.addEventListener('error', function(event){
         throw new Error("An attempt to retrieve " + type + " with id " + id + " failed");
@@ -142,7 +161,7 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
           // Fire the missing callback (try to find using the remote
           // method)
           console.log("Miss, fallback to REST: " + type.toString() + ":" + id);
-          findRemote.call(self, store, type, id);
+          findRemote.call(self, GiddyUp.ProxyStore.create({store: store, adapter: self}), type, id);
         }
       });
     }
@@ -165,8 +184,15 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
     // state of each record, and when all have reported back, then do
     // a bulk fetch from REST for the ones that are not in the cache.
     _findMany = function(idlist) {
-      console.log("findManyRemote:" + type.toString() + ":" + idlist.toString());
-      findManyRemote.call(self, store, type, idlist);
+      var head = idlist.slice(0, 50),
+          tail = idlist.slice(50, idlist.length),
+          proxyStore = GiddyUp.ProxyStore.create({store: store, adapter:self});
+
+      while(head.length > 0){
+        findManyRemote.call(self, proxyStore, type, head);
+        head = tail.slice(0, 50);
+        tail = tail.slice(50, tail.length);
+      }
     };
 
     stateManager = GiddyUp.CachedRecordFetchingManager.create({
@@ -174,7 +200,7 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
       findManyRemote: _findMany
     });
 
-    ids.forEach(function(id){
+    ids.forEach(function(id) {
       self.find(store, type, id, function(s, t, mid){
         console.log("missed:" + type + ":" + id);
         stateManager.send('missedRecord', mid);
@@ -182,15 +208,15 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
         console.log("found:" + type + ":" + id);
         stateManager.send('foundRecord', fid);
       })
-    }, this);
+    });
   },
 
   loadValue: function(store, type, value){
     console.log("loadValue: " + type.toString() + " : " + value.toString());
+    this._super(store, type, value);
     if(type.immutable === true){
       this.cacheValue(type, value);
     }
-    this._super(store, type, value);
   },
 
   cacheValue: function(type, value){
@@ -204,8 +230,9 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
         dbStore = dbTransaction.objectStore(name);
 
     var storeOp = function(record){
-      var json = record.toJSON();
-      dbStore.put(json, [typeName, record.get('id')]);
+      // var json = JSON.stringify(record);
+      console.log("Storing in indexedDb: " + record.toString());
+      dbStore.put(record, [typeName, record.id]);
     };
 
     if(value instanceof Array){
