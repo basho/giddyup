@@ -21,10 +21,19 @@ module GiddyUp
           @test_result.log_url = log.public_url
         end
         @test_result.save!
+        publish_test_result
         true
       rescue
         false
       end
+    end
+
+    def publish_test_result
+      message = {
+        :id => id, :data => TestResultSerializer.new(@test_result).to_json
+      }
+
+      $redis.publish "test_results", message
     end
 
     def create_log(data)
