@@ -9,7 +9,7 @@ gem 'oj'
 gem 'fog'
 gem 'pg'
 gem 'rake'
-gem 'thin'
+gem 'puma'
 gem 'rack-rewrite'
 gem 'redis'
 
