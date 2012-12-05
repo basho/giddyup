@@ -15,12 +15,10 @@ var states = {
     },
 
     becameMissed: function(manager){
-      console.log('Some records missed, transitioning to loadingRemote!');
       manager.transitionTo('loadingRemote');
     },
 
     becameLoaded: function(manager){
-      console.log('All records present, transitioning to clean!');
       manager.transitionTo('clean');
     }
   }),
@@ -31,9 +29,7 @@ var states = {
 
     enter: function(manager){
       var ids = manager.get('missing'),
-          findManyRemote = manager.findManyRemote;
-
-      console.log('Loading remote ids: ' + ids.toString());
+          findManyRemote = manager.get('findManyRemote');
 
       findManyRemote.call(null, ids);
       manager.transitionTo('clean');
@@ -102,14 +98,12 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
   name: null,
 
   init: function(){
-    console.log("Create dat db");
     var self = this,
         name = this.get('name');
 
     var request = indexedDB.open(name, 2);
 
     request.addEventListener('upgradeneeded', function(event){
-      console.log("Setting dat object store");
       request.result.createObjectStore(name, {autoIncrement: false});
     });
 
@@ -119,7 +113,6 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
     });
 
     request.addEventListener('success', function(event){
-      console.log("Got dat db");
       self.set('db', request.result);
     })
 
@@ -130,7 +123,6 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
     var foundLocal = success || Ember.K;
     var findRemote = callback || this._super;
     if(type.immutable !== true){
-      console.log("Not immutable, find with REST: " + type.toString() + ":" + id);
       // Non-immutable record types get sent directly.
       findRemote.call(this, store, type, id);
     } else {
@@ -154,13 +146,11 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
 
         if(hash){
           // Fire the success callback
-          console.log("Found: " + type.toString() + ":" + id);
           foundLocal.call(self, id);
           store.load(type, hash);
         } else {
           // Fire the missing callback (try to find using the remote
           // method)
-          console.log("Miss, fallback to REST: " + type.toString() + ":" + id);
           findRemote.call(self, GiddyUp.ProxyStore.create({store: store, adapter: self}), type, id);
         }
       });
@@ -174,7 +164,6 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
     // If the type is not immutable (i.e. not cached indefinitely),
     // jump out early by calling the REST version instead.
     if(type.immutable !== true) {
-      console.log("Not immutable, findMany with REST: " + type.toString());
       findManyRemote.call(this, store, type, ids);
       return;
     }
@@ -202,17 +191,14 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
 
     ids.forEach(function(id) {
       self.find(store, type, id, function(s, t, mid){
-        console.log("missed:" + type + ":" + id);
         stateManager.send('missedRecord', mid);
       }, function(fid) {
-        console.log("found:" + type + ":" + id);
         stateManager.send('foundRecord', fid);
       })
     });
   },
 
   loadValue: function(store, type, value){
-    console.log("loadValue: " + type.toString() + " : " + value.toString());
     this._super(store, type, value);
     if(type.immutable === true){
       this.cacheValue(type, value);
@@ -220,7 +206,6 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
   },
 
   cacheValue: function(type, value){
-    console.log("Caching! " + type.toString() + " : " + value.toString());
     var name = this.get('name'),
         db = this.get('db'),
         self = this,
@@ -230,8 +215,6 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
         dbStore = dbTransaction.objectStore(name);
 
     var storeOp = function(record){
-      // var json = JSON.stringify(record);
-      console.log("Storing in indexedDb: " + record.toString());
       dbStore.put(record, [typeName, record.id]);
     };
 
@@ -244,9 +227,7 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
 });
 
 if(indexedDB){
-  console.log("USING INDEXED DB");
   GiddyUp.Adapter = GiddyUp.CachingAdapter.extend({name: 'giddyup'});
 } else {
-  console.log("USING PLAIN REST");
   GiddyUp.Adapter = DS.RESTAdapter.extend();
 }
