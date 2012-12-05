@@ -30,11 +30,10 @@ module GiddyUp
     end
 
     def publish_test_result
-      message = {
-        :id => id, :data => TestResultSerializer.new(@test_result).to_json
-      }
-
-      $redis.publish "test_results", JSON.generate(message)
+      $redis.publish "test_results", JSON.generate({
+        :id   => id,
+        :data => TestResultSerializer.new(@test_result)
+      })
     end
 
     def create_log(data)
