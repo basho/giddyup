@@ -33,7 +33,7 @@ GiddyUp.Project = DS.Model.extend({
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.belongsTo('GiddyUp.Project', { key: 'project' }),
-  test_results: DS.hasMany('GiddyUp.TestResult', { embedded: true }),
+  test_results: DS.hasMany('GiddyUp.TestResult', { key: 'test_result_ids' }),
   tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
   cells: function(){
     if(!this.get('project.isLoaded')){
@@ -221,3 +221,7 @@ GiddyUp.ScorecardSubcellRouterProxy = Ember.Object.extend({
     }
   }.property('scorecard.test_results.isLoaded', 'scorecard.test_results.@each.isLoaded')
 });
+
+
+// Immutability!
+GiddyUp.TestResult.immutable = GiddyUp.Log.immutable = true;

@@ -2,6 +2,7 @@ GiddyUp = Ember.Application.create({
 });
 
 require('router');
+require('adapter');
 require('store');
 
 require('models');

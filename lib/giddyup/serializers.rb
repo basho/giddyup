@@ -16,9 +16,8 @@ class TestResultSerializer < ActiveModel::Serializer
 end
 
 class ScorecardSerializer < ActiveModel::Serializer
-  attributes :id, :name, :project
+  attributes :id, :name, :project, :test_result_ids
   has_many :tests
-  has_many :test_results
 
   def project
     # We key the project off the name
