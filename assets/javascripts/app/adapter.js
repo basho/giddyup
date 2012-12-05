@@ -1,4 +1,3 @@
-// var indexedDB = null;
 var indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.msIndexedDB;
 
 var states = {
