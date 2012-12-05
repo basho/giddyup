@@ -1,4 +1,8 @@
 require 'webmachine/adapters/rack'
+require 'redis'
+
+$redis = Redis.new(:timeout => 0)
+
 module GiddyUp
   Application = Webmachine::Application.new do |app|
     app.configure do |config|
