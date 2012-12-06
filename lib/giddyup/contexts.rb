@@ -25,7 +25,7 @@ module GiddyUp
         publish_test_result
         true
       rescue
-        false
+        500
       end
     end
 
