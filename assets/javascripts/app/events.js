@@ -3,7 +3,10 @@ GiddyUp.EventProcessor = Ember.Object.extend({
     this.source = new EventSource('live');
 
     this.source.addEventListener('test_result', function(e) {
-      GiddyUp.store.load(GiddyUp.TestResult, JSON.parse(e.data));
+      var parsedResponse = JSON.parse(e.data);
+      var testResult = parsedResponse.test_result;
+
+      GiddyUp.store.load(GiddyUp.TestResult, testResult);
     });
   }
 });
