@@ -34,7 +34,7 @@ module GiddyUp
       @redis.publish 'events', JSON.generate({
         :id    => id,
         :event => 'test_result',
-        :data  => TestResultSerializer.new(@test_result).to_json
+        :data  => TestResultSerializer.new(@test_result)
       })
     end
 
