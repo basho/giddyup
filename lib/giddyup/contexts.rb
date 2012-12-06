@@ -30,9 +30,10 @@ module GiddyUp
     end
 
     def publish_test_result
-      REDIS.publish "test_results", JSON.generate({
-        :id   => id,
-        :data => TestResultSerializer.new(@test_result)
+      REDIS.publish 'events', JSON.generate({
+        :id    => id,
+        :event => 'test_result',
+        :data  => TestResultSerializer.new(@test_result).to_json
       })
     end
 
