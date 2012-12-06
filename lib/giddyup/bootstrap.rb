@@ -37,3 +37,9 @@ GiddyUp::LogBucket = ENV['S3_BUCKET']
 ### BASIC AUTH SETUP
 GiddyUp::AUTH_USER = ENV['AUTH_USER']
 GiddyUp::AUTH_PASSWORD = ENV['AUTH_PASSWORD']
+
+### RedisToGo Setup
+require 'redis'
+redisurl = URI.parse(ENV['REDISTOGO_URL'])
+GiddyUp::REDIS = Redis.new(:host => redisurl.host, :port => redisurl.port,
+                           :password => redisurl.password, :timeout => 0)

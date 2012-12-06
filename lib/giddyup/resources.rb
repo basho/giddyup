@@ -93,7 +93,7 @@ module GiddyUp
   class LiveResource < StreamingResource
     def to_event
       Fiber.new do |f|
-        $redis.subscribe("test_results") do |on|
+        REDIS.subscribe("test_results") do |on|
           on.message do |channel, msg|
             message = JSON.parse(msg)
             id      = message["id"]
