@@ -77,6 +77,11 @@ module GiddyUp
 
   class LiveResource < Webmachine::Resource
     def initialize
+      @redis = GiddyUp::Redis.new
+      set_headers
+    end
+
+    def set_headers
       response.headers['Connection']    ||= 'keep-alive'
       response.headers['Cache-Control'] ||= 'no-cache'
     end
@@ -91,7 +96,7 @@ module GiddyUp
 
     def to_event
       Fiber.new do |f|
-        REDIS.subscribe('events') do |on|
+        @redis.subscribe('events') do |on|
           on.message do |channel, msg|
             message = JSON.parse(msg)
             id      = message["id"]

@@ -40,6 +40,15 @@ GiddyUp::AUTH_PASSWORD = ENV['AUTH_PASSWORD']
 
 ### RedisToGo Setup
 require 'redis'
-redisurl = URI.parse(ENV['REDISTOGO_URL'])
-GiddyUp::REDIS = Redis.new(:host => redisurl.host, :port => redisurl.port,
-                           :password => redisurl.password, :timeout => 0)
+REDISURL = URI.parse(ENV['REDISTOGO_URL'])
+
+module GiddyUp
+  module Redis
+    def self.new
+      ::Redis.new(:host     => REDISURL.host,
+                  :port     => REDISURL.port,
+                  :password => REDISURL.password,
+                  :timeout  => 0)
+    end
+  end
+end
