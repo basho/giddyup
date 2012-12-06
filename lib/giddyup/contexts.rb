@@ -31,10 +31,12 @@ module GiddyUp
     end
 
     def publish_test_result
+      result = TestResultSerializer.new(@test_result)
+
       @redis.publish 'events', JSON.generate({
         :id    => id,
         :event => 'test_result',
-        :data  => TestResultSerializer.new(@test_result)
+        :data  => { :test_result => result.serializable_hash }
       })
     end
 
