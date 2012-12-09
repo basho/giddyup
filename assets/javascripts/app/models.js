@@ -1,13 +1,3 @@
-// Hack to allow the 'tags' field on Test, which is an hstore column
-// in postgresql.
-DS.attr.transforms.hash = {
-  from: function(serialized) {
-    return Ember.none(serialized) ? null : serialized;
-  },
-  to: function(deserialized) {
-    return Ember.none(deserialized) ? null : deserialized;
-  }
-};
 
 // Sorts Ember objects in an Array by the given properties.
 GiddyUp.propertyComparator = function() {
