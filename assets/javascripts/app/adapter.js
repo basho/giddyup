@@ -91,6 +91,18 @@ GiddyUp.ProxyStore = Ember.Object.extend({
   }
 });
 
+GiddyUp.serializer = DS.JSONSerializer.create();
+
+GiddyUp.serializer.registerTransform('hash', {
+  deserialize: function(serialized) {
+    return Ember.none(serialized) ? null : serialized;
+  },
+
+  serialize: function(deserialized) {
+    return Ember.none(deserialized) ? null : deserialized;
+  }
+});
+
 // Implements an adapter that caches immutable records locally in the
 // Indexed DB API.
 GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
