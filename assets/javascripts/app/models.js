@@ -39,14 +39,14 @@ GiddyUp.Scorecard = DS.Model.extend({
           scorecard: scorecard
         });
       });
-    })
+    });
   }.property('project.isLoaded'),
   platforms: function(){
     return this.get('tests').getEach('platform').sort().uniq();
-  }.property('tests').cacheable(),
+  }.property('tests.@each.isLoaded'),
   testNames: function(){
     return this.get('tests').getEach('name').sort().uniq();
-  }.property('tests').cacheable()
+  }.property('tests.@each.isLoaded')
 });
 
 GiddyUp.TestResult = DS.Model.extend({
