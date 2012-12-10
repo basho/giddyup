@@ -64,4 +64,8 @@ class Scorecard < ActiveRecord::Base
   def tests
     project.tests.for_version(name)
   end
+
+  def test_ids
+    tests.pluck(:id)
+  end
 end
