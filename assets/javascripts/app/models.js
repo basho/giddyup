@@ -1,13 +1,3 @@
-// Hack to allow the 'tags' field on Test, which is an hstore column
-// in postgresql.
-DS.attr.transforms.hash = {
-  from: function(serialized) {
-    return Ember.none(serialized) ? null : serialized;
-  },
-  to: function(deserialized) {
-    return Ember.none(deserialized) ? null : deserialized;
-  }
-};
 
 // Sorts Ember objects in an Array by the given properties.
 GiddyUp.propertyComparator = function() {
@@ -21,20 +11,19 @@ GiddyUp.propertyComparator = function() {
       if(bv < av) return 1;
     }
     return 0;
-  }
+  };
 };
 
 GiddyUp.Project = DS.Model.extend({
-  primaryKey: 'name',
   name: DS.attr('string'),
-  scorecards: DS.hasMany('GiddyUp.Scorecard', { key: 'scorecard_ids' })
+  scorecards: DS.hasMany('GiddyUp.Scorecard')
 });
 
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
-  project: DS.belongsTo('GiddyUp.Project', { key: 'project' }),
-  test_results: DS.hasMany('GiddyUp.TestResult', { key: 'test_result_ids' }),
-  tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
+  project: DS.belongsTo('GiddyUp.Project'),
+  test_results: DS.hasMany('GiddyUp.TestResult'),
+  tests: DS.hasMany('GiddyUp.Test'),
   cells: function(){
     if(!this.get('project.isLoaded')){
       return [];
@@ -50,14 +39,14 @@ GiddyUp.Scorecard = DS.Model.extend({
           scorecard: scorecard
         });
       });
-    })
+    });
   }.property('project.isLoaded'),
   platforms: function(){
     return this.get('tests').getEach('platform').sort().uniq();
-  }.property('tests').cacheable(),
+  }.property('tests.@each.isLoaded'),
   testNames: function(){
     return this.get('tests').getEach('name').sort().uniq();
-  }.property('tests').cacheable()
+  }.property('tests.@each.isLoaded')
 });
 
 GiddyUp.TestResult = DS.Model.extend({
