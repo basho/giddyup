@@ -276,5 +276,10 @@ if(false){
 }
 
 GiddyUp.Adapter.map('GiddyUp.Project', {
-  primaryKey: 'name'
+  primaryKey: 'name',
+  scorecards: { key: 'scorecard_ids' }
+});
+
+GiddyUp.Adapter.map('GiddyUp.Scorecard', {
+  test_results: { key: 'test_result_ids' }
 });
