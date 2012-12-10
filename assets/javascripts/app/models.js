@@ -16,13 +16,13 @@ GiddyUp.propertyComparator = function() {
 
 GiddyUp.Project = DS.Model.extend({
   name: DS.attr('string'),
-  scorecards: DS.hasMany('GiddyUp.Scorecard', { key: 'scorecard_ids' })
+  scorecards: DS.hasMany('GiddyUp.Scorecard')
 });
 
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.belongsTo('GiddyUp.Project', { key: 'project' }),
-  test_results: DS.hasMany('GiddyUp.TestResult', { key: 'test_result_ids' }),
+  test_results: DS.hasMany('GiddyUp.TestResult'),
   tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
   cells: function(){
     if(!this.get('project.isLoaded')){
