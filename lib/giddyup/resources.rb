@@ -205,10 +205,37 @@ module GiddyUp
     end
   end
 
+  class TestsResource < Resource
+    def resource_exists?
+      @tests = Test.find(query_ids)
+    rescue ActiveRecord::RecordNotFound
+      false
+    else
+      true
+    end
+
+    def to_json
+      ActiveModel::ArraySerializer(@tests, {:root => "tests"}).to_json
+    end
+  end
+
+  class TestResource < Resource
+    def resource_exists?
+      @test = Test.find(request.path_info[:id])
+      @test.present?
+    end
+
+    def to_json
+      TestSerializer.new(@test, {}).to_json
+    end
+  end
+
   Application.routes do
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
     add ['logs', :id], LogResource
+    add ['tests', :id], TestResource
+    add ['tests'], TestsResource
     add ['test_results', :id], TestResultResource
     add ['test_results'], TestResultResource do |request|
       request.post?
