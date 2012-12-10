@@ -23,7 +23,7 @@ GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.belongsTo('GiddyUp.Project'),
   test_results: DS.hasMany('GiddyUp.TestResult'),
-  tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
+  tests: DS.hasMany('GiddyUp.Test'),
   cells: function(){
     if(!this.get('project.isLoaded')){
       return [];
