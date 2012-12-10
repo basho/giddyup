@@ -254,5 +254,6 @@ GiddyUp.Adapter.map('GiddyUp.Project', {
 });
 
 GiddyUp.Adapter.map('GiddyUp.Scorecard', {
+  project: { key: 'project' },
   test_results: { key: 'test_result_ids' }
 });
