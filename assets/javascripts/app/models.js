@@ -11,7 +11,7 @@ GiddyUp.propertyComparator = function() {
       if(bv < av) return 1;
     }
     return 0;
-  }
+  };
 };
 
 GiddyUp.Project = DS.Model.extend({
