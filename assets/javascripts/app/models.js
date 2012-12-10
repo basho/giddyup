@@ -21,7 +21,7 @@ GiddyUp.Project = DS.Model.extend({
 
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
-  project: DS.belongsTo('GiddyUp.Project', { key: 'project' }),
+  project: DS.belongsTo('GiddyUp.Project'),
   test_results: DS.hasMany('GiddyUp.TestResult'),
   tests: DS.hasMany('GiddyUp.Test', { embedded: true }),
   cells: function(){
