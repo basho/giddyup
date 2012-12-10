@@ -52,10 +52,13 @@ GiddyUp.ScorecardView = Ember.View.extend({
   templateName: 'scorecard',
   isLoaded: function(){
     var result = this.get('controller.content.isLoaded') &&
+      this.get('controller.content.tests').getEach('isLoaded').
+      every(function(l){ return l; }) &&
       this.get('controller.content.test_results').getEach('isLoaded').
       every(function(l){ return l; });
     return result;
   }.property('controller.content.isLoaded',
+             'controller.content.tests.@each.isLoaded',
              'controller.content.test_results.@each.isLoaded')
 });
 
