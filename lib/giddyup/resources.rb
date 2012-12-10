@@ -215,7 +215,7 @@ module GiddyUp
     end
 
     def to_json
-      ActiveModel::ArraySerializer(@tests, {:root => "tests"}).to_json
+      ActiveModel::ArraySerializer.new(@tests, {:root => "tests"}).to_json
     end
   end
 
