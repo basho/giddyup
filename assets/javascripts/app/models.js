@@ -15,7 +15,6 @@ GiddyUp.propertyComparator = function() {
 };
 
 GiddyUp.Project = DS.Model.extend({
-  primaryKey: 'name',
   name: DS.attr('string'),
   scorecards: DS.hasMany('GiddyUp.Scorecard', { key: 'scorecard_ids' })
 });

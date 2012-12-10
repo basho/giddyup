@@ -247,3 +247,7 @@ if(indexedDB){
     serializer: GiddyUp.serializer
   });
 }
+
+GiddyUp.Adapter.map('GiddyUp.Project', {
+  primaryKey: 'name'
+});
