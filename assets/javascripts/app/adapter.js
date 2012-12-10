@@ -274,3 +274,7 @@ if(false){
     }
   });
 }
+
+GiddyUp.Adapter.map('GiddyUp.Project', {
+  primaryKey: 'name'
+});
