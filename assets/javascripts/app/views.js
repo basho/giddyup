@@ -10,7 +10,7 @@ GiddyUp.prettyDate = function(date){
       distance_in_years = Math.round(distance_in_days / 365);
 
   if(distance_in_minutes <= 1) {
-    return (distance_in_minutes == 0) ? "just now" : "1 minute ago";
+    return (distance_in_minutes === 0) ? "just now" : "1 minute ago";
   } else if(distance_in_minutes >= 2 && distance_in_minutes <= 44) {
     return distance_in_minutes + " minutes ago";
   } else if(distance_in_minutes >= 45 && distance_in_minutes <= 89) {
@@ -49,18 +49,9 @@ GiddyUp.ScorecardsView = Ember.View.extend({
 });
 
 GiddyUp.ScorecardView = Ember.View.extend({
-  templateName: 'scorecard',
-  isLoaded: function(){
-    var result = this.get('controller.content.isLoaded') &&
-      this.get('controller.content.tests').getEach('isLoaded').
-      every(function(l){ return l; }) &&
-      this.get('controller.content.test_results').getEach('isLoaded').
-      every(function(l){ return l; });
-    return result;
-  }.property('controller.content.isLoaded',
-             'controller.content.tests.@each.isLoaded',
-             'controller.content.test_results.@each.isLoaded')
+  templateName: 'scorecard'
 });
+
 
 GiddyUp.TestResultsView = Ember.View.extend({
   templateName: 'test_results',
@@ -79,31 +70,34 @@ GiddyUp.TestResultView = Ember.View.extend({
   templateName: 'test_result'
 });
 
-GiddyUp.ScorecardSubcellView = Ember.View.extend({
+GiddyUp.TestView = Ember.View.extend({
   tagName: 'span',
   labelClass: 'badge',
   classNameBindings: ['labelClass', 'statusClass'],
   attributeBindings: ['title'],
   statusClass: function(){
-    var status = this.get('content.status');
-    if(status.get('total') === 0)
+    // var status = this.get('content.status');
+    // if(status.get('total') === 0)
       return '';
-    else if(status.get('latest'))
-      return 'badge-success';
-    else
-      return 'badge-important';
-  }.property('content.status'),
+    // else if(status.get('latest'))
+    //   return 'badge-success';
+    // else
+    //   return 'badge-important';
+  }.property(),
   title: function(){
-    var percent = this.get('content.status.percent');
-    if(percent !== null || percent !== undefined)
-      return percent.toFixed(1).toString() + "%";
-    else
+    // var percent = this.get('content.status.percent');
+    // if(percent !== null || percent !== undefined)
+    //   return percent.toFixed(1).toString() + "%";
+    // else
       return "0%";
-  }.property('content.status'),
+  }.property(),
   abbr: function(){
-    var backend = this.get('content.test.backend');
-    var upgrade_version = this.get('content.test.upgrade_version');
-    var abbr = ''
+    if(!this.get('content.isLoaded')){
+      return 'loading';
+    }
+    var backend = this.get('content.backend');
+    var upgrade_version = this.get('content.upgradeVersion');
+    var abbr = '';
     switch(upgrade_version){
     case 'previous':
       abbr = '-1'; break;
@@ -129,7 +123,7 @@ GiddyUp.ScorecardSubcellView = Ember.View.extend({
       return 'U';
     else
       return abbr;
-  }.property('content.test.backend', 'content.test.upgrade_version')
+  }.property('content.backend', 'content.upgradeVersion')
 });
 
 GiddyUp.CollectionView = Ember.CollectionView.extend({

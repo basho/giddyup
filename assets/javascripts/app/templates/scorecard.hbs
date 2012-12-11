@@ -1,31 +1,3 @@
-{{#if view.isLoaded}}
-<table class="table table-striped">
-  <thead>
-    <tr>
-      <th>&nbsp;</th>
-      {{#each platform in controller.content.platforms}}
-        <th>{{platform}}</th>
-      {{/each}}
-    </tr>
-  </thead>
-  <tbody>
-    {{#each test in controller.content.cells}}
-      <tr>
-        <td>{{test.firstObject.name}}</td>
-        {{#each cell in test}}
-          <td>
-            {{#each cell.subcells}}
-              <div>{{#view GiddyUp.ScorecardSubcellView contentBinding="this"}}<a {{action showTestResults this href=true}}>{{view.abbr}}</a>{{/view}}</div>
-            {{/each}}
-          </td>
-        {{/each}}
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
-{{else}}
-<div class="alert alert-info">
-  <strong>Loading test results...</strong>
-  Please wait.
-</div>
-{{/if}}
+{{#each controller.tests}}
+  {{#view GiddyUp.TestView contentBinding="this"}}{{view.abbr}}{{/view}}
+{{/each}}

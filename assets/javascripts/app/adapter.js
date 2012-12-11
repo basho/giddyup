@@ -91,7 +91,11 @@ GiddyUp.ProxyStore = Ember.Object.extend({
   }
 });
 
-GiddyUp.serializer = DS.JSONSerializer.create();
+GiddyUp.serializer = DS.RESTSerializer.create({
+  keyForHasMany: function(type, name){
+    return name.match(/^(.*)s$/)[1]+'_ids';
+  }
+});
 
 GiddyUp.serializer.registerTransform('hash', {
   deserialize: function(serialized) {
@@ -276,12 +280,12 @@ if(false){
 }
 
 GiddyUp.Adapter.map('GiddyUp.Project', {
-  primaryKey: 'name',
-  scorecards: { key: 'scorecard_ids' }
+  primaryKey: 'name' //,
+  // scorecards: { key: 'scorecard_ids' }
 });
 
 GiddyUp.Adapter.map('GiddyUp.Scorecard', {
-  project: { key: 'project' },
-  test_results: { key: 'test_result_ids' },
-  tests: { key: 'test_ids' }
+  project: { key: 'project' }
+  // test_results: { key: 'test_result_ids' },
+  // tests: { key: 'test_ids' }
 });
