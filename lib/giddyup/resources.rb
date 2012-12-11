@@ -221,8 +221,13 @@ module GiddyUp
 
   class TestResource < Resource
     def resource_exists?
-      @test = Test.find(request.path_info[:id])
-      @test.present?
+      begin
+        @test = Test.find(request.path_info[:id])
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
     end
 
     def to_json
