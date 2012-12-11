@@ -34,6 +34,7 @@ riak_tests = %w{
   riaknostic_rt
   rolling_capabilities
   rt_basic_test
+  verify_backup_restore
   verify_build_cluster
   verify_busy_dist_port
   verify_capabilities
