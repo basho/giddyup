@@ -52,45 +52,39 @@ GiddyUp.ScorecardView = Ember.View.extend({
   templateName: 'scorecard'
 });
 
-
 GiddyUp.TestResultsView = Ember.View.extend({
   templateName: 'test_results',
-  nameBinding: 'controller.test.name',
-  platformBinding: 'controller.test.platform',
-  backend: function(){
-    var backend = this.get('controller.test.backend');
-    if(backend === undefined)
-      return 'undefined';
-    else
-      return backend.toString();
-  }.property('controller.test.backend')
+  nameBinding: 'content.test.name',
+  platformBinding: 'content.test.platform',
+  backendBinding: 'content.test.backend'
 });
 
 GiddyUp.TestResultView = Ember.View.extend({
   templateName: 'test_result'
 });
 
-GiddyUp.TestView = Ember.View.extend({
+GiddyUp.TestInstanceView = Ember.View.extend({
   tagName: 'span',
   labelClass: 'badge',
   classNameBindings: ['labelClass', 'statusClass'],
   attributeBindings: ['title'],
   statusClass: function(){
-    // var status = this.get('content.status');
-    // if(status.get('total') === 0)
+    var total = this.get('content.status.total'),
+        latest = this.get('content.status.latest');
+    if(total === 0 || total === null || total === undefined)
       return '';
-    // else if(status.get('latest'))
-    //   return 'badge-success';
-    // else
-    //   return 'badge-important';
-  }.property(),
+    else if(latest)
+      return 'badge-success';
+    else
+      return 'badge-important';
+  }.property('content.status.total', 'content.status.latest'),
   title: function(){
-    // var percent = this.get('content.status.percent');
-    // if(percent !== null || percent !== undefined)
-    //   return percent.toFixed(1).toString() + "%";
-    // else
+    var percent = this.get('content.status.percent');
+    if(percent !== null && percent !== undefined)
+      return percent.toFixed(1).toString() + "%";
+    else
       return "0%";
-  }.property(),
+  }.property('content.status.percent'),
   abbr: function(){
     if(!this.get('content.isLoaded')){
       return 'loading';
