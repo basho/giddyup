@@ -1,16 +1,1 @@
-<div class="row-fluid">
-  {{#with view}}
-  <h4>{{name}} / {{platform}} / {{backend}} backend <a class="btn btn-mini" {{action showScorecard controller.scorecard.content href=true}}>&times;&nbsp; Hide results</a></h4>
-  {{/with}}
-</div>
-
-<div class="row-fluid">
-  <div class="span3 well">
-    {{view GiddyUp.TestResultsCollectionView contentBinding="controller.test_results"}}
-  </div>
-  {{#if controller.testResult}}
-    <div class="span9">{{outlet testResult}}</div>
-  {{else}}
-    <div class="span9 well">Select a test result to view a log of its test run.</div>
-  {{/if}}
-</div>
+{{view GiddyUp.TestResultsCollectionView contentBinding="controller"}}

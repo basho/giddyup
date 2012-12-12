@@ -242,7 +242,10 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
 });
 
 if(false){
-  GiddyUp.Adapter = GiddyUp.CachingAdapter.extend({name: 'giddyup'});
+  GiddyUp.Adapter = GiddyUp.CachingAdapter.extend({
+    name: 'giddyup',
+    serializer: GiddyUp.serializer
+  });
 } else {
   GiddyUp.Adapter = DS.RESTAdapter.extend({
     fetchBatchSize: 50,

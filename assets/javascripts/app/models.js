@@ -17,24 +17,51 @@ GiddyUp.Test = DS.Model.extend({
   upgradeVersionBinding: 'tags.upgrade_version'
 });
 
+GiddyUp.TestInstanceResults = Ember.ArrayProxy.extend(Ember.SortableMixin, {
+  sortProperties: ['created_at'],
+  sortAscending: false,
+
+  totalBinding: 'length',
+  latestBinding: 'firstObject.success',
+
+  percent: function(){
+    var total = this.get('total'),
+        succeeded = this.get('arrangedContent').filterProperty('success', true).length;
+    if(total === 0){
+      return 0.0;
+    } else {
+      return succeeded / total;
+    }
+  }.property('total', '@each.success')
+});
+
 GiddyUp.TestInstance = DS.Model.extend({
   test: DS.belongsTo('GiddyUp.Test'),
   scorecard: DS.belongsTo('GiddyUp.Scorecard'),
   test_results: DS.hasMany('GiddyUp.TestResult'),
-
+  nameBinding: 'test.name',
+  backendBinding: 'test.backend',
+  upgradeVersionBinding: 'test.upgradeVersion',
+  platformBinding: 'test.platform',
+  sortedResults: function(){
+    return GiddyUp.TestInstanceResults.create({
+      content: this.get('test_results')
+    });
+  }.property(),
+  statusBinding: 'sortedResults',
   // Used for generating a string to put in the URL
   tagString: function(){
-    var n = this.get('test.name'),
-        p = this.get('test.platform'),
-        b = this.get('test.backend'),
-        u = this.get('test.upgradeVersion'),
+    var n = this.get('name'),
+        p = this.get('platform'),
+        b = this.get('backend'),
+        u = this.get('upgradeVersion'),
         result;
     result = n.toString();
     if(p) result += "-" + p;
     if(b) result += "-" + b;
     if(u) result += "-" + u;
     return result;
-  }.property('test.name', 'test.platform', 'test.backend', 'test.upgradeVersion')
+  }.property('name', 'platform', 'backend', 'upgradeVersion')
 });
 
 GiddyUp.TestResult = DS.Model.extend({

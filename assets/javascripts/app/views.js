@@ -48,8 +48,12 @@ GiddyUp.ScorecardsView = Ember.View.extend({
   isLoadedBinding: 'controller.content.isLoaded'
 });
 
-GiddyUp.ScorecardView = Ember.View.extend({
-  templateName: 'scorecard'
+GiddyUp.TestInstancesView = Ember.View.extend({
+  templateName: 'test_instances'
+});
+
+GiddyUp.TestInstanceView = Ember.View.extend({
+  templateName: 'test_instance'
 });
 
 GiddyUp.TestResultsView = Ember.View.extend({
@@ -63,7 +67,7 @@ GiddyUp.TestResultView = Ember.View.extend({
   templateName: 'test_result'
 });
 
-GiddyUp.TestInstanceView = Ember.View.extend({
+GiddyUp.TestInstanceBubbleView = Ember.View.extend({
   tagName: 'span',
   labelClass: 'badge',
   classNameBindings: ['labelClass', 'statusClass'],
