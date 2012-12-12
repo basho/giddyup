@@ -6,14 +6,39 @@ GiddyUp.Project = DS.Model.extend({
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.belongsTo('GiddyUp.Project'),
+  test_instances: DS.hasMany('GiddyUp.TestInstance')
+});
+
+GiddyUp.Test = DS.Model.extend({
+  name: DS.attr('string'),
+  tags: DS.attr('hash'),
+  platformBinding: 'tags.platform',
+  backendBinding: 'tags.backend',
+  upgradeVersionBinding: 'tags.upgrade_version'
+});
+
+GiddyUp.TestInstance = DS.Model.extend({
+  test: DS.belongsTo('GiddyUp.Test'),
+  scorecard: DS.belongsTo('GiddyUp.Scorecard'),
   test_results: DS.hasMany('GiddyUp.TestResult'),
-  tests: DS.hasMany('GiddyUp.Test')
+
+  // Used for generating a string to put in the URL
+  tagString: function(){
+    var n = this.get('test.name'),
+        p = this.get('test.platform'),
+        b = this.get('test.backend'),
+        u = this.get('test.upgradeVersion'),
+        result;
+    result = n.toString();
+    if(p) result += "-" + p;
+    if(b) result += "-" + b;
+    if(u) result += "-" + u;
+    return result;
+  }.property('test.name', 'test.platform', 'test.backend', 'test.upgradeVersion')
 });
 
 GiddyUp.TestResult = DS.Model.extend({
-  test: DS.belongsTo('GiddyUp.Test'),
-  scorecard: DS.belongsTo('GiddyUp.Scorecard'),
-
+  test_instance: DS.belongsTo('GiddyUp.TestInstance'),
   status: DS.attr('boolean'),
 
   success: function() {
@@ -27,18 +52,9 @@ GiddyUp.TestResult = DS.Model.extend({
   log_url: DS.attr('string'),
   created_at: DS.attr('date'),
   long_version: DS.attr('string'),
-  platformBinding: 'test.platform',
-  backendBinding: 'test.backend',
-  nameBinding: 'test.name'
-});
-
-GiddyUp.Test = DS.Model.extend({
-  name: DS.attr('string'),
-  tags: DS.attr('hash'),
-  test_results: DS.hasMany('GiddyUp.TestResult'),
-  platformBinding: 'tags.platform',
-  backendBinding: 'tags.backend',
-  upgradeVersionBinding: 'tags.upgrade_version'
+  platformBinding: 'test_instance.test.platform',
+  backendBinding: 'test_instance.test.backend',
+  nameBinding: 'test_instance.test.name'
 });
 
 GiddyUp.Log = DS.Model.extend({
