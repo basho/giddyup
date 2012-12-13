@@ -17,7 +17,7 @@ GiddyUp.Test = DS.Model.extend({
   upgradeVersionBinding: 'tags.upgrade_version'
 });
 
-GiddyUp.TestInstanceResults = Ember.ArrayProxy.extend(Ember.SortableMixin, {
+GiddyUp.TestInstanceStatus = Ember.ArrayProxy.extend(Ember.SortableMixin, {
   sortProperties: ['created_at'],
   sortAscending: false,
 
@@ -43,14 +43,15 @@ GiddyUp.TestInstance = DS.Model.extend({
   backendBinding: 'test.backend',
   upgradeVersionBinding: 'test.upgradeVersion',
   platformBinding: 'test.platform',
-  sortedResults: function(){
-    return GiddyUp.TestInstanceResults.create({
+  status: function(){
+    return GiddyUp.TestInstanceStatus.create({
       content: this.get('test_results')
     });
   }.property(),
-  statusBinding: 'sortedResults',
   // Used for generating a string to put in the URL
   tagString: function(){
+    if(!this.get('test.isLoaded'))
+      return '';
     var n = this.get('name'),
         p = this.get('platform'),
         b = this.get('backend'),
@@ -61,7 +62,7 @@ GiddyUp.TestInstance = DS.Model.extend({
     if(b) result += "-" + b;
     if(u) result += "-" + u;
     return result;
-  }.property('name', 'platform', 'backend', 'upgradeVersion')
+  }.property('test.isLoaded', 'name', 'platform', 'backend', 'upgradeVersion')
 });
 
 GiddyUp.TestResult = DS.Model.extend({
@@ -75,6 +76,11 @@ GiddyUp.TestResult = DS.Model.extend({
   failure: function() {
     return this.get('status') === false;
   }.property('status'),
+
+  log: function(){
+    var id = this.get('id');
+    return GiddyUp.Log.find(id);
+  }.property(),
 
   log_url: DS.attr('string'),
   created_at: DS.attr('date'),

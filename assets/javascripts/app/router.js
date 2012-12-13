@@ -88,13 +88,27 @@ GiddyUp.Router = Ember.Router.extend({
             testInstance: Ember.Route.extend({
               route: '/:test_instance_id',
 
+              serialize: function(router, context) {
+                return {
+                  test_instance_id: [context.get('id'),
+                                     context.get('tagString')].join('-')
+                };
+              },
+
+              deserialize: function(router, params){
+                var tagString = params.test_instance_id,
+                    id;
+                id = tagString.split('-').slice(0,2).join('-');
+                return GiddyUp.TestInstance.find(id);
+              },
+
               showTestResult: Ember.Router.transitionTo('projects.show.scorecard.show.testInstance.result'),
 
               connectOutlets: function(router, context){
                 router.get('applicationController').
                   connectOutlet('testInstance', 'testInstance', context);
                 router.get('testInstanceController').
-                  connectOutlet('testResults', 'testResults', context.get('sortedResults'));
+                  connectOutlet('testResults', 'testResults', context.get('test_results'));
               },
 
               exit: function(router){
@@ -110,7 +124,7 @@ GiddyUp.Router = Ember.Router.extend({
                 connectOutlets: function(router, context){
                   router.get('testResultsController').set('selectedItem', context);
                   router.get('testInstanceController').
-                    connectOutlet('testResult', 'testResult', context);
+                    connectOutlet('testResult', 'testResult', context.get('log'));
                 },
 
                 exit: function(router) {

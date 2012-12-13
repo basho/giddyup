@@ -1,6 +1,9 @@
 GiddyUp.prettyDate = function(date){
   // Based roughly on distance_of_time_in_words from Ruby on Rails,
   // with ideas from John Resig's "prettyDate" function.
+  if(date === null || date === undefined)
+    return '';
+
   var now = (new Date()).getTime(),
       distance_in_seconds = (now - date.getTime()) / 1000,
       distance_in_minutes = Math.round(distance_in_seconds / 60.0),
@@ -53,14 +56,25 @@ GiddyUp.TestInstancesView = Ember.View.extend({
 });
 
 GiddyUp.TestInstanceView = Ember.View.extend({
-  templateName: 'test_instance'
+  templateName: 'test_instance',
+  descriptor: function(){
+    var name = this.get('controller.content.name'),
+        platform = this.get('controller.content.platform'),
+        backend = this.get('controller.content.backend'),
+        version = this.get('controller.content.upgradeVersion'),
+        desc = '';
+
+    if(name) desc += name;
+    if(platform) desc += " / " + platform;
+    if(backend) desc += " / " + backend;
+    if(version) desc += " / " + version;
+    return desc;
+  }.property('controller.content.name', 'controller.content.platform',
+             'controller.content.backend', 'controller.content.upgradeVersion')
 });
 
 GiddyUp.TestResultsView = Ember.View.extend({
-  templateName: 'test_results',
-  nameBinding: 'content.test.name',
-  platformBinding: 'content.test.platform',
-  backendBinding: 'content.test.backend'
+  templateName: 'test_results'
 });
 
 GiddyUp.TestResultView = Ember.View.extend({
@@ -90,9 +104,6 @@ GiddyUp.TestInstanceBubbleView = Ember.View.extend({
       return "0%";
   }.property('content.status.percent'),
   abbr: function(){
-    if(!this.get('content.isLoaded')){
-      return 'loading';
-    }
     var backend = this.get('content.backend');
     var upgrade_version = this.get('content.upgradeVersion');
     var abbr = '';

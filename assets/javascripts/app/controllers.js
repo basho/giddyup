@@ -12,9 +12,11 @@ GiddyUp.TestInstancesController = Ember.ArrayController.extend({
   sortProperties: ['name', 'platform', 'backend', 'upgradeVersion']
 });
 
-GiddyUp.TestInstanceController = Ember.ObjectController.extend();
+GiddyUp.TestInstanceController = Ember.ObjectController.extend({});
 
 GiddyUp.TestResultsController = Ember.ArrayController.extend({
+  sortProperties: ['created_at'],
+  sortAscending: false
 });
 
 GiddyUp.TestResultController = Ember.ObjectController.extend();
