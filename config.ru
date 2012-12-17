@@ -10,6 +10,8 @@ require 'rack-rewrite'
 require 'rake-pipeline'
 require 'rake-pipeline/middleware'
 
+Rack::Mime::MIME_TYPES['.woff'] = 'application/x-font-woff'
+
 use Rack::Rewrite do
   rewrite %r{^(.*)\/$}, '$1/index.html'
 end
