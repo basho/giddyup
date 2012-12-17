@@ -1,5 +1,5 @@
-// Version: v1.0.0-pre.2-103-g9fc4d5d
-// Last commit: 9fc4d5d (2012-12-09 11:22:46 -0800)
+// Version: v1.0.0-pre.2-117-gc8aa80a
+// Last commit: c8aa80a (2012-12-15 12:48:26 -0800)
 
 
 (function() {
@@ -142,8 +142,8 @@ if ('undefined' !== typeof window) {
 
 })();
 
-// Version: v1.0.0-pre.2-103-g9fc4d5d
-// Last commit: 9fc4d5d (2012-12-09 11:22:46 -0800)
+// Version: v1.0.0-pre.2-117-gc8aa80a
+// Last commit: c8aa80a (2012-12-15 12:48:26 -0800)
 
 
 (function() {
@@ -5426,6 +5426,7 @@ function processNames(paths, root, seen) {
     paths[idx] = key;
 
     if (obj && obj.toString === classToString) {
+      obj.toString = makeToString(paths.join('.'));
       obj[NAME_KEY] = paths.join('.');
     } else if (obj && obj.isNamespace) {
       if (seen[guidFor(obj)]) { continue; }
@@ -5505,17 +5506,26 @@ classToString = function() {
     }
   }
 
+  var ret;
+
   if (this[NAME_KEY]) {
-    return this[NAME_KEY];
+    ret = this[NAME_KEY];
   } else {
     var str = superClassString(this);
     if (str) {
-      return "(subclass of " + str + ")";
+      ret = "(subclass of " + str + ")";
     } else {
-      return "(unknown mixin)";
+      ret = "(unknown mixin)";
     }
+    this.toString = makeToString(ret);
   }
+
+  return ret;
 };
+
+function makeToString(ret) {
+  return function() { return ret; };
+}
 
 MixinPrototype.toString = classToString;
 
@@ -5958,48 +5968,50 @@ Ember.typeOf = function(item) {
   confusing.
 
   ```javascript
-  Ember.none();              // true
-  Ember.none(null);          // true
-  Ember.none(undefined);     // true
-  Ember.none('');            // false
-  Ember.none([]);            // false
-  Ember.none(function(){});  // false
+  Ember.isNone();              // true
+  Ember.isNone(null);          // true
+  Ember.isNone(undefined);     // true
+  Ember.isNone('');            // false
+  Ember.isNone([]);            // false
+  Ember.isNone(function(){});  // false
   ```
 
-  @method none
+  @method isNone
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
 */
-Ember.none = function(obj) {
+Ember.isNone = function(obj) {
   return obj === null || obj === undefined;
 };
+Ember.none = Ember.deprecateFunc("Ember.none is deprecated. Please use Ember.isNone instead.", Ember.isNone);
 
 /**
   Verifies that a value is `null` or an empty string, empty array,
   or empty function.
 
-  Constrains the rules on `Ember.none` by returning false for empty
+  Constrains the rules on `Ember.isNone` by returning false for empty
   string and empty arrays.
 
   ```javascript
-  Ember.empty();                // true
-  Ember.empty(null);            // true
-  Ember.empty(undefined);       // true
-  Ember.empty('');              // true
-  Ember.empty([]);              // true
-  Ember.empty('Adam Hawkins');  // false
-  Ember.empty([0,1,2]);         // false
+  Ember.isEmpty();                // true
+  Ember.isEmpty(null);            // true
+  Ember.isEmpty(undefined);       // true
+  Ember.isEmpty('');              // true
+  Ember.isEmpty([]);              // true
+  Ember.isEmpty('Adam Hawkins');  // false
+  Ember.isEmpty([0,1,2]);         // false
   ```
 
-  @method empty
+  @method isEmpty
   @for Ember
   @param {Object} obj Value to test
   @return {Boolean}
 */
-Ember.empty = function(obj) {
+Ember.isEmpty = function(obj) {
   return obj === null || obj === undefined || (obj.length === 0 && typeof obj !== 'function') || (typeof obj === 'object' && Ember.get(obj, 'length') === 0);
 };
+Ember.empty = Ember.deprecateFunc("Ember.empty is deprecated. Please use Ember.isEmpty instead.", Ember.isEmpty) ;
 
 /**
  This will compare two javascript values of possibly different types.
@@ -9634,7 +9646,7 @@ CoreObject.PrototypeMixin = Mixin.create({
 
         App.Teacher = App.Person.extend({
           toStringExtension: function(){
-            return @get('fullName');
+            return this.get('fullName');
           }
         });
         teacher = App.Teacher.create()
@@ -9643,12 +9655,18 @@ CoreObject.PrototypeMixin = Mixin.create({
     @method toString
     @return {String} string representation
   */
-  toString: function() {
-    var hasToStringExtension = Ember.typeOf(this.toStringExtension) === 'function',
+  toString: function toString() {
+    var hasToStringExtension = typeof this.toStringExtension === 'function',
         extension = hasToStringExtension ? ":" + this.toStringExtension() : '';
-    return '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+    var ret = '<'+this.constructor.toString()+':'+guidFor(this)+extension+'>';
+    this.toString = makeToString(ret);
+    return ret;
   }
 });
+
+function makeToString(ret) {
+  return function() { return ret; };
+}
 
 if (Ember.config.overridePrototypeMixin) {
   Ember.config.overridePrototypeMixin(CoreObject.PrototypeMixin);
@@ -9810,7 +9828,7 @@ Ember.CoreObject = CoreObject;
 @submodule ember-runtime
 */
 
-var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.none;
+var get = Ember.get, set = Ember.set, guidFor = Ember.guidFor, none = Ember.isNone;
 
 /**
   An unordered collection of objects.
@@ -12156,7 +12174,9 @@ Ember.Application = Ember.Namespace.extend(
       this.startRouting(router);
     }
 
-    Ember.BOOTED = true;
+    if (!Ember.testing) {
+      Ember.BOOTED = true;
+    }
   },
 
   createApplicationView: function (router) {
@@ -12225,6 +12245,8 @@ Ember.Application = Ember.Namespace.extend(
   ready: Ember.K,
 
   willDestroy: function() {
+    Ember.BOOTED = false;
+
     get(this, 'eventDispatcher').destroy();
     if (this._createdRouter)          { this._createdRouter.destroy(); }
     if (this._createdApplicationView) { this._createdApplicationView.destroy(); }
@@ -13444,7 +13466,7 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
       be used.
   */
   renderToBuffer: function(parentBuffer, bufferOperation) {
-    var name = 'render-to-buffer.' + this.instrumentName,
+    var name = 'render.' + this.instrumentName,
         details = {};
 
     this.instrumentDetails(details);
@@ -14467,9 +14489,7 @@ Ember.View = Ember.CoreView.extend(
       Ember.assert('template must be a function. Did you mean to call Ember.Handlebars.compile("...") or specify templateName instead?', typeof template === 'function');
       // The template should write directly to the render buffer instead
       // of returning a string.
-      Ember.instrument('template.' + this.instrumentName,
-        { object: this.toString() },
-        function() { output = template(context, { data: data }); });
+      output = template(context, { data: data });
 
       // If the template returned a string instead of writing to the buffer,
       // push the string onto the buffer.
@@ -17934,7 +17954,7 @@ Ember.StateManager = Ember.State.extend({
 
   transitionTo: function(path, context) {
     // XXX When is transitionTo called with no path
-    if (Ember.empty(path)) { return; }
+    if (Ember.isEmpty(path)) { return; }
 
     // The ES6 signature of this function is `path, ...contexts`
     var contexts = context ? Array.prototype.slice.call(arguments, 1) : [],
@@ -18486,7 +18506,7 @@ Ember.Routable = Ember.Mixin.create({
   serialize: function(manager, context) {
     var modelClass, routeMatcher, namespace, param, id;
 
-    if (Ember.empty(context)) { return ''; }
+    if (Ember.isEmpty(context)) { return ''; }
 
     if (modelClass = this.modelClassFor(get(manager, 'namespace'))) {
       param = paramForClass(modelClass);
@@ -20552,6 +20572,113 @@ Ember.Handlebars.registerHelper('helperMissing', function(path, options) {
   throw new Ember.Error(Ember.String.fmt(error, [view, path, this]));
 });
 
+/**
+  Register a bound handlebars helper. Bound helpers behave similarly to regular
+  handlebars helpers, with the added ability to re-render when the underlying data
+  changes.
+
+  ## Simple example
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('capitalize', function(value) {
+    return value.toUpperCase();
+  });
+  ```
+
+  The above bound helper can be used inside of templates as follows:
+
+  ```handlebars
+  {{capitalize name}}
+  ```
+
+  In this case, when the `name` property of the template's context changes,
+  the rendered value of the helper will update to reflect this change.
+
+  ## Example with options
+
+  Like normal handlebars helpers, bound helpers have access to the options
+  passed into the helper call.
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('repeat', function(value, options) {
+    var count = options.hash.count;
+    var a = [];
+    while(a.length < count){
+        a.push(value);
+    }
+    return a.join('');
+  });
+  ```
+
+  This helper could be used in a template as follows:
+
+  ```handlebars
+  {{repeat text count=3}}
+  ```
+
+  ## Example with extra dependencies
+
+  The `Ember.Handlebars.registerBoundHelper` method takes a variable length
+  third parameter which indicates extra dependencies on the passed in value.
+  This allows the handlebars helper to update when these dependencies change.
+
+  ```javascript
+  Ember.Handlebars.registerBoundHelper('capitalizeName', function(value) {
+    return value.get('name').toUpperCase();
+  }, 'name');
+  ```
+
+  @method registerBoundHelper
+  @for Ember.Handlebars
+  @param {String} name
+  @param {Function} function
+  @param {String} dependentKeys*
+*/
+Ember.Handlebars.registerBoundHelper = function(name, fn) {
+  var dependentKeys = Array.prototype.slice.call(arguments, 2);
+  Ember.Handlebars.registerHelper(name, function(property, options) {
+    var data = options.data,
+      view = data.view,
+      currentContext = (options.contexts && options.contexts[0]) || this,
+      pathRoot, path, normalized,
+      observer, loc;
+
+    normalized = Ember.Handlebars.normalizePath(currentContext, property, data);
+
+    pathRoot = normalized.root;
+    path = normalized.path;
+    
+    var bindView = new Ember._SimpleHandlebarsView(
+      path, pathRoot, !options.hash.unescaped, options.data
+    );
+    bindView.normalizedValue = function() {
+      var value = Ember._SimpleHandlebarsView.prototype.normalizedValue.call(bindView);
+      return fn.call(view, value, options);
+    };
+
+    view.appendChild(bindView);
+
+    observer = function() {
+      Ember.run.scheduleOnce('render', bindView, 'rerender');
+    };
+
+    Ember.addObserver(pathRoot, path, observer);
+    loc = 0;
+    while(loc < dependentKeys.length) {
+      Ember.addObserver(pathRoot, path + '.' + dependentKeys[loc], observer);
+      loc += 1;
+    }
+
+    view.one('willClearRender', function() {
+      Ember.removeObserver(pathRoot, path, observer);
+      loc = 0;
+      while(loc < dependentKeys.length) {
+        Ember.removeObserver(pathRoot, path + '.' + dependentKeys[loc], observer);
+        loc += 1;
+      }
+    });
+  });
+};
 
 })();
 
@@ -20715,6 +20842,7 @@ function SimpleHandlebarsView(path, pathRoot, isEscaped, templateData) {
 
   this.morph = Metamorph();
   this.state = 'preRender';
+  this.updateId = null;
 }
 
 Ember._SimpleHandlebarsView = SimpleHandlebarsView;
@@ -20723,7 +20851,14 @@ SimpleHandlebarsView.prototype = {
   isVirtual: true,
   isView: true,
 
-  destroy: Ember.K,
+  destroy: function () {
+    if (this.updateId) {
+      Ember.run.cancel(this.updateId);
+      this.updateId = null;
+    }
+    this.morph = null;
+  },
+
   propertyDidChange: Ember.K,
 
   normalizedValue: function() {
@@ -20745,16 +20880,7 @@ SimpleHandlebarsView.prototype = {
     return result;
   },
 
-  renderToBuffer: function(parentBuffer) {
-    var name = 'render-to-buffer.simpleHandlebars',
-        details = { object: '<Ember._SimpleHandlebarsView>' };
-
-    return Ember.instrument(name, details, function() {
-      return this._renderToBuffer(parentBuffer);
-    }, this);
-  },
-
-  _renderToBuffer: function(buffer) {
+  renderToBuffer: function(buffer) {
     var string = '';
 
     string += this.morph.startTag();
@@ -20789,16 +20915,16 @@ SimpleHandlebarsView.prototype = {
         throw new Error("Something you did tried to replace an {{expression}} before it was inserted into the DOM.");
       case 'hasElement':
       case 'inDOM':
-        var morph = this.morph;
-
-        Ember.run.schedule('render', this, function() {
-          if (get(this, 'isDestroyed')) { return; }
-          morph.html(this.render());
-        });
+        this.updateId = Ember.run.scheduleOnce('render', this, 'update');
         break;
     }
 
     return this;
+  },
+
+  update: function () {
+    this.updateId = null;
+    this.morph.html(this.render());
   },
 
   transitionTo: function(state) {
@@ -21028,7 +21154,6 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
       fn = options.fn,
       inverse = options.inverse,
       view = data.view,
-      instrumentName = view.instrumentName,
       currentContext = this,
       pathRoot, path, normalized,
       observer;
@@ -21058,28 +21183,23 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 
       template(context, { data: options.data });
     } else {
-      var bindView = Ember.instrument('bind-view.' + instrumentName,
-        { object: view.toString() },
-        function() {
-          // Create the view that will wrap the output of this template/property
-          // and add it to the nearest view's childViews array.
-          // See the documentation of Ember._HandlebarsBoundView for more.
-          var bindView = view.createChildView(Ember._HandlebarsBoundView, {
-            preserveContext: preserveContext,
-            shouldDisplayFunc: shouldDisplay,
-            valueNormalizerFunc: valueNormalizer,
-            displayTemplate: fn,
-            inverseTemplate: inverse,
-            path: path,
-            pathRoot: pathRoot,
-            previousContext: currentContext,
-            isEscaped: !options.hash.unescaped,
-            templateData: options.data
-          });
+      // Create the view that will wrap the output of this template/property
+      // and add it to the nearest view's childViews array.
+      // See the documentation of Ember._HandlebarsBoundView for more.
+      var bindView = view.createChildView(Ember._HandlebarsBoundView, {
+        preserveContext: preserveContext,
+        shouldDisplayFunc: shouldDisplay,
+        valueNormalizerFunc: valueNormalizer,
+        displayTemplate: fn,
+        inverseTemplate: inverse,
+        path: path,
+        pathRoot: pathRoot,
+        previousContext: currentContext,
+        isEscaped: !options.hash.unescaped,
+        templateData: options.data
+      });
 
-          view.appendChild(bindView);
-          return bindView;
-        });
+      view.appendChild(bindView);
 
       /** @private */
       observer = function() {
@@ -21108,7 +21228,6 @@ function bind(property, options, preserveContext, shouldDisplay, valueNormalizer
 function simpleBind(property, options) {
   var data = options.data,
       view = data.view,
-      instrumentName = view.instrumentName,
       currentContext = this,
       pathRoot, path, normalized,
       observer;
@@ -21129,17 +21248,12 @@ function simpleBind(property, options) {
       if (result === null || result === undefined) { result = ""; }
       data.buffer.push(result);
     } else {
-      var bindView = Ember.instrument('simple-bind-view.' + instrumentName,
-        { object: view.toString() },
-        function() {
-          var bindView = new Ember._SimpleHandlebarsView(
-            path, pathRoot, !options.hash.unescaped, options.data
-          );
+      var bindView = new Ember._SimpleHandlebarsView(
+        path, pathRoot, !options.hash.unescaped, options.data
+      );
 
-          bindView._parentView = view;
-          view.appendChild(bindView);
-          return bindView;
-        });
+      bindView._parentView = view;
+      view.appendChild(bindView);
 
       observer = function() {
         Ember.run.scheduleOnce('render', bindView, 'rerender');
@@ -21224,7 +21338,7 @@ EmberHandlebars.registerHelper('bind', function(property, options) {
   }
 
   return bind.call(context, property, options, false, function(result) {
-    return !Ember.none(result);
+    return !Ember.isNone(result);
   });
 });
 
@@ -21295,7 +21409,7 @@ EmberHandlebars.registerHelper('with', function(context, options) {
     }
 
     return bind.call(this, path, options, true, function(result) {
-      return !Ember.none(result);
+      return !Ember.isNone(result);
     });
   } else {
     Ember.assert("You must pass exactly one argument to the with helper", arguments.length === 2);
@@ -21469,7 +21583,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
 
   Ember.assert("You must specify at least one hash argument to bindAttr", !!Ember.keys(attrs).length);
 
-  var view = options.data.view, instrumentName = view.instrumentName;
+  var view = options.data.view;
   var ret = [];
   var ctx = this;
 
@@ -21481,11 +21595,7 @@ EmberHandlebars.registerHelper('bindAttr', function(options) {
   // Handle classes differently, as we can bind multiple classes
   var classBindings = attrs['class'];
   if (classBindings !== null && classBindings !== undefined) {
-    var classResults = Ember.instrument('class-bindings.' + instrumentName,
-      { object: view.toString() },
-      function() {
-        return EmberHandlebars.bindClasses(this, classBindings, view, dataId, options);
-      }, this);
+    var classResults = EmberHandlebars.bindClasses(this, classBindings, view, dataId, options);
 
     ret.push('class="' + Handlebars.Utils.escapeExpression(classResults.join(' ')) + '"');
     delete attrs['class'];
@@ -21774,7 +21884,7 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
           //
           // is converted to this:
           //
-          //     classNameBinding="context.isGreen:green"
+          //     classNameBinding="_parentView.context.isGreen:green"
           var parsedPath = Ember.View._parsePropertyPath(full);
           path = this.contextualizeBindingPath(parsedPath.path, data);
           if (path) { extensions.classNameBindings[b] = path + parsedPath.classNames; }
@@ -21796,9 +21906,9 @@ EmberHandlebars.ViewHelper = Ember.Object.create({
     } else if (Ember.isGlobalPath(path)) {
       return null;
     } else if (path === 'this') {
-      return 'context';
+      return '_parentView.context';
     } else {
-      return 'context.' + path;
+      return '_parentView.context.' + path;
     }
   },
 
@@ -22170,7 +22280,6 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
   var data = options.data;
   var inverse = options.inverse;
   var view = options.data.view;
-  var instrumentName = view.instrumentName;
 
   // If passed a path string, convert that into an object.
   // Otherwise, just default to the standard class.
@@ -22231,19 +22340,10 @@ Ember.Handlebars.registerHelper('collection', function(path, options) {
 
   var viewString = view.toString();
 
-  Ember.instrument('collection-setup.' + instrumentName,
-    { object: viewString },
-    function() {
-      var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
-      viewOptions._anonymous = true;
-      hash.itemViewClass = itemViewClass.extend(viewOptions);
-    });
+  var viewOptions = Ember.Handlebars.ViewHelper.propertiesFromHTMLOptions({ data: data, hash: itemHash }, this);
+  hash.itemViewClass = itemViewClass.extend(viewOptions);
 
-  return Ember.instrument('collection-view.' + instrumentName,
-    { object: viewString },
-    function() {
-      return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
-    }, this);
+  return Ember.Handlebars.helpers.view.call(this, collectionClass, options);
 });
 
 
@@ -23906,7 +24006,8 @@ Ember.Select = Ember.View.extend(
     @type String
     @default null
   */
-  value: Ember.computed(function(key) {
+  value: Ember.computed(function(key, value) {
+    if (arguments.length === 2) { return value; }
     var valuePath = get(this, 'optionValuePath').replace(/^content\.?/, '');
     return valuePath ? get(this, 'selection.' + valuePath) : get(this, 'selection');
   }).property('selection'),
@@ -24202,8 +24303,8 @@ Ember Handlebars
 
 
 })();
-// Version: v1.0.0-pre.2-103-g9fc4d5d
-// Last commit: 9fc4d5d (2012-12-09 11:22:46 -0800)
+// Version: v1.0.0-pre.2-117-gc8aa80a
+// Last commit: c8aa80a (2012-12-15 12:48:26 -0800)
 
 
 (function() {

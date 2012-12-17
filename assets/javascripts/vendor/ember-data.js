@@ -1304,7 +1304,7 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
     // client-side ID generators will use something like uuid.js
     // to avoid conflicts.
     var adapter;
-    if (Ember.none(id)) {
+    if (Ember.isNone(id)) {
       adapter = get(this, 'adapter');
       if (adapter && adapter.generateIdForRecord) {
         id = coerceId(adapter.generateIdForRecord(this, record));
@@ -1786,10 +1786,16 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   },
 
   /**
-    TODO: What is this method trying to do?
+    This method returns if a certain record is already loaded 
+    in the store. Use this function to know beforehand if a find() 
+    will result in a request or that it will be a cache hit.
+
+    @param {Class} type
+    @param {string} id
+    @return {boolean}
   */
   recordIsLoaded: function(type, id) {
-    return !Ember.none(this.typeMapFor(type).idToCid[id]);
+    return !Ember.isNone(this.typeMapFor(type).idToCid[id]);
   },
 
   // ............
@@ -2452,8 +2458,6 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
   load: function(type, id, data) {
     if (data === undefined) {
       data = id;
-
-      var adapter = this.adapterForType(type);
       id = this.preprocessData(type, data);
     }
 
@@ -2484,10 +2488,6 @@ DS.Store = Ember.Object.extend(DS._Mappable, {
 
     if (dataList === undefined) {
       dataList = ids;
-      ids = [];
-
-      var adapter = this.adapterForType(type);
-
       ids = map(dataList, function(data) {
         return this.preprocessData(type, data);
       }, this);
@@ -3131,8 +3131,8 @@ createdState.states.uncommitted.reopen({
       t.recordIsMoving('created', record);
     });
 
-    manager.transitionTo('deleted.saved');
     record.clearRelationships();
+    manager.transitionTo('deleted.saved');
   }
 });
 
@@ -3436,7 +3436,7 @@ DS.StateManager = Ember.StateManager.extend({
 
 
 (function() {
-var get = Ember.get, set = Ember.set, none = Ember.none;
+var get = Ember.get, set = Ember.set, none = Ember.isNone;
 
 var retrieveFromCurrentState = Ember.computed(function(key) {
   return get(get(this, 'stateManager.currentState'), key);
@@ -3870,7 +3870,7 @@ DS.attr = function(type, options) {
 
 (function() {
 var get = Ember.get, set = Ember.set,
-    none = Ember.none;
+    none = Ember.isNone;
 
 DS.belongsTo = function(type, options) {
   Ember.assert("The first argument DS.belongsTo must be a model type or string, like DS.belongsTo(App.Person)", !!type && (typeof type === 'string' || DS.Model.detect(type)));
@@ -4763,38 +4763,56 @@ var set = Ember.set;
 */
 
 Ember.onLoad('Ember.Application', function(Application) {
-  Application.registerInjection({
-    name: "store",
-    before: "controllers",
+  if (Application.registerInjection) {
+    Application.registerInjection({
+      name: "store",
+      before: "controllers",
 
-    // If a store subclass is defined, like App.Store,
-    // instantiate it and inject it into the router.
-    injection: function(app, stateManager, property) {
-      if (!stateManager) { return; }
-      if (property === 'Store') {
-        set(stateManager, 'store', app[property].create());
+      // If a store subclass is defined, like App.Store,
+      // instantiate it and inject it into the router.
+      injection: function(app, stateManager, property) {
+        if (!stateManager) { return; }
+        if (property === 'Store') {
+          set(stateManager, 'store', app[property].create());
+        }
       }
-    }
-  });
+    });
 
-  Application.registerInjection({
-    name: "giveStoreToControllers",
-    after: ['store','controllers'],
+    Application.registerInjection({
+      name: "giveStoreToControllers",
+      after: ['store','controllers'],
 
-    // For each controller, set its `store` property
-    // to the DS.Store instance we created above.
-    injection: function(app, stateManager, property) {
-      if (!stateManager) { return; }
-      if (/^[A-Z].*Controller$/.test(property)) {
-        var controllerName = property.charAt(0).toLowerCase() + property.substr(1);
-        var store = stateManager.get('store');
-        var controller = stateManager.get(controllerName);
-        if(!controller) { return; }
+      // For each controller, set its `store` property
+      // to the DS.Store instance we created above.
+      injection: function(app, stateManager, property) {
+        if (!stateManager) { return; }
+        if (/^[A-Z].*Controller$/.test(property)) {
+          var controllerName = property.charAt(0).toLowerCase() + property.substr(1);
+          var store = stateManager.get('store');
+          var controller = stateManager.get(controllerName);
+          if(!controller) { return; }
 
-        controller.set('store', store);
+          controller.set('store', store);
+        }
       }
-    }
-  });
+    });
+  } else if (Application.initializer) {
+    Application.initializer({
+      name: "store",
+
+      initialize: function(container, application) {
+        container.register('store', 'main', application.Store);
+      }
+    });
+
+    Application.initializer({
+      name: "giveStoreToControllers",
+
+      initialize: function(container) {
+        container.typeInjection('controller', 'store', 'store:main');
+      }
+    });
+  }
 });
 
 })();
@@ -5296,7 +5314,7 @@ DS.Serializer = Ember.Object.extend({
   //.........................
 
   materialize: function(record, serialized) {
-    if (Ember.none(get(record, 'id'))) {
+    if (Ember.isNone(get(record, 'id'))) {
       record.materializeId(this.extractId(record.constructor, serialized));
     }
 
@@ -5609,21 +5627,21 @@ DS.Serializer = Ember.Object.extend({
 DS.JSONTransforms = {
   string: {
     deserialize: function(serialized) {
-      return Ember.none(serialized) ? null : String(serialized);
+      return Ember.isNone(serialized) ? null : String(serialized);
     },
 
     serialize: function(deserialized) {
-      return Ember.none(deserialized) ? null : String(deserialized);
+      return Ember.isNone(deserialized) ? null : String(deserialized);
     }
   },
 
   number: {
     deserialize: function(serialized) {
-      return Ember.none(serialized) ? null : Number(serialized);
+      return Ember.isNone(serialized) ? null : Number(serialized);
     },
 
     serialize: function(deserialized) {
-      return Ember.none(deserialized) ? null : Number(deserialized);
+      return Ember.isNone(deserialized) ? null : Number(deserialized);
     }
   },
 
@@ -6132,7 +6150,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
   /*
     Implement this method in order to query fixtures data
   */
-  queryFixtures: function(fixtures, query) {
+  queryFixtures: function(fixtures, query, type) {
     return fixtures;
   },
 
@@ -6200,7 +6218,7 @@ DS.FixtureAdapter = DS.Adapter.extend({
 
     Ember.assert("Unable to find fixtures for model type "+type.toString(), !!fixtures);
 
-    fixtures = this.queryFixtures(fixtures, query);
+    fixtures = this.queryFixtures(fixtures, query, type);
 
     if (fixtures) {
       this.simulateRemoteCall(function() {
@@ -6266,7 +6284,7 @@ DS.RESTSerializer = DS.JSONSerializer.extend({
   addBelongsTo: function(hash, record, key, relationship) {
     var id = get(record, relationship.key+'.id');
 
-    if (!Ember.none(id)) { hash[key] = id; }
+    if (!Ember.isNone(id)) { hash[key] = id; }
   }
 });
 
@@ -6294,7 +6312,9 @@ DS.RESTAdapter = DS.Adapter.extend({
       data: data,
       context: this,
       success: function(json) {
-        this.didCreateRecord(store, type, record, json);
+        Ember.run(this, function(){
+          this.didCreateRecord(store, type, record, json);
+        });
       },
       error: function(xhr) {
         this.didError(store, type, record, xhr);
@@ -6347,7 +6367,9 @@ DS.RESTAdapter = DS.Adapter.extend({
       data: data,
       context: this,
       success: function(json) {
-        this.didCreateRecords(store, type, records, json);
+        Ember.run(this, function(){
+          this.didCreateRecords(store, type, records, json);
+        });
       }
     });
   },
@@ -6370,7 +6392,9 @@ DS.RESTAdapter = DS.Adapter.extend({
       data: data,
       context: this,
       success: function(json) {
-        this.didUpdateRecord(store, type, record, json);
+        Ember.run(this, function(){
+          this.didUpdateRecord(store, type, record, json);
+        });
       },
       error: function(xhr) {
         this.didError(store, type, record, xhr);
@@ -6403,7 +6427,9 @@ DS.RESTAdapter = DS.Adapter.extend({
       data: data,
       context: this,
       success: function(json) {
-        this.didUpdateRecords(store, type, records, json);
+        Ember.run(this, function(){
+          this.didUpdateRecords(store, type, records, json);
+        });
       }
     });
   },
@@ -6422,7 +6448,9 @@ DS.RESTAdapter = DS.Adapter.extend({
     this.ajax(this.buildURL(root, id), "DELETE", {
       context: this,
       success: function(json) {
-        this.didDeleteRecord(store, type, record, json);
+        Ember.run(this, function(){
+          this.didDeleteRecord(store, type, record, json);
+        });
       }
     });
   },
@@ -6451,7 +6479,9 @@ DS.RESTAdapter = DS.Adapter.extend({
       data: data,
       context: this,
       success: function(json) {
-        this.didDeleteRecords(store, type, records, json);
+        Ember.run(this, function(){
+          this.didDeleteRecords(store, type, records, json);
+        });
       }
     });
   },
@@ -6466,7 +6496,9 @@ DS.RESTAdapter = DS.Adapter.extend({
 
     this.ajax(this.buildURL(root, id), "GET", {
       success: function(json) {
-        this.didFindRecord(store, type, json, id);
+        Ember.run(this, function(){
+          this.didFindRecord(store, type, json, id);
+        });
       }
     });
   },
@@ -6484,7 +6516,9 @@ DS.RESTAdapter = DS.Adapter.extend({
     this.ajax(this.buildURL(root), "GET", {
       data: this.sinceQuery(since),
       success: function(json) {
-        this.didFindAll(store, type, json);
+        Ember.run(this, function(){
+          this.didFindAll(store, type, json);
+        });
       }
     });
   },
@@ -6509,7 +6543,9 @@ DS.RESTAdapter = DS.Adapter.extend({
     this.ajax(this.buildURL(root), "GET", {
       data: query,
       success: function(json) {
-        this.didFindQuery(store, type, json, recordArray);
+        Ember.run(this, function(){
+          this.didFindQuery(store, type, json, recordArray);
+        });
       }
     });
   },
@@ -6528,7 +6564,9 @@ DS.RESTAdapter = DS.Adapter.extend({
     this.ajax(this.buildURL(root), "GET", {
       data: {ids: ids},
       success: function(json) {
-        this.didFindMany(store, type, json);
+        Ember.run(this, function(){
+          this.didFindMany(store, type, json);
+        });
       }
     });
   },
@@ -6575,8 +6613,6 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   rootForType: function(type) {
-    if (type.url) { return type.url; }
-
     // use the last part of the name as the URL
     var parts = type.toString().split(".");
     var name = parts[parts.length - 1];
@@ -6611,6 +6647,7 @@ DS.RESTAdapter = DS.Adapter.extend({
 
       if (!sideloadedType) {
         mappings = get(this, 'mappings');
+        console.log(['sideload mappings', mappings]);
         Ember.assert("Your server returned a hash with the key " + prop + " but you have no mappings", !!mappings);
 
         sideloadedType = get(mappings, prop);
@@ -6618,7 +6655,7 @@ DS.RESTAdapter = DS.Adapter.extend({
         if (typeof sideloadedType === 'string') {
           sideloadedType = get(window, sideloadedType);
         }
-
+        console.log(['sideloadedType', sideloadedType]);
         Ember.assert("Your server returned a hash with the key " + prop + " but you have no mapping for it", !!sideloadedType);
       }
 
@@ -6627,6 +6664,7 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   sideloadAssociations: function(store, type, json, prop, loaded) {
+    console.log(['sideloadAssoc', type, json, prop, loaded]);
     loaded[prop] = true;
 
     get(type, 'associationsByName').forEach(function(key, meta) {
