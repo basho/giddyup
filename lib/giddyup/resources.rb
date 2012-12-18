@@ -196,8 +196,13 @@ module GiddyUp
 
   class ScorecardResource < Resource
     def resource_exists?
-      @scorecard = Scorecard.find(request.path_info[:id])
-      @scorecard.present?
+      begin
+        @scorecard = Scorecard.find(request.path_info[:id])
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
     end
 
     def to_json
