@@ -228,5 +228,37 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
 if(false){
   GiddyUp.Adapter = GiddyUp.CachingAdapter.extend({name: 'giddyup'});
 } else {
-  GiddyUp.Adapter = DS.RESTAdapter.extend();
+  GiddyUp.Adapter = DS.RESTAdapter.extend({
+    fetchBatchSize: 50,
+
+    didFindMany: function(store, type, json) {
+      var root = this.pluralize(this.rootForType(type));
+
+      this.sideload(store, type, json, root);
+      store.loadMany(type, json[root]);
+    },
+
+    findMany: function(store, type, ids) {
+      var root = this.rootForType(type),
+      batchSize = Ember.get(this, 'fetchBatchSize', ids.length),
+      batch, rest = ids, success;
+
+      success = function(json) {
+        Ember.run(this, function(){
+          this.didFindMany(store, type, json);
+        });
+      };
+
+      while(rest.length > 0) {
+        batch = rest.slice(0, batchSize);
+        rest = rest.slice(batchSize);
+        ids = batch;
+
+        this.ajax(this.buildURL(root), "GET", {
+          data: {ids: ids},
+          success: success
+        });
+      }
+    }
+  });
 }
