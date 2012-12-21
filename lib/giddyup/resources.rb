@@ -162,7 +162,7 @@ module GiddyUp
       scope = Project.where(:name => request.path_info[:name])
       if !request.query.empty?
         query = request.query.dup
-        scope = scope.includes(:tests)
+        scope = scope.includes(:tests).order('tests.name asc')
         if version = query.delete('version')
           scope = Test.for_version(version, scope)
         end
