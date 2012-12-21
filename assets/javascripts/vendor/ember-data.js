@@ -6647,7 +6647,6 @@ DS.RESTAdapter = DS.Adapter.extend({
 
       if (!sideloadedType) {
         mappings = get(this, 'mappings');
-        console.log(['sideload mappings', mappings]);
         Ember.assert("Your server returned a hash with the key " + prop + " but you have no mappings", !!mappings);
 
         sideloadedType = get(mappings, prop);
@@ -6655,7 +6654,7 @@ DS.RESTAdapter = DS.Adapter.extend({
         if (typeof sideloadedType === 'string') {
           sideloadedType = get(window, sideloadedType);
         }
-        console.log(['sideloadedType', sideloadedType]);
+
         Ember.assert("Your server returned a hash with the key " + prop + " but you have no mapping for it", !!sideloadedType);
       }
 
@@ -6664,7 +6663,6 @@ DS.RESTAdapter = DS.Adapter.extend({
   },
 
   sideloadAssociations: function(store, type, json, prop, loaded) {
-    console.log(['sideloadAssoc', type, json, prop, loaded]);
     loaded[prop] = true;
 
     get(type, 'associationsByName').forEach(function(key, meta) {
