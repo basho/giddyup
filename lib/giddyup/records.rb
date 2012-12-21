@@ -93,4 +93,8 @@ class TestInstance
     TestResult.where(:scorecard_id => scorecard_id,
                      :test_id => test_id).pluck(:id)
   end
+
+  def test
+    Test.find(@test_id)
+  end
 end

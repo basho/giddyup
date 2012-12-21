@@ -9,14 +9,6 @@ GiddyUp.Scorecard = DS.Model.extend({
   test_instances: DS.hasMany('GiddyUp.TestInstance')
 });
 
-GiddyUp.Test = DS.Model.extend({
-  name: DS.attr('string'),
-  tags: DS.attr('hash'),
-  platformBinding: 'tags.platform',
-  backendBinding: 'tags.backend',
-  upgradeVersionBinding: 'tags.upgrade_version'
-});
-
 GiddyUp.TestInstanceStatus = Ember.ArrayProxy.extend(Ember.SortableMixin, {
   sortProperties: ['created_at'],
   sortAscending: false,
@@ -36,13 +28,12 @@ GiddyUp.TestInstanceStatus = Ember.ArrayProxy.extend(Ember.SortableMixin, {
 });
 
 GiddyUp.TestInstance = DS.Model.extend({
-  test: DS.belongsTo('GiddyUp.Test'),
   scorecard: DS.belongsTo('GiddyUp.Scorecard'),
   test_results: DS.hasMany('GiddyUp.TestResult'),
-  nameBinding: 'test.name',
-  backendBinding: 'test.backend',
-  upgradeVersionBinding: 'test.upgradeVersion',
-  platformBinding: 'test.platform',
+  name: DS.attr('string'),
+  platform: DS.attr('string'),
+  backend: DS.attr('string'),
+  upgradeVersion: DS.attr('string'),
   status: function(){
     return GiddyUp.TestInstanceStatus.create({
       content: this.get('test_results')
@@ -84,10 +75,7 @@ GiddyUp.TestResult = DS.Model.extend({
 
   log_url: DS.attr('string'),
   created_at: DS.attr('date'),
-  long_version: DS.attr('string'),
-  platformBinding: 'test_instance.test.platform',
-  backendBinding: 'test_instance.test.backend',
-  nameBinding: 'test_instance.test.name'
+  long_version: DS.attr('string')
 });
 
 GiddyUp.Log = DS.Model.extend({

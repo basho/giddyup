@@ -12,7 +12,12 @@ class LogSerializer < ActiveModel::Serializer
 end
 
 class TestInstanceSerializer < ActiveModel::Serializer
-  attributes :id, :scorecard_id, :test_id, :test_result_ids
+  attributes :id, :scorecard_id, :test_result_ids, :name, :platform, :backend, :upgrade_version
+
+  def name; test_instance.test.name; end
+  def platform; test_instance.test.tags['platform']; end
+  def backend; test_instance.test.tags['backend']; end
+  def upgrade_version; test_instance.test.tags['upgrade_version']; end
 end
 
 class TestResultSerializer < ActiveModel::Serializer
