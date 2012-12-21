@@ -41,19 +41,14 @@ GiddyUp.TestInstance = DS.Model.extend({
   }.property(),
   // Used for generating a string to put in the URL
   tagString: function(){
-    if(!this.get('test.isLoaded'))
-      return '';
-    var n = this.get('name'),
-        p = this.get('platform'),
-        b = this.get('backend'),
-        u = this.get('upgradeVersion'),
-        result;
-    result = n.toString();
-    if(p) result += "-" + p;
-    if(b) result += "-" + b;
-    if(u) result += "-" + u;
-    return result;
-  }.property('test.isLoaded', 'name', 'platform', 'backend', 'upgradeVersion')
+    var props = this.getProperties(['name', 'platform',
+                                    'backend', 'upgradeVersion']);
+    result = [props.name];
+    if(props.platform) result.push(props.platform);
+    if(props.backend) result.push(props.backend);
+    if(props.upgradeVersion) result.push(props.upgradeVersion);
+    return result.join("-");
+  }.property('name', 'platform', 'backend', 'upgradeVersion')
 });
 
 GiddyUp.TestResult = DS.Model.extend({
