@@ -99,11 +99,11 @@ GiddyUp.serializer = DS.RESTSerializer.create({
 
 GiddyUp.serializer.registerTransform('hash', {
   deserialize: function(serialized) {
-    return Ember.none(serialized) ? null : serialized;
+    return Ember.isNone(serialized) ? null : serialized;
   },
 
   serialize: function(deserialized) {
-    return Ember.none(deserialized) ? null : deserialized;
+    return Ember.isNone(deserialized) ? null : deserialized;
   }
 });
 
@@ -283,12 +283,13 @@ if(false){
 }
 
 GiddyUp.Adapter.map('GiddyUp.Project', {
-  primaryKey: 'name' //,
-  // scorecards: { key: 'scorecard_ids' }
+  primaryKey: 'name'
 });
 
 GiddyUp.Adapter.map('GiddyUp.Scorecard', {
   project: { key: 'project' }
-  // test_results: { key: 'test_result_ids' },
-  // tests: { key: 'test_ids' }
+});
+
+GiddyUp.Adapter.reopen({
+  mappings: { }
 });
