@@ -113,7 +113,7 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
 
     request.addEventListener('success', function(event){
       self.set('db', request.result);
-    })
+    });
 
     return this._super();
   },
@@ -193,7 +193,7 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
         stateManager.send('missedRecord', mid);
       }, function(fid) {
         stateManager.send('foundRecord', fid);
-      })
+      });
     });
   },
 
