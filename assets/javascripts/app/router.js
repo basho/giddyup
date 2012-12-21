@@ -89,10 +89,12 @@ GiddyUp.Router = Ember.Router.extend({
               route: '/:test_instance_id',
 
               serialize: function(router, context) {
-                return {
-                  test_instance_id: [context.get('id'),
-                                     context.get('tagString')].join('-')
-                };
+                var components = [context.get('id')],
+                    tag = context.get('tagString');
+
+                if(tag) components.push(tag);
+
+                return { test_instance_id: components.join('-') };
               },
 
               deserialize: function(router, params){
