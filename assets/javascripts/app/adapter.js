@@ -225,7 +225,7 @@ GiddyUp.CachingAdapter = DS.RESTAdapter.extend({
   }
 });
 
-if(indexedDB){
+if(false){
   GiddyUp.Adapter = GiddyUp.CachingAdapter.extend({name: 'giddyup'});
 } else {
   GiddyUp.Adapter = DS.RESTAdapter.extend();
