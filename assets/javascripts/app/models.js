@@ -43,7 +43,7 @@ GiddyUp.TestInstance = DS.Model.extend({
   tagString: function(){
     var props = this.getProperties(['name', 'platform',
                                     'backend', 'upgradeVersion']);
-    result = [props.name];
+    var result = [props.name];
     if(props.platform) result.push(props.platform);
     if(props.backend) result.push(props.backend);
     if(props.upgradeVersion) result.push(props.upgradeVersion);

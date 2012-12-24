@@ -88,7 +88,7 @@ GiddyUp.TestInstancesController = Ember.ArrayController.extend({
 
     // Now insert the items
     content.forEach(function(item) {
-      var keys = dimensions.map(function(d) { return item.get(d) });
+      var keys = dimensions.map(function(d) { return item.get(d); });
       var leaf = index.findByKeys(keys);
       leaf.addObject(item);
     }, this);

@@ -132,7 +132,7 @@ GiddyUp.Router = Ember.Router.extend({
                 exit: function(router) {
                   router.get('testResultsController').set('selectedItem', undefined);
                   router.get('testInstanceController').disconnectOutlet('testResult');
-                },
+                }
               })
             })
           })
