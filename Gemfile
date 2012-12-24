@@ -9,7 +9,7 @@ gem 'oj'
 gem 'fog'
 gem 'pg'
 gem 'rake'
-gem 'rainbows'
+gem 'puma'
 gem 'rack-rewrite'
 
 group :assets do
