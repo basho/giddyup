@@ -17,7 +17,7 @@ end
 task :jshint do
   jsfiles = Dir["assets/javascripts/app/**/*.js"]
   result = system "jshint", "--config" , ".jshintrc", *jsfiles
-  exit result
+  exit result || 1
 end
 
 namespace :db do

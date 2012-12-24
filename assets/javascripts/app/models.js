@@ -22,7 +22,7 @@ GiddyUp.TestInstanceStatus = Ember.ArrayProxy.extend(Ember.SortableMixin, {
     if(total === 0){
       return 0.0;
     } else {
-      return succeeded / total;
+      return (succeeded / total) * 100;
     }
   }.property('total', '@each.success')
 });
