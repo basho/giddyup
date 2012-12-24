@@ -1,3 +1,29 @@
-{{#each controller}}
-  {{#view GiddyUp.TestInstanceBubbleView contentBinding="this"}}<a {{action showTestInstance this href="true"}}>{{view.abbr}}</a>{{/view}}
-{{/each}}
+{{#if isLoaded}}
+<table class="table table-striped">
+  <thead>
+    <th></th>
+    {{#each column in dimensionValues.lastObject}}
+      <th>{{column}}</th>
+    {{/each}}
+  </thead>
+  <tbody>
+    {{#each row in matrix}}
+      <tr>
+        <td>{{row.key}}</td>
+        {{#each cell in row}}
+          <td>
+            {{#each item in cell}}
+              <div>{{#view GiddyUp.TestInstanceBubbleView contentBinding="item"}}<a {{action showTestResults item href="true"}}>{{view.abbr}}</a>{{/view}}</div>
+            {{/each}}
+          </td>
+          {{/each}}
+      </tr>
+      {{/each}}
+  </tbody>
+</table>
+{{else}}
+<div class="alert alert-info">
+  <strong>Loading test matrix...</strong>
+  please wait.
+</div>
+{{/if}}

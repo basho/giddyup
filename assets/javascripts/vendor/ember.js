@@ -1,5 +1,5 @@
-// Version: v1.0.0-pre.2-117-gc8aa80a
-// Last commit: c8aa80a (2012-12-15 12:48:26 -0800)
+// Version: v1.0.0-pre.2-128-ge4a8670
+// Last commit: e4a8670 (2012-12-20 19:20:45 -0800)
 
 
 (function() {
@@ -142,8 +142,8 @@ if ('undefined' !== typeof window) {
 
 })();
 
-// Version: v1.0.0-pre.2-117-gc8aa80a
-// Last commit: c8aa80a (2012-12-15 12:48:26 -0800)
+// Version: v1.0.0-pre.2-151-g77df9b4
+// Last commit: 77df9b4 (2012-12-22 14:10:16 -0800)
 
 
 (function() {
@@ -722,7 +722,9 @@ var platform = Ember.platform = {};
 */
 Ember.create = Object.create;
 
-if (!Ember.create) {
+// STUB_OBJECT_CREATE allows us to override other libraries that stub
+// Object.create different than we would prefer
+if (!Ember.create || Ember.ENV.STUB_OBJECT_CREATE) {
   var K = function() {};
 
   Ember.create = function(obj, props) {
@@ -6150,6 +6152,11 @@ function _copy(obj, deep, seen, copies) {
     ret = {};
     for(key in obj) {
       if (!obj.hasOwnProperty(key)) continue;
+
+      // Prevents browsers that don't respect non-enumerability from
+      // copying internal Ember properties
+      if (key.substring(0,2) === '__') continue;
+
       ret[key] = deep ? _copy(obj[key], deep, seen, copies) : obj[key];
     }
   }
@@ -7107,6 +7114,36 @@ Ember.Enumerable = Ember.Mixin.create(
   },
 
   /**
+    Returns an array with all of the items in the enumeration where the passed
+    function returns false for. This method is the inverse of filter().
+
+    The callback method you provide should have the following signature (all
+    parameters are optional):
+
+          function(item, index, enumerable);
+
+    - *item* is the current item in the iteration.
+    - *index* is the current index in the iteration
+    - *enumerable* is the enumerable object itself.
+
+    It should return the a falsey value to include the item in the results.
+
+    Note that in addition to a callback, you can also pass an optional target
+    object that will be set as "this" on the context. This is a good way
+    to give your iterator function access to the current object.
+
+    @method reject
+    @param {Function} callback The callback to execute
+    @param {Object} [target] The target object to use
+    @return {Array} A rejected array.
+   */
+  reject: function(callback, target) {
+    return this.filter(function() {
+      return !(callback.apply(target, arguments));
+    });
+  },
+
+  /**
     Returns an array with just the items with the matched property. You
     can pass an optional second argument with the target value. Otherwise
     this will match any property that evaluates to `true`.
@@ -7118,6 +7155,24 @@ Ember.Enumerable = Ember.Mixin.create(
   */
   filterProperty: function(key, value) {
     return this.filter(iter.apply(this, arguments));
+  },
+
+  /**
+    Returns an array with the items that do not have truthy values for
+    key.  You can pass an optional second argument with the target value.  Otherwise
+    this will match any property that evaluates to false.
+
+    @method rejectProperty
+    @param {String} key the property to test
+    @param {String} [value] optional value to test against.
+    @return {Array} rejected array
+  */
+  rejectProperty: function(key, value) {
+    var exactValue = function(item) { return get(item, key) === value; },
+        hasValue = function(item) { return !!get(item, key); },
+        use = (arguments.length === 2 ? exactValue : hasValue);
+
+    return this.reject(use);
   },
 
   /**
@@ -9432,7 +9487,8 @@ var set = Ember.set, get = Ember.get,
     finishPartial = Mixin.finishPartial,
     reopen = Mixin.prototype.reopen,
     classToString = Mixin.prototype.toString,
-    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER;
+    MANDATORY_SETTER = Ember.ENV.MANDATORY_SETTER,
+    indexOf = Ember.EnumerableUtils.indexOf;
 
 var undefinedDescriptor = {
   configurable: true,
@@ -9494,7 +9550,7 @@ function makeCtor() {
           Ember.assert("Ember.Object.create no longer supports defining computed properties.", !(value instanceof Ember.ComputedProperty));
           Ember.assert("Ember.Object.create no longer supports defining methods that call _super.", !(typeof value === 'function' && value.toString().indexOf('_super') !== -1));
 
-          if (concatenatedProperties && concatenatedProperties.indexOf(keyName) >= 0) {
+          if (concatenatedProperties && indexOf(concatenatedProperties, keyName) >= 0) {
             var baseValue = this[keyName];
 
             if (baseValue) {
@@ -12363,8 +12419,143 @@ Ember.EnumerableUtils.forEach(dragEvents, function(eventName) {
 @submodule ember-views
 */
 
+/*** BEGIN METAMORPH HELPERS ***/
+
+// Internet Explorer prior to 9 does not allow setting innerHTML if the first element
+// is a "zero-scope" element. This problem can be worked around by making
+// the first node an invisible text node. We, like Modernizr, use &shy;
+var needsShy = (function(){
+  var testEl = document.createElement('div');
+  testEl.innerHTML = "<div></div>";
+  testEl.firstChild.innerHTML = "<script></script>";
+  return testEl.firstChild.innerHTML === '';
+})();
+
+// IE 8 (and likely earlier) likes to move whitespace preceeding
+// a script tag to appear after it. This means that we can
+// accidentally remove whitespace when updating a morph.
+var movesWhitespace = (function() {
+  var testEl = document.createElement('div');
+  testEl.innerHTML = "Test: <script type='text/x-placeholder'></script>Value";
+  return testEl.childNodes[0].nodeValue === 'Test:' &&
+          testEl.childNodes[2].nodeValue === ' Value';
+})();
+
+// Use this to find children by ID instead of using jQuery
+var findChildById = function(element, id) {
+  if (element.getAttribute('id') === id) { return element; }
+
+  var len = element.childNodes.length, idx, node, found;
+  for (idx=0; idx<len; idx++) {
+    node = element.childNodes[idx];
+    found = node.nodeType === 1 && findChildById(node, id);
+    if (found) { return found; }
+  }
+};
+
+var setInnerHTMLWithoutFix = function(element, html) {
+  if (needsShy) {
+    html = '&shy;' + html;
+  }
+
+  var matches = [];
+  if (movesWhitespace) {
+    // Right now we only check for script tags with ids with the
+    // goal of targeting morphs.
+    html = html.replace(/(\s+)(<script id='([^']+)')/g, function(match, spaces, tag, id) {
+      matches.push([id, spaces]);
+      return tag;
+    });
+  }
+
+  element.innerHTML = html;
+
+  // If we have to do any whitespace adjustments do them now
+  if (matches.length > 0) {
+    var len = matches.length, idx;
+    for (idx=0; idx<len; idx++) {
+      var script = findChildById(element, matches[idx][0]),
+          node = document.createTextNode(matches[idx][1]);
+      script.parentNode.insertBefore(node, script);
+    }
+  }
+
+  if (needsShy) {
+    var shyElement = element.firstChild;
+    while (shyElement.nodeType === 1 && !shyElement.nodeName) {
+      shyElement = shyElement.firstChild;
+    }
+    if (shyElement.nodeType === 3 && shyElement.nodeValue.charAt(0) === "\u00AD") {
+      shyElement.nodeValue = shyElement.nodeValue.slice(1);
+    }
+  }
+};
+
+/*** END METAMORPH HELPERS */
+
+
+var innerHTMLTags = {};
+var canSetInnerHTML = function(tagName) {
+  if (innerHTMLTags[tagName] !== undefined) {
+    return innerHTMLTags[tagName];
+  }
+
+  var canSet = true;
+
+  // IE 8 and earlier don't allow us to do innerHTML on select
+  if (tagName.toLowerCase() === 'select') {
+    var el = document.createElement('select');
+    setInnerHTMLWithoutFix(el, '<option value="test">Test</option>');
+    canSet = el.options.length === 1;
+  }
+
+  innerHTMLTags[tagName] = canSet;
+
+  return canSet;
+};
+
+var setInnerHTML = function(element, html) {
+  var tagName = element.tagName;
+
+  if (canSetInnerHTML(tagName)) {
+    setInnerHTMLWithoutFix(element, html);
+  } else {
+    Ember.assert("Can't set innerHTML on "+element.tagName+" in this browser", element.outerHTML);
+
+    var startTag = element.outerHTML.match(new RegExp("<"+tagName+"([^>]*)>", 'i'))[0],
+        endTag = '</'+tagName+'>';
+
+    var wrapper = document.createElement('div');
+    setInnerHTMLWithoutFix(wrapper, startTag + html + endTag);
+    element = wrapper.firstChild;
+    while (element.tagName !== tagName) {
+      element = element.nextSibling;
+    }
+  }
+
+  return element;
+};
+
+Ember.ViewUtils = {
+  setInnerHTML: setInnerHTML
+};
+
+})();
+
+
+
+(function() {
+/**
+@module ember
+@submodule ember-views
+*/
+
 var get = Ember.get, set = Ember.set;
 var indexOf = Ember.ArrayPolyfills.indexOf;
+
+
+
+
 
 var ClassSet = function() {
   this.seen = {};
@@ -12397,14 +12588,16 @@ Ember.RenderBuffer = function(tagName) {
   return new Ember._RenderBuffer(tagName);
 };
 
-
 Ember._RenderBuffer = function(tagName) {
-  this.elementTag = tagName;
-  this.childBuffers = [];
+  this.tagNames = [tagName || null];
+  this.buffer = [];
 };
 
 Ember._RenderBuffer.prototype =
 /** @scope Ember.RenderBuffer.prototype */ {
+
+  // The root view's element
+  _element: null,
 
   /**
     @private
@@ -12506,7 +12699,7 @@ Ember._RenderBuffer.prototype =
     @chainable
   */
   push: function(string) {
-    this.childBuffers.push(String(string));
+    this.buffer.push(string);
     return this;
   },
 
@@ -12595,139 +12788,77 @@ Ember._RenderBuffer.prototype =
     return this;
   },
 
-  /**
-    @private
-
-    Create a new child render buffer from a parent buffer. Optionally set
-    additional properties on the buffer. Optionally invoke a callback
-    with the newly created buffer.
-
-    This is a primitive method used by other public methods: `begin`,
-    `prepend`, `replaceWith`, `insertAfter`.
-
-    @method newBuffer
-    @param {String} tagName Tag name to use for the child buffer's element
-    @param {Ember._RenderBuffer} parent The parent render buffer that this
-      buffer should be appended to.
-    @param {Function} fn A callback to invoke with the newly created buffer.
-    @param {Object} other Additional properties to add to the newly created
-      buffer.
-  */
-  newBuffer: function(tagName, parent, fn, other) {
-    var buffer = new Ember._RenderBuffer(tagName);
-    buffer.parentBuffer = parent;
-
-    if (other) { Ember.$.extend(buffer, other); }
-    if (fn) { fn.call(this, buffer); }
-
-    return buffer;
-  },
-
-  /**
-    @private
-
-    Replace the current buffer with a new buffer. This is a primitive
-    used by `remove`, which passes `null` for `newBuffer`, and `replaceWith`,
-    which passes the new buffer it created.
-
-    @method replaceWithBuffer
-    @param {Ember._RenderBuffer} buffer The buffer to insert in place of
-      the existing buffer.
-  */
-  replaceWithBuffer: function(newBuffer) {
-    var parent = this.parentBuffer;
-    if (!parent) { return; }
-
-    var childBuffers = parent.childBuffers;
-
-    var index = indexOf.call(childBuffers, this);
-
-    if (newBuffer) {
-      childBuffers.splice(index, 1, newBuffer);
-    } else {
-      childBuffers.splice(index, 1);
-    }
-  },
-
-  /**
-    Creates a new `Ember.RenderBuffer` object with the provided tagName as
-    the element tag and with its `parentBuffer` property set to the current
-    `Ember.RenderBuffer`.
-
-    @method begin
-    @param {String} tagName Tag name to use for the child buffer's element
-    @return {Ember.RenderBuffer} A new RenderBuffer object
-  */
   begin: function(tagName) {
-    return this.newBuffer(tagName, this, function(buffer) {
-      this.childBuffers.push(buffer);
-    });
+    this.tagNames.push(tagName || null);
+    return this;
   },
 
-  /**
-    Prepend a new child buffer to the current render buffer.
+  pushOpeningTag: function() {
+    var tagName = this.currentTagName();
+    if (!tagName) { return; }
 
-    @method prepend
-    @param {String} tagName Tag name to use for the child buffer's element
-  */
-  prepend: function(tagName) {
-    return this.newBuffer(tagName, this, function(buffer) {
-      this.childBuffers.splice(0, 0, buffer);
-    });
+    if (!this._element && this.buffer.length === 0) {
+      this._element = this.generateElement();
+      return;
+    }
+
+    var buffer = this.buffer,
+        id = this.elementId,
+        classes = this.classes,
+        attrs = this.elementAttributes,
+        style = this.elementStyle,
+        prop;
+
+    buffer.push('<' + tagName);
+
+    if (id) {
+      buffer.push(' id="' + this._escapeAttribute(id) + '"');
+      this.elementId = null;
+    }
+    if (classes) {
+      buffer.push(' class="' + this._escapeAttribute(classes.join(' ')) + '"');
+      this.classes = null;
+    }
+
+    if (style) {
+      buffer.push(' style="');
+
+      for (prop in style) {
+        if (style.hasOwnProperty(prop)) {
+          buffer.push(prop + ':' + this._escapeAttribute(style[prop]) + ';');
+        }
+      }
+
+      buffer.push('"');
+
+      this.elementStyle = null;
+    }
+
+    if (attrs) {
+      for (prop in attrs) {
+        if (attrs.hasOwnProperty(prop)) {
+          buffer.push(' ' + prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
+        }
+      }
+
+      this.elementAttributes = null;
+    }
+
+    buffer.push('>');
   },
 
-  /**
-    Replace the current buffer with a new render buffer.
-
-    @method replaceWith
-    @param {String} tagName Tag name to use for the new buffer's element
-  */
-  replaceWith: function(tagName) {
-    var parentBuffer = this.parentBuffer;
-
-    return this.newBuffer(tagName, parentBuffer, function(buffer) {
-      this.replaceWithBuffer(buffer);
-    });
+  pushClosingTag: function() {
+    var tagName = this.tagNames.pop();
+    if (tagName) { this.buffer.push('</' + tagName + '>'); }
   },
 
-  /**
-    Insert a new render buffer after the current render buffer.
-
-    @method insertAfter
-    @param {String} tagName Tag name to use for the new buffer's element
-  */
-  insertAfter: function(tagName) {
-    var parentBuffer = get(this, 'parentBuffer');
-
-    return this.newBuffer(tagName, parentBuffer, function(buffer) {
-      var siblings = parentBuffer.childBuffers;
-      var index = indexOf.call(siblings, this);
-      siblings.splice(index + 1, 0, buffer);
-    });
+  currentTagName: function() {
+    return this.tagNames[this.tagNames.length-1];
   },
 
-  /**
-    Closes the current buffer and adds its content to the parentBuffer.
-
-    @method end
-    @return {Ember.RenderBuffer} The parentBuffer, if one exists. Otherwise, this
-  */
-  end: function() {
-    var parent = this.parentBuffer;
-    return parent || this;
-  },
-
-  remove: function() {
-    this.replaceWithBuffer(null);
-  },
-
-  /**
-    @method element
-    @return {DOMElement} The element corresponding to the generated HTML
-      of this buffer
-  */
-  element: function() {
-    var element = document.createElement(this.elementTag),
+  generateElement: function() {
+    var tagName = this.tagNames.pop(), // pop since we don't need to close
+        element = document.createElement(tagName),
         $element = Ember.$(element),
         id = this.elementId,
         classes = this.classes,
@@ -12735,8 +12866,14 @@ Ember._RenderBuffer.prototype =
         style = this.elementStyle,
         styleBuffer = '', prop;
 
-    if (id) { $element.attr('id', id); }
-    if (classes) { $element.attr('class', classes.join(' ')); }
+    if (id) {
+      $element.attr('id', id);
+      this.elementId = null;
+    }
+    if (classes) {
+      $element.attr('class', classes.join(' '));
+      this.classes = null;
+    }
 
     if (style) {
       for (prop in style) {
@@ -12746,6 +12883,8 @@ Ember._RenderBuffer.prototype =
       }
 
       $element.attr('style', styleBuffer);
+
+      this.elementStyle = null;
     }
 
     if (attrs) {
@@ -12754,29 +12893,26 @@ Ember._RenderBuffer.prototype =
           $element.attr(prop, attrs[prop]);
         }
       }
-    }
 
-    this.elementTag = ''; // hack to avoid creating an innerString function
-    var html = this.string();
-
-    if (!Ember.$.support.htmlSerialize) { // work around IE zero-scope bug by inserting a script tag
-      html = '&shy;' + html;
-    }
-
-    element.innerHTML = html;
-
-    if (!Ember.$.support.htmlSerialize) {
-      // This code is copied from Metamorph
-      var shyElement = element.firstChild;
-      while (shyElement.nodeType === 1 && !shyElement.nodeName) {
-        shyElement = shyElement.firstChild;
-      }
-      if (shyElement.nodeType === 3 && shyElement.nodeValue.charAt(0) === "\u00AD") {
-        shyElement.nodeValue = shyElement.nodeValue.slice(1);
-      }
+      this.elementAttributes = null;
     }
 
     return element;
+  },
+
+  /**
+    @method element
+    @return {DOMElement} The element corresponding to the generated HTML
+      of this buffer
+  */
+  element: function() {
+    var html = this.innerString();
+
+    if (html) {
+      this._element = Ember.ViewUtils.setInnerHTML(this._element, html);
+    }
+
+    return this._element;
   },
 
   /**
@@ -12786,63 +12922,15 @@ Ember._RenderBuffer.prototype =
     @return {String} The generated HTML
   */
   string: function() {
-    var content = [];
-    return this.array(content).join('');
+    if (this._element) {
+      return this.element().outerHTML;
+    } else {
+      return this.innerString();
+    }
   },
 
-  array: function(content) {
-    var tag = this.elementTag, openTag;
-
-    if (tag) {
-      var id = this.elementId,
-          classes = this.classes,
-          attrs = this.elementAttributes,
-          style = this.elementStyle,
-          styleBuffer = '', prop;
-
-      content.push("<" + tag);
-
-      if (id) { content.push(' id="' + this._escapeAttribute(id) + '"'); }
-      if (classes) { content.push(' class="' + this._escapeAttribute(classes.join(' ')) + '"'); }
-
-      if (style) {
-        content.push(' style="');
-
-        for (prop in style) {
-          if (style.hasOwnProperty(prop)) {
-            content.push(prop + ':' + this._escapeAttribute(style[prop]) + ';');
-          }
-        }
-
-        content.push('"');
-      }
-
-      if (attrs) {
-        for (prop in attrs) {
-          if (attrs.hasOwnProperty(prop)) {
-            content.push(' ' + prop + '="' + this._escapeAttribute(attrs[prop]) + '"');
-          }
-        }
-      }
-
-      content.push('>');
-    }
-
-    var childBuffers = this.childBuffers;
-
-    Ember.ArrayPolyfills.forEach.call(childBuffers, function(buffer) {
-      var stringy = typeof buffer === 'string';
-      if (stringy) {
-        content.push(buffer);
-      } else {
-        buffer.array(content);
-      }
-    });
-
-    if (tag) {
-      content.push("</" + tag + ">");
-    }
-    return content;
+  innerString: function() {
+    return this.buffer.join('');
   },
 
   _escapeAttribute: function(value) {
@@ -13420,27 +13508,6 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
     else { return get(this, 'parentView'); }
   }).property('parentView').volatile(),
 
-  /**
-    Creates a new `renderBuffer` with the passed `tagName`. You can override
-    this method to provide further customization to the buffer if needed.
-    Normally you will not need to call or override this method.
-
-    @method renderBuffer
-    @param [tagName] {String}
-    @return {Ember.RenderBuffer}
-  */
-  renderBuffer: function(tagName) {
-    tagName = tagName || this.tagName;
-
-    // Explicitly check for null or undefined, as tagName
-    // may be an empty string, which would evaluate to false.
-    if (tagName === null || tagName === undefined) {
-      tagName = 'div';
-    }
-
-    return Ember.RenderBuffer(tagName);
-  },
-
   instrumentName: 'core_view',
 
   instrumentDetails: function(hash) {
@@ -13477,32 +13544,19 @@ Ember.CoreView = Ember.Object.extend(Ember.Evented, {
   },
 
   _renderToBuffer: function(parentBuffer, bufferOperation) {
-    var buffer;
-
     Ember.run.sync();
-
-    // Determine where in the parent buffer to start the new buffer.
-    // By default, a new buffer will be appended to the parent buffer.
-    // The buffer operation may be changed if the child views array is
-    // mutated by Ember.ContainerView.
-    bufferOperation = bufferOperation || 'begin';
 
     // If this is the top-most view, start a new buffer. Otherwise,
     // create a new buffer relative to the original using the
     // provided buffer operation (for example, `insertAfter` will
     // insert a new buffer after the "parent buffer").
-    if (parentBuffer) {
-      var tagName = this.tagName;
-      if (tagName === null || tagName === undefined) {
-        tagName = 'div';
-      }
+    var tagName = this.tagName;
 
-      buffer = parentBuffer[bufferOperation](tagName);
-    } else {
-      buffer = this.renderBuffer();
+    if (tagName === null || tagName === undefined) {
+      tagName = 'div';
     }
 
-    this.buffer = buffer;
+    var buffer = this.buffer = parentBuffer && parentBuffer.begin(tagName) || Ember.RenderBuffer(tagName);
     this.transitionTo('inBuffer', false);
 
     this.beforeRender(buffer);
@@ -15058,9 +15112,12 @@ Ember.View = Ember.CoreView.extend(
 
   beforeRender: function(buffer) {
     this.applyAttributesToBuffer(buffer);
+    buffer.pushOpeningTag();
   },
 
-  afterRender: Ember.K,
+  afterRender: function(buffer) {
+    buffer.pushClosingTag();
+  },
 
   applyAttributesToBuffer: function(buffer) {
     // Creates observers for all registered class name and attribute bindings,
@@ -15804,12 +15861,7 @@ Ember.merge(inBuffer, {
   // when a view is rendered in a buffer, rerendering it simply
   // replaces the existing buffer with a new one
   rerender: function(view) {
-    Ember.deprecate("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM. Because this is avoidable and the cause of significant performance issues in applications, this behavior is deprecated. If you want to use the debugger to find out what caused this, you can set ENV.RAISE_ON_DEPRECATION to true.");
-
-    view.triggerRecursively('willClearRender');
-
-    view.clearRenderedChildren();
-    view.renderToBuffer(view.buffer, 'replaceWith');
+    throw new Error("Something you did caused a view to re-render after it rendered but before it was inserted into the DOM.");
   },
 
   // when a view is rendered in a buffer, appending a child
@@ -16440,31 +16492,7 @@ Ember.merge(states._default, {
 
 Ember.merge(states.inBuffer, {
   childViewsDidChange: function(parentView, views, start, added) {
-    var buffer = parentView.buffer,
-        startWith, prev, prevBuffer, view;
-
-    // Determine where to begin inserting the child view(s) in the
-    // render buffer.
-    if (start === 0) {
-      // If views were inserted at the beginning, prepend the first
-      // view to the render buffer, then begin inserting any
-      // additional views at the beginning.
-      view = views[start];
-      startWith = start + 1;
-      view.renderToBuffer(buffer, 'prepend');
-    } else {
-      // Otherwise, just insert them at the same place as the child
-      // views mutation.
-      view = views[start - 1];
-      startWith = start;
-    }
-
-    for (var i=startWith; i<start+added; i++) {
-      prev = view;
-      view = views[i];
-      prevBuffer = prev.buffer;
-      view.renderToBuffer(prevBuffer, 'insertAfter');
-    }
+    throw new Error('You cannot modify child views while in the inBuffer state');
   }
 });
 
@@ -19924,6 +19952,17 @@ Ember Routing
         testEl.innerHTML = "<div></div>";
         testEl.firstChild.innerHTML = "<script></script>";
         return testEl.firstChild.innerHTML === '';
+      })(),
+
+
+      // IE 8 (and likely earlier) likes to move whitespace preceeding
+      // a script tag to appear after it. This means that we can
+      // accidentally remove whitespace when updating a morph.
+      movesWhitespace = (function() {
+        var testEl = document.createElement('div');
+        testEl.innerHTML = "Test: <script type='text/x-placeholder'></script>Value";
+        return testEl.childNodes[0].nodeValue === 'Test:' &&
+                testEl.childNodes[2].nodeValue === ' Value';
       })();
 
   // Constructor that supports either Metamorph('foo') or new
@@ -19957,11 +19996,21 @@ Ember Routing
   };
 
   startTagFunc = function() {
-    return "<script id='" + this.start + "' type='text/x-placeholder'></script>";
+    /*
+     * We replace chevron by its hex code in order to prevent escaping problems.
+     * Check this thread for more explaination:
+     * http://stackoverflow.com/questions/8231048/why-use-x3c-instead-of-when-generating-html-from-javascript
+     */
+    return "<script id='" + this.start + "' type='text/x-placeholder'>\x3C/script>";
   };
 
   endTagFunc = function() {
-    return "<script id='" + this.end + "' type='text/x-placeholder'></script>";
+    /*
+     * We replace chevron by its hex code in order to prevent escaping problems.
+     * Check this thread for more explaination:
+     * http://stackoverflow.com/questions/8231048/why-use-x3c-instead-of-when-generating-html-from-javascript
+     */
+    return "<script id='" + this.end + "' type='text/x-placeholder'>\x3C/script>";
   };
 
   // If we have the W3C range API, this process is relatively straight forward.
@@ -20059,6 +20108,41 @@ Ember Routing
       _default: [ 0, "", "" ]
     };
 
+    var findChildById = function(element, id) {
+      if (element.getAttribute('id') === id) { return element; }
+
+      var len = element.childNodes.length, idx, node, found;
+      for (idx=0; idx<len; idx++) {
+        node = element.childNodes[idx];
+        found = node.nodeType === 1 && findChildById(node, id);
+        if (found) { return found; }
+      }
+    };
+
+    var setInnerHTML = function(element, html) {
+      var matches = [];
+      if (movesWhitespace) {
+        // Right now we only check for script tags with ids with the
+        // goal of targeting morphs.
+        html = html.replace(/(\s+)(<script id='([^']+)')/g, function(match, spaces, tag, id) {
+          matches.push([id, spaces]);
+          return tag;
+        });
+      }
+
+      element.innerHTML = html;
+
+      // If we have to do any whitespace adjustments do them now
+      if (matches.length > 0) {
+        var len = matches.length, idx;
+        for (idx=0; idx<len; idx++) {
+          var script = findChildById(element, matches[idx][0]),
+              node = document.createTextNode(matches[idx][1]);
+          script.parentNode.insertBefore(node, script);
+        }
+      }
+    };
+
     /**
      * Given a parent node and some HTML, generate a set of nodes. Return the first
      * node, which will allow us to traverse the rest using nextSibling.
@@ -20072,7 +20156,8 @@ Ember Routing
       if (needsShy) { html = '&shy;'+html; }
 
       var element = document.createElement('div');
-      element.innerHTML = start + html + end;
+
+      setInnerHTML(element, start + html + end);
 
       for (var i=0; i<=depth; i++) {
         element = element.firstChild;
@@ -20745,10 +20830,11 @@ var DOMManager = {
     var morph = view.morph;
 
     view.transitionTo('preRender');
-    view.clearRenderedChildren();
-    var buffer = view.renderToBuffer();
 
     Ember.run.schedule('render', this, function() {
+      view.clearRenderedChildren();
+      var buffer = view.renderToBuffer();
+
       if (get(view, 'isDestroyed')) { return; }
       view.invokeRecursively(function(view) {
         view.propertyDidChange('element');
@@ -20787,9 +20873,11 @@ Ember._Metamorph = Ember.Mixin.create({
 
   beforeRender: function(buffer) {
     buffer.push(this.morph.startTag());
+    buffer.pushOpeningTag();
   },
 
   afterRender: function(buffer) {
+    buffer.pushClosingTag();
     buffer.push(this.morph.endTag());
   },
 
@@ -23944,7 +24032,7 @@ Ember.Select = Ember.View.extend(
 
   tagName: 'select',
   classNames: ['ember-select'],
-  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value>{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
+  defaultTemplate: Ember.Handlebars.compile('{{#if view.prompt}}<option value="">{{view.prompt}}</option>{{/if}}{{#each view.content}}{{view Ember.SelectOption contentBinding="this"}}{{/each}}'),
   attributeBindings: ['multiple', 'disabled', 'tabindex'],
 
   /**
@@ -24303,8 +24391,8 @@ Ember Handlebars
 
 
 })();
-// Version: v1.0.0-pre.2-117-gc8aa80a
-// Last commit: c8aa80a (2012-12-15 12:48:26 -0800)
+// Version: v1.0.0-pre.2-151-g77df9b4
+// Last commit: 77df9b4 (2012-12-22 14:10:16 -0800)
 
 
 (function() {
