@@ -11,7 +11,6 @@ input 'assets/javascripts' do
       vendor/handlebars.js
       vendor/ember.js
       vendor/ember-data.js
-      vendor/ember-matrix.js
     )
     concat files, 'vendor.js'
   end

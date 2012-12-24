@@ -7,13 +7,13 @@
     {{/each}}
   </thead>
   <tbody>
-    {{#each row in matrix}}
+    {{#each matrix}}
       <tr>
-        <td>{{row.key}}</td>
-        {{#each cell in row}}
+        <td>{{key}}</td>
+        {{#each this}}
           <td>
-            {{#each item in cell}}
-              <div>{{#view GiddyUp.TestInstanceBubbleView contentBinding="item"}}<a {{action showTestResults item href="true"}}>{{view.abbr}}</a>{{/view}}</div>
+            {{#each this}}
+              <div>{{#view GiddyUp.TestInstanceBubbleView contentBinding="this"}}<a>{{view.abbr}}</a>{{/view}}</div>
             {{/each}}
           </td>
           {{/each}}
