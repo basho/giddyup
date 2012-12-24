@@ -22,7 +22,6 @@ module GiddyUp
         else
           @connection.rollback_db_transaction
         end
-        ActiveRecord::Base.clear_active_connections!
       end
       super
     end
@@ -59,6 +58,7 @@ module GiddyUp
       unless [204, 205, 304].include?(response.code)
         response.headers['Content-Type'] ||= "text/html"
       end
+      ActiveRecord::Base.clear_active_connections!
     end
 
     def query_ids
