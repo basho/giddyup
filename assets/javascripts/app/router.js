@@ -52,7 +52,7 @@ GiddyUp.Router = Ember.Router.extend({
         },
 
         exit: function(router){
-          if(!Ember.none(router.get('applicationController.scorecards'))){
+          if(!Ember.isNone(router.get('applicationController.scorecards'))){
             router.get('projectsController').set('selectedItem', undefined);
             router.get('applicationController').disconnectOutlet('scorecards');
           }
@@ -68,77 +68,70 @@ GiddyUp.Router = Ember.Router.extend({
           show: Ember.Route.extend({
             route: '/:scorecard_id',
 
-            showTestResults: Ember.Router.transitionTo('projects.show.scorecard.show.test_results.index'),
-            showTestResult: Ember.Router.transitionTo('projects.show.scorecard.show.test_results.show'),
+            showTestInstance: Ember.Router.transitionTo('projects.show.scorecard.show.testInstance.show'),
 
             connectOutlets: function(router, context) {
               router.get('scorecardsController').set('selectedItem', context);
               router.get('applicationController').
-                connectOutlet('scorecard','scorecard', context);
+                connectOutlet('testInstances', 'testInstances', context.get('test_instances'));
             },
 
             exit: function(router) {
               router.get('scorecardsController').set('selectedItem', undefined);
-              router.get('applicationController').disconnectOutlet('scorecard');
+              router.get('applicationController').disconnectOutlet('testInstances');
             },
 
             index: Ember.Route.extend({
               route: '/'
             }),
 
-            test_results: Ember.Route.extend({
-              route: '/test_results/:platform/:test/:backend',
-
-              connectOutlets: function(router, context) {
-                router.get('applicationController').
-                  connectOutlet('testResults','testResults', context);
-              },
-
-              exit: function(router) {
-                router.get('applicationController').disconnectOutlet('testResults');
-              },
+            testInstance: Ember.Route.extend({
+              route: '/:test_instance_id',
 
               serialize: function(router, context) {
-                if(context) {
-                  return {
-                    platform: context.get('test.platform'),
-                    test: context.get('test.name'),
-                    backend: context.get('test.backend')
-                  };
-                } else {
-                  return {};
-                }
+                var components = [context.get('id')],
+                    tag = context.get('tagString');
+
+                if(tag) components.push(tag);
+
+                return { test_instance_id: components.join('-') };
               },
 
-              deserialize: function(router, params) {
-                var scorecardController = router.get('scorecardController');
-
-                return GiddyUp.ScorecardSubcellRouterProxy.create({
-                  test: {
-                    platform: params.platform,
-                    name: params.test,
-                    backend: params.backend
-                  },
-                  scorecard: scorecardController
-                });
+              deserialize: function(router, params){
+                var tagString = params.test_instance_id,
+                    id;
+                id = tagString.split('-').slice(0,2).join('-');
+                return GiddyUp.TestInstance.find(id);
               },
 
-              index: Ember.Route.extend({
-                route: '/'
-              }),
+              showTestResult: Ember.Router.transitionTo('projects.show.scorecard.show.testInstance.result'),
 
-              show: Ember.Route.extend({
+              connectOutlets: function(router, context){
+                router.get('applicationController').
+                  connectOutlet('testInstance', 'testInstance', context);
+                router.get('testInstanceController').
+                  connectOutlet('testResults', 'testResults', context.get('test_results'));
+              },
+
+              exit: function(router){
+                router.get('testInstanceController').disconnectOutlet('testResults');
+                router.get('applicationController').disconnectOutlet('testInstance');
+              },
+
+              show: Ember.Route.extend({ route: '/' }),
+
+              result: Ember.Route.extend({
                 route: '/:test_result_id',
 
-                connectOutlets: function(router, context) {
+                connectOutlets: function(router, context){
                   router.get('testResultsController').set('selectedItem', context);
-                  router.get('testResultsController').
-                    connectOutlet('testResult','testResult', GiddyUp.Log.find(context.get('id')));
+                  router.get('testInstanceController').
+                    connectOutlet('testResult', 'testResult', context.get('log'));
                 },
 
                 exit: function(router) {
-                  router.get('testResultsController').disconnectOutlet('testResult');
                   router.get('testResultsController').set('selectedItem', undefined);
+                  router.get('testInstanceController').disconnectOutlet('testResult');
                 }
               })
             })

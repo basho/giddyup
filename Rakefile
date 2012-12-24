@@ -14,6 +14,12 @@ namespace :assets do
   end
 end
 
+task :jshint do
+  jsfiles = Dir["assets/javascripts/app/**/*.js"]
+  result = system "jshint", "--config" , ".jshintrc", *jsfiles
+  exit result || 1
+end
+
 namespace :db do
   task :migrate => :environment do
     ActiveRecord::Migration.verbose = ENV["VERBOSE"] ? ENV["VERBOSE"] == "true" : true

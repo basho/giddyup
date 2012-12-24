@@ -196,8 +196,13 @@ module GiddyUp
 
   class ScorecardResource < Resource
     def resource_exists?
-      @scorecard = Scorecard.find(request.path_info[:id])
-      @scorecard.present?
+      begin
+        @scorecard = Scorecard.find(request.path_info[:id])
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
     end
 
     def to_json
@@ -205,10 +210,78 @@ module GiddyUp
     end
   end
 
+  class TestInstancesResource < Resource
+    def resource_exists?
+      begin
+        @test_instances = query_ids.map do |id|
+          TestInstance.find(id)
+        end
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
+    end
+
+    def to_json
+      ActiveModel::ArraySerializer.new(@test_instances, {:root => "test_instances"}).to_json
+    end
+  end
+
+  class TestInstanceResource < Resource
+    def resource_exists?
+      begin
+        @test_instance = TestInstance.find(request.path_info[:id])
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
+    end
+
+    def to_json
+      TestInstanceSerializer.new(@test_instance, :root => "test_instance").to_json
+    end
+  end
+
+  class TestsResource < Resource
+    def resource_exists?
+      @tests = Test.find(query_ids)
+    rescue ActiveRecord::RecordNotFound
+      false
+    else
+      true
+    end
+
+    def to_json
+      ActiveModel::ArraySerializer.new(@tests, {:root => "tests"}).to_json
+    end
+  end
+
+  class TestResource < Resource
+    def resource_exists?
+      begin
+        @test = Test.find(request.path_info[:id])
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
+    end
+
+    def to_json
+      TestSerializer.new(@test, {}).to_json
+    end
+  end
+
   Application.routes do
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
     add ['logs', :id], LogResource
+    add ['tests', :id], TestResource
+    add ['tests'], TestsResource
+    add ['test_instances', :id], TestInstanceResource
+    add ['test_instances'], TestInstancesResource
     add ['test_results', :id], TestResultResource
     add ['test_results'], TestResultResource do |request|
       request.post?

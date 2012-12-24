@@ -64,4 +64,37 @@ class Scorecard < ActiveRecord::Base
   def tests
     project.tests.for_version(name)
   end
+
+  def test_ids
+    tests.pluck(:id)
+  end
+end
+
+class TestInstance
+  include ActiveModel::SerializerSupport
+  attr_accessor :scorecard_id, :test_id
+
+  def self.find(id)
+    sid, tid = id.to_s.scan(/\d+/)[0..1]
+    scorecard = Scorecard.find(sid)
+    raise ActiveRecord::RecordNotFound unless scorecard.tests.exists?(tid)
+    new(sid, tid)
+  end
+
+  def initialize(sid, tid)
+    @scorecard_id, @test_id = sid, tid
+  end
+
+  def id
+    [@scorecard_id, @test_id].join('-')
+  end
+
+  def test_result_ids
+    TestResult.where(:scorecard_id => scorecard_id,
+                     :test_id => test_id).pluck(:id)
+  end
+
+  def test
+    Test.find(@test_id)
+  end
 end
