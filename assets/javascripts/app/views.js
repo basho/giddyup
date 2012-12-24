@@ -1,7 +1,7 @@
 GiddyUp.prettyDate = function(date){
   // Based roughly on distance_of_time_in_words from Ruby on Rails,
   // with ideas from John Resig's "prettyDate" function.
-  if(date === null || date === undefined)
+  if(Ember.isNone(date))
     return '';
 
   var now = (new Date()).getTime(),
