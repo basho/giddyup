@@ -13,7 +13,7 @@
         {{#each this}}
           <td>
             {{#each this}}
-              <div>{{#view GiddyUp.TestInstanceBubbleView contentBinding="this"}}<a>{{view.abbr}}</a>{{/view}}</div>
+              <div>{{#view GiddyUp.TestInstanceBubbleView contentBinding="this"}}<a {{action showTestInstance this href="true"}}>{{view.abbr}}</a>{{/view}}</div>
             {{/each}}
           </td>
           {{/each}}
