@@ -72,7 +72,7 @@ GiddyUp.TestInstancesController = Ember.ArrayController.extend({
     return Ember.A(dimensions).map(function(dimension) {
       return content.getEach(dimension).uniq().sort();
     });
-  }.property('dimensions', 'content'),
+  }.property('dimensions', 'content').volatile(),
 
   matrix: function() {
     var content = this.get('content'),

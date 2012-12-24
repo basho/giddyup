@@ -16,7 +16,7 @@ GiddyUp.serializer.registerTransform('hash', {
 
 GiddyUp.Adapter = DS.RESTAdapter.extend({
   serializer: GiddyUp.serializer,
-  fetchBatchSize: 50,
+  fetchBatchSize: 30,
 
   didFindMany: function(store, type, json) {
     var root = this.pluralize(this.rootForType(type));

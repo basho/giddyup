@@ -56,7 +56,7 @@ GiddyUp.CachedRecordFetchingManager = Ember.StateManager.extend({
   },
 
   missed: function(record) {
-    this.counter -= 1;
+    this.counter--;
     this.missing.push(record);
     if(this.counter === 0){
       this.send('becameMissed');
@@ -64,7 +64,7 @@ GiddyUp.CachedRecordFetchingManager = Ember.StateManager.extend({
   },
 
   found: function(record) {
-    this.counter -= 1;
+    this.counter--;
 
     if(this.counter === 0){
       if(this.missing.length === 0) {

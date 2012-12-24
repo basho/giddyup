@@ -1,1 +1,1 @@
-web: bundle exec rackup -s puma -p $PORT
+web: bundle exec rainbows -p $PORT -c rainbows.rb

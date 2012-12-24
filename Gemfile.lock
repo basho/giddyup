@@ -47,6 +47,7 @@ GEM
       ruby-hmac
     formatador (0.2.3)
     i18n (0.6.1)
+    kgio (2.7.4)
     mime-types (1.19)
     multi_json (1.3.6)
     net-scp (1.0.4)
@@ -55,10 +56,13 @@ GEM
     nokogiri (1.5.5)
     oj (1.3.4)
     pg (0.14.1)
-    puma (1.6.3)
-      rack (~> 1.2)
     rack (1.4.1)
     rack-rewrite (1.2.1)
+    rainbows (4.4.2)
+      kgio (~> 2.5)
+      rack (~> 1.1)
+      unicorn (~> 4.1)
+    raindrops (0.10.0)
     rake (0.9.2.2)
     ruby-hmac (0.4.0)
     thor (0.16.0)
@@ -67,6 +71,10 @@ GEM
     uglifier (1.3.0)
       execjs (>= 0.3.0)
       multi_json (~> 1.0, >= 1.0.2)
+    unicorn (4.5.0)
+      kgio (~> 2.6)
+      rack
+      raindrops (~> 0.7)
     webmachine (1.0.0)
       i18n (>= 0.4.0)
       multi_json
@@ -81,9 +89,9 @@ DEPENDENCIES
   fog
   oj
   pg
-  puma
   rack
   rack-rewrite
+  rainbows
   rake
   rake-pipeline!
   rake-pipeline-web-filters!
