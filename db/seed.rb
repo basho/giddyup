@@ -46,6 +46,7 @@ riak_tests = %w{
   verify_listkeys
   verify_riak_lager
   verify_riak_stats
+  verify_search
   verify_staged_clustering
 }
 
