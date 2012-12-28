@@ -42,9 +42,11 @@ riak_tests = %w{
   verify_commit_hooks
   verify_down
   verify_leave
+  verify_link_walk_urls
   verify_listkeys
   verify_riak_lager
   verify_riak_stats
+  verify_search
   verify_staged_clustering
 }
 
