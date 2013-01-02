@@ -185,6 +185,23 @@ GiddyUp.TestResultsCollectionView = GiddyUp.CollectionView.extend({
     templateName: 'test_results_collection_item_view',
     versionStringBinding: 'content.long_version',
     successBinding: 'content.success',
+    isLoadedBinding: 'content.isLoaded',
+    labelClass: function(){
+      var s = this.get('success');
+      if(s){
+        return 'label label-success';
+      } else {
+        return 'label label-important';
+      }
+    }.property('success'),
+    labelText: function(){
+      var s = this.get('success');
+      if(s){
+        return 'Success';
+      } else {
+        return 'Failure';
+      }
+    }.property('success'),
     timeAgo: function(){
       return GiddyUp.prettyDate(this.get('content.created_at'));
     }.property('content.created_at')

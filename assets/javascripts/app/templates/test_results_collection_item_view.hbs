@@ -1,7 +1,8 @@
 {{#with view}}
-  {{#if success}}
-  <a {{action showTestResult content href=true}}><span class="label label-success">Success</span> {{timeAgo}} [{{versionString}}]</a>
+  {{#if isLoaded}}
+    <a {{action showTestResult content href=true}}><span {{bindAttr class="labelClass"}}>{{labelText}}</span> {{timeAgo}} [{{versionString}}]</a>
   {{else}}
-  <a {{action showTestResult content href=true}}><span class="label label-important">Failure</span> {{timeAgo}} [{{versionString}}]</a>
+    <span class="label">Loading...</span>
   {{/if}}
 {{/with}}
+
