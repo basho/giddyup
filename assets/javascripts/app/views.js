@@ -52,7 +52,25 @@ GiddyUp.ScorecardsView = Ember.View.extend({
 });
 
 GiddyUp.TestInstancesView = Ember.View.extend({
-  templateName: 'test_instances'
+  templateName: 'test_instances',
+  progressTotalBinding: 'controller.content.length',
+  progressComplete: function(){
+    return this.get('controller.content').filterProperty('isLoaded').length;
+  }.property('controller.content.@each.isLoaded'),
+  progressPercent: function(){
+    var length = this.get('progressTotal'),
+        loadedLength = this.get('progressComplete'),
+        percent;
+    if(length === 0){
+      percent = 0.0;
+    } else {
+      percent = (loadedLength / length) * 100.0;
+    }
+    return "" + Math.round(percent) + "%";
+  }.property('progressTotal', 'progressComplete'),
+  progressStyle: function(){
+    return "width: " + this.get('progressPercent');
+  }.property('progressPercent')
 });
 
 GiddyUp.TestInstanceView = Ember.View.extend({

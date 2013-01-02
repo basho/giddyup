@@ -1,8 +1,13 @@
 GiddyUp.ApplicationController = Ember.Controller.extend();
 
-GiddyUp.ProjectsController = Ember.ArrayController.extend();
+GiddyUp.ProjectsController = Ember.ArrayController.extend({
+  sortProperties: ['id']
+});
 
-GiddyUp.ScorecardsController = Ember.ArrayController.extend();
+GiddyUp.ScorecardsController = Ember.ArrayController.extend({
+  sortProperties: ['name'],
+  sortAscending: false
+});
 
 GiddyUp.ProjectController = Ember.ObjectController.extend();
 
