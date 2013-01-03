@@ -48,7 +48,7 @@ var createIndex = function(props, values, obp) {
     var prop = props.get('firstObject');
     var range = values.get('firstObject');
     return range.map(function(key) {
-      var subtree = createIndex(props.slice(1), values.slice(1));
+      var subtree = createIndex(props.slice(1), values.slice(1), obp);
       return Vector.create({
         key: key,
         indexProperty: prop,
