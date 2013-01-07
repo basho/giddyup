@@ -77,14 +77,14 @@ GiddyUp.TestResult = DS.Model.extend({
     var instance  = this.get('test_instance');
     var scorecard = instance.get('scorecard');
     var project   = scorecard.get('project');
-    var backend   = instnace.get('backend') || "undefined";
+    var backend   = instance.get('backend') || "undefined";
 
     return {
       title:   "GiddyUp: New " + status + " on " +
                project.get('name') + " " +
                scorecard.get('name'),
       message: instance.get('name') + " | " +
-               instance.get('backend') + " | " +
+               backend + " | " +
                instance.get('platform')
     };
   }.property()
