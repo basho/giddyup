@@ -1,4 +1,6 @@
 require 'stringio'
+require 'json'
+
 module GiddyUp
   # When modifying a record, wraps the resource in a transaction that
   # can be rolled back if the request is not successful.
@@ -69,6 +71,41 @@ module GiddyUp
           ids << CGI.unescape(value)
         end
         ids
+      end
+    end
+  end
+
+  class LiveResource < Webmachine::Resource
+    def initialize
+      @redis = GiddyUp::Redis.new
+      set_headers
+    end
+
+    def set_headers
+      response.headers['Connection']    ||= 'keep-alive'
+      response.headers['Cache-Control'] ||= 'no-cache'
+    end
+
+    def allowed_methods
+      %W[GET]
+    end
+
+    def content_types_provided
+      [['text/event-stream', :to_event]]
+    end
+
+    def to_event
+      Fiber.new do |f|
+        @redis.subscribe('events') do |on|
+          on.message do |channel, msg|
+            message = JSON.parse(msg)
+            id      = message["id"]
+            event   = message["event"]
+            data    = JSON.generate(message["data"])
+
+            Fiber.yield "id: #{id}\nevent: #{event}\ndata: #{data}\n\n"
+          end
+        end
       end
     end
   end
@@ -275,6 +312,7 @@ module GiddyUp
   end
 
   Application.routes do
+    add ['live'], LiveResource
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
     add ['logs', :id], LogResource

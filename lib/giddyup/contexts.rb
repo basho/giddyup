@@ -1,8 +1,10 @@
+require 'json'
 module GiddyUp
   # Context that creates a test result
   class CreateTestResult
     def initialize
       @test_result = TestResult.new
+      @redis = GiddyUp::Redis.new
     end
 
     def id
@@ -21,10 +23,21 @@ module GiddyUp
           @test_result.log_url = log.public_url
         end
         @test_result.save!
+        publish_test_result
         true
       rescue
-        false
+        500
       end
+    end
+
+    def publish_test_result
+      result = TestResultSerializer.new(@test_result)
+
+      @redis.publish 'events', JSON.generate({
+        :id    => id,
+        :event => 'test_result',
+        :data  => { :test_result => result.serializable_hash }
+      })
     end
 
     def create_log(data)

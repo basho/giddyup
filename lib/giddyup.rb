@@ -1,4 +1,5 @@
 require 'webmachine/adapters/rack'
+
 module GiddyUp
   Application = Webmachine::Application.new do |app|
     app.configure do |config|
