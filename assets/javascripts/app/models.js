@@ -70,7 +70,24 @@ GiddyUp.TestResult = DS.Model.extend({
 
   log_url: DS.attr('string'),
   created_at: DS.attr('date'),
-  long_version: DS.attr('string')
+  long_version: DS.attr('string'),
+
+  notification: function() {
+    var status    = this.get('status') === true ? "pass" : "fail";
+    var instance  = this.get('test_instance');
+    var scorecard = instance.get('scorecard');
+    var project   = scorecard.get('project');
+    var backend   = instnace.get('backend') || "undefined";
+
+    return {
+      title:   "GiddyUp: New " + status + " on " +
+               project.get('name') + " " +
+               scorecard.get('name'),
+      message: instance.get('name') + " | " +
+               instance.get('backend') + " | " +
+               instance.get('platform')
+    };
+  }.property()
 });
 
 GiddyUp.Log = DS.Model.extend({
