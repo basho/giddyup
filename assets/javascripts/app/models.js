@@ -90,6 +90,20 @@ GiddyUp.TestResult = DS.Model.extend({
   }.property()
 });
 
+GiddyUp.TestResult.reopenClass({
+  /** Load record, immediately materialize, and force listening array
+   ** proxies to reference object. */
+  loadRawTestResult: function(rawTestResult) {
+    var newTestResult = GiddyUp.store.load(GiddyUp.TestResult,
+                                           rawTestResult);
+    var testResult    = GiddyUp.TestResult.find(newTestResult.id);
+
+    testResult.get('test_instance.test_results').pushObject(testResult);
+
+    return testResult;
+  }
+});
+
 GiddyUp.Log = DS.Model.extend({
   body: DS.attr('string'),
 
