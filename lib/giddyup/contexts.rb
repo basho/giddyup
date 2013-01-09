@@ -4,7 +4,6 @@ module GiddyUp
   class CreateTestResult
     def initialize
       @test_result = TestResult.new
-      @redis = GiddyUp::Redis.new
     end
 
     def id
@@ -33,11 +32,9 @@ module GiddyUp
     def publish_test_result
       result = TestResultSerializer.new(@test_result)
 
-      @redis.publish 'events', JSON.generate({
-        :id    => id,
-        :event => 'test_result',
-        :data  => { :test_result => result.serializable_hash }
-      })
+      GiddyUp::Events.publish('events', 'id' => id,
+                              'event' => 'test_result',
+                              'data' => {test_result: result.serializable_hash})
     end
 
     def create_log(data)

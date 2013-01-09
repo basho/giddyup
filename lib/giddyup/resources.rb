@@ -1,5 +1,6 @@
 require 'stringio'
 require 'json'
+require 'thread'
 
 module GiddyUp
   # When modifying a record, wraps the resource in a transaction that
@@ -77,7 +78,6 @@ module GiddyUp
 
   class LiveResource < Webmachine::Resource
     def initialize
-      @redis = GiddyUp::Redis.new
       set_headers
     end
 
@@ -95,16 +95,26 @@ module GiddyUp
     end
 
     def to_event
-      Fiber.new do |f|
-        @redis.subscribe('events') do |on|
-          on.message do |channel, msg|
-            message = JSON.parse(msg)
-            id      = message["id"]
-            event   = message["event"]
-            data    = JSON.generate(message["data"])
+      # TODO: Make this more generic. We assume subscription is
+      # non-blocking, which is a AS::Notifications thing. redis-rb,
+      # for example, uses blocking subscriptions. We need the
+      # pump/event-loop to ensure that the Fiber does not terminate
+      # prematurely.
+      queue = Queue.new
+      subscriber = GiddyUp::Events.subscribe('events') do |_, payload|
+        id = payload['id']
+        event = payload['event']
+        data = JSON.generate(payload['data'])
+        queue << "id: #{id}\nevent: #{event}\ndata: #{data}\n\n"
+      end
 
-            Fiber.yield "id: #{id}\nevent: #{event}\ndata: #{data}\n\n"
+      Fiber.new do |f|
+        begin
+          loop do
+            Fiber.yield queue.pop
           end
+        ensure
+          GiddyUp::Events.unsubscribe(subscriber)
         end
       end
     end
