@@ -4,7 +4,9 @@ Welcome to the exciting world of `giddyup`.
 
 ## What is GiddyUp?
 
-GiddyUp is the visual scorecard for [riak_test](http://github.com/basho/riak_test).  GiddyUp provides two services, seeding ```riak_test``` with the list of tests which should be run for each platform, and receiving tests results and logs via a REST interface.
+GiddyUp is the visual scorecard for [riak_test](http://github.com/basho/riak_test).  GiddyUp
+provides two services, seeding ```riak_test``` with the list of tests which should be run for
+each platform, and receiving tests results and logs via a REST interface.
 
 ## Bootstrapping and Configuration
 
@@ -28,19 +30,24 @@ Also, install this: get the [heroku-toolbelt](https://toolbelt.heroku.com)
 ## Migrations
 Want to add a new migration? try `bundle exec rake db:new_migration[MigrationName]`!
 
-Fun Fact: zsh hates []'s. try adding `setopt nonomatch` to your .zshrc to make it love them, unless you are the yesnomatch type, in which case, run `noglob bundle exec rake db:new_migration[MigrationName]`. Don't say I did't warn you.
+Fun Fact: zsh hates []'s. try adding `setopt nonomatch` to your .zshrc to make it love them,
+unless you are the yesnomatch type, in which case, run 
+`noglob bundle exec rake db:new_migration[MigrationName]`. Don't say I did't warn you.
 
 ### How to test migrations?
-Your best bet is to get the current heroku dataset with `pg_dump`. You need the heroku database url, which you can get with `heroku config` if you have access. If you don't, you shouldn't be doing this.
+Your best bet is to get the current heroku dataset with `pg_dump`. You need the heroku database
+url, which you can get with `heroku config` if you have access. If you don't, you shouldn't be
+doing this.
 
 ```
-pg_dump postgres://whatever > heroku.sql
+pg_dump -O -x postgres://whatever > heroku.sql
 dropdb giddyup_dev
 createdb giddyup_dev
 psql giddyup_dev < heroku.sql
 ```
 
-Once you start giddyup after that, you should have a mirror of production. Try out your migration now. the end.
+Once you start giddyup after that, you should have a mirror of production. Try out your
+migration now. the end.
 
 ## Screenshot
 
