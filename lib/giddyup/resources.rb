@@ -77,7 +77,7 @@ module GiddyUp
 
   class LiveResource < Webmachine::Resource
     def initialize
-      @redis = GiddyUp::Redis.new
+      @events = GiddyUp::Events.new
       set_headers
     end
 
@@ -96,15 +96,13 @@ module GiddyUp
 
     def to_event
       Fiber.new do |f|
-        @redis.subscribe('events') do |on|
-          on.message do |channel, msg|
-            message = JSON.parse(msg)
-            id      = message["id"]
-            event   = message["event"]
-            data    = JSON.generate(message["data"])
+        @events.subscribe do |msg|
+          message = JSON.parse(msg)
+          id      = message["id"]
+          event   = message["event"]
+          data    = JSON.generate(message["data"])
 
-            Fiber.yield "id: #{id}\nevent: #{event}\ndata: #{data}\n\n"
-          end
+          Fiber.yield "id: #{id}\nevent: #{event}\ndata: #{data}\n\n"
         end
       end
     end

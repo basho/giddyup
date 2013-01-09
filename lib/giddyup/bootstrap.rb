@@ -38,17 +38,22 @@ GiddyUp::LogBucket = ENV['S3_BUCKET']
 GiddyUp::AUTH_USER = ENV['AUTH_USER']
 GiddyUp::AUTH_PASSWORD = ENV['AUTH_PASSWORD']
 
-### RedisToGo Setup
-require 'redis'
-REDISURL = URI.parse(ENV['REDISTOGO_URL'])
-
 module GiddyUp
-  module Redis
-    def self.new
-      ::Redis.new(:host     => REDISURL.host,
-                  :port     => REDISURL.port,
-                  :password => REDISURL.password,
-                  :timeout  => 0)
+  class Events
+    attr_accessor :queue, :exchange
+
+    def initialize
+      @queue    = "events"
+      @channel  = AMQP.channel
+      @exchange = channel.default_exchange
+    end
+
+    def publish(event)
+      exchange.publish event, :routing_key => queue.name
+    end
+
+    def subscribe(&block)
+      channel.subscribe block
     end
   end
 end
