@@ -47,8 +47,8 @@ module GiddyUp
     def self.new
       ::Redis.new(:host     => REDISURL.host,
                   :port     => REDISURL.port,
-                  :password => REDISURL.password,
-                  :timeout  => 0)
+                  :password => REDISURL.password
+                  )
     end
   end
 end
