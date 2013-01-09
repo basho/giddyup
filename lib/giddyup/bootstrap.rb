@@ -38,17 +38,10 @@ GiddyUp::LogBucket = ENV['S3_BUCKET']
 GiddyUp::AUTH_USER = ENV['AUTH_USER']
 GiddyUp::AUTH_PASSWORD = ENV['AUTH_PASSWORD']
 
-### RedisToGo Setup
-require 'redis'
-REDISURL = URI.parse(ENV['REDISTOGO_URL'])
+### EVENTS SETUP
 
-module GiddyUp
-  module Redis
-    def self.new
-      ::Redis.new(:host     => REDISURL.host,
-                  :port     => REDISURL.port,
-                  :password => REDISURL.password
-                  )
-    end
-  end
-end
+# We can change this later to use whatever as long as we can make the
+# API similar. Redis on Heroku is flakey and we only have one server
+# process right now.
+require 'active_support/notifications'
+GiddyUp::Events = ActiveSupport::Notifications
