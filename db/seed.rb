@@ -32,7 +32,6 @@ riak_tests = %w{
   mapred_verify_rt
   partition_repair
   riaknostic_rt
-  rolling_capabilities
   rt_basic_test
   verify_backup_restore
   verify_build_cluster
@@ -94,6 +93,7 @@ platforms.each do |p|
       create_riak_test "loaded_upgrade", tags.merge('platform' => p, 'backend' => b, 'upgrade_version' => v)
     end
     create_riak_test "verify_basic_upgrade", tags.merge('platform' => p, 'upgrade_version' => v)
+    create_riak_test "rolling_capabilities", tags.merge('platform' => p, 'upgrade_version' => v)
   end
 end
 
