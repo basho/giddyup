@@ -21,6 +21,19 @@ task :jshint do
 end
 
 namespace :db do
+  desc "Generates a new migration"
+  task :new_migration, :name do |t, args|
+    name = args[:name]
+    date = Time.now.strftime('%Y%m%d%H%M%s')
+    require 'active_support/core_ext/string/inflections'
+    underscored_name = name.underscore
+    camelized_name = name.camelize
+    File.open("db/migrate/#{date}_#{underscored_name}.rb", "w") do |f|
+      puts "Creating #{f.path}"
+      f.write "class #{camelized_name} < ActiveRecord::Migration\n  def up\n  end\n\n  def down\n  end\nend\n"
+    end
+  end
+  
   task :migrate => :environment do
     ActiveRecord::Migration.verbose = ENV["VERBOSE"] ? ENV["VERBOSE"] == "true" : true
     ActiveRecord::Migrator.migrate([Pathname.new('db/migrate')], ENV["VERSION"] ? ENV["VERSION"].to_i : nil) do |migration|
