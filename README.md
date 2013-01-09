@@ -25,6 +25,11 @@ Also, install this: get the [heroku-toolbelt](https://toolbelt.heroku.com)
    backend combinations using ```foreman run rake db:seed```
 4. Start your application with ```foreman start```
 
+## Migrations
+Want to add a new migration? try `bundle exec rake db:new_migration[MigrationName]`!
+
+Fun Fact: zsh hates []'s. try adding `setopt nonomatch` to your .zshrc to make it love them, unless you are the yesnomatch type, in which case, run `noglob bundle exec rake db:new_migration[MigrationName]`. Don't say I did't warn you.
+
 ## Screenshot
 
 ![Screenshot](https://raw.github.com/basho/giddyup/master/screenshot.png "Screenshot")
