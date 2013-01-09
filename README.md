@@ -30,6 +30,18 @@ Want to add a new migration? try `bundle exec rake db:new_migration[MigrationNam
 
 Fun Fact: zsh hates []'s. try adding `setopt nonomatch` to your .zshrc to make it love them, unless you are the yesnomatch type, in which case, run `noglob bundle exec rake db:new_migration[MigrationName]`. Don't say I did't warn you.
 
+### How to test migrations?
+Your best bet is to get the current heroku dataset with `pg_dump`. You need the heroku database url, which you can get with `heroku config` if you have access. If you don't, you shouldn't be doing this.
+
+```
+pg_dump postgres://whatever > heroku.sql
+dropdb giddyup_dev
+createdb giddyup_dev
+psql giddyup_dev < heroku.sql
+```
+
+Once you start giddyup after that, you should have a mirror of production. Try out your migration now. the end.
+
 ## Screenshot
 
 ![Screenshot](https://raw.github.com/basho/giddyup/master/screenshot.png "Screenshot")
