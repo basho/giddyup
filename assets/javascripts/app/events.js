@@ -4,23 +4,19 @@ GiddyUp.EventProcessor = Ember.Object.extend({
 
     this.source.addEventListener('test_result', function(e) {
       var parsedResponse = JSON.parse(e.data);
-      var testResult     = parsedResponse.test_result;
-
-      // Load the new test result into the store.
-      //
-      GiddyUp.store.load(GiddyUp.TestResult, testResult);
+      var rawTestResult  = parsedResponse.test_result;
+      var testResult     = GiddyUp.TestResult.loadRawTestResult(
+                            rawTestResult);
 
       // Notification handling.
       //
       if (window.webkitNotifications &&
           window.webkitNotifications.checkPermission() === 0) {
-
-          var result  = GiddyUp.TestResult.find(testResult.id);
-          var message = result.get('notification');
+          var message = testResult.get('notification');
 
           window.webkitNotifications.createNotification(
-            "icon.png", message.title, message.message
-          ).show();
+            "icon.png", message.title, message.message).
+          show();
       }
     });
   }
