@@ -17,4 +17,5 @@ group :assets do
   gem 'rake-pipeline-web-filters'
   gem 'uglifier'
   gem 'tilt'
+  gem 'therubyracer'
 end
