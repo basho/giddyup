@@ -70,38 +70,7 @@ GiddyUp.TestResult = DS.Model.extend({
 
   log_url: DS.attr('string'),
   created_at: DS.attr('date'),
-  long_version: DS.attr('string'),
-
-  notification: function() {
-    var status    = this.get('status') === true ? "pass" : "fail";
-    var instance  = this.get('test_instance');
-    var scorecard = instance.get('scorecard');
-    var project   = scorecard.get('project');
-    var backend   = instance.get('backend') || "undefined";
-
-    return {
-      title:   "GiddyUp: New " + status + " on " +
-               project.get('name') + " " +
-               scorecard.get('name'),
-      message: instance.get('name') + " | " +
-               backend + " | " +
-               instance.get('platform')
-    };
-  }.property()
-});
-
-GiddyUp.TestResult.reopenClass({
-  /** Load record, immediately materialize, and force listening array
-   ** proxies to reference object. */
-  loadRawTestResult: function(rawTestResult) {
-    var newTestResult = GiddyUp.store.load(GiddyUp.TestResult,
-                                           rawTestResult);
-    var testResult    = GiddyUp.TestResult.find(newTestResult.id);
-
-    testResult.get('test_instance.test_results').pushObject(testResult);
-
-    return testResult;
-  }
+  long_version: DS.attr('string')
 });
 
 GiddyUp.Log = DS.Model.extend({
