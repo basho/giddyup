@@ -11,7 +11,6 @@ gem 'pg'
 gem 'rake'
 gem 'puma'
 gem 'rack-rewrite'
-gem 'redis'
 
 group :assets do
   gem 'rake-pipeline'
