@@ -24,15 +24,15 @@ GiddyUp.EventProcessor = Ember.Object.extend({
 
 /* Enable live event streams if available. */
 if(!!window.EventSource) {
-  GiddyUp.eventProcessor = GiddyUp.EventProcessor.create({});
+  // GiddyUp.eventProcessor = GiddyUp.EventProcessor.create({});
 }
 
 /* Prompt the user once to accept nofications. */
 if (window.webkitNotifications &&
     window.webkitNotifications.checkPermission() !== 0) {
-  GiddyUp.desktopNotifierBinding = $('a').live('click', function() {
-    window.webkitNotifications.requestPermission(function() {
-      GiddyUp.desktopNotifierBinding.die();
-    });
-  });
+  // GiddyUp.desktopNotifierBinding = $('a').live('click', function() {
+  //   window.webkitNotifications.requestPermission(function() {
+  //     GiddyUp.desktopNotifierBinding.die();
+  //   });
+  // });
 }

@@ -43,5 +43,23 @@ GiddyUp::AUTH_PASSWORD = ENV['AUTH_PASSWORD']
 # We can change this later to use whatever as long as we can make the
 # API similar. Redis on Heroku is flakey and we only have one server
 # process right now.
-require 'active_support/notifications'
-GiddyUp::Events = ActiveSupport::Notifications
+# require 'active_support/notifications'
+# GiddyUp::Events = ActiveSupport::Notifications
+
+
+# We're running out of request threads, dammit.
+module GiddyUp
+  module NullEvents
+    extend self
+    def publish(*args)
+    end
+
+    def subscribe(*args)
+    end
+
+    def unsubscribe(*args)
+    end
+  end
+
+  Events = NullEvents
+end
