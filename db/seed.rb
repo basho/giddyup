@@ -100,5 +100,7 @@ end
 ## Riak 1.3 features
 platforms.each do |p|
   next if p =~ /fedora-15/
-  create_riak_test "verify_reset_bucket_props", 'platform' => p, 'min_version' => '1.3.0'
+  tags = {'platform' => p, 'min_version' => '1.3.0'}
+  create_riak_test "verify_reset_bucket_props", tags
+  create_riak_test "verify_kv_health_check", tags
 end
