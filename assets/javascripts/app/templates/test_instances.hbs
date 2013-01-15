@@ -23,6 +23,6 @@
 </table>
 {{else}}
 <div class="progress progress-striped active">
-  <div class="bar" {{bindAttr style="view.progressStyle"}}>Reticulating splines: {{view.progressComplete}} / {{view.progressTotal}}</div>
+  <div class="bar" {{bindAttr style="view.progressStyle"}}>{{view.progressMessage}}: {{view.progressComplete}} / {{view.progressTotal}}</div>
 </div>
 {{/if}}

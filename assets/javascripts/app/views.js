@@ -1,3 +1,17 @@
+// Based on http://stackoverflow.com/a/2450976/18315
+GiddyUp.shuffle = function (myArray) {
+  var i = myArray.length, j, tempi, tempj;
+  if ( i === 0 ) return myArray;
+  while ( --i ) {
+     j = Math.floor( Math.random() * ( i + 1 ) );
+     tempi = myArray[i];
+     tempj = myArray[j];
+     myArray[i] = tempj;
+     myArray[j] = tempi;
+   }
+  return myArray;
+};
+
 GiddyUp.prettyDate = function(date){
   // Based roughly on distance_of_time_in_words from Ruby on Rails,
   // with ideas from John Resig's "prettyDate" function.
@@ -70,7 +84,48 @@ GiddyUp.TestInstancesView = Ember.View.extend({
   }.property('progressTotal', 'progressComplete'),
   progressStyle: function(){
     return "width: " + this.get('progressPercent');
-  }.property('progressPercent')
+  }.property('progressPercent'),
+  progressMessages: function(){
+    var messages = [
+      'Reticulating splines',
+      'Reversing Parfitt notation',
+      'Amortizing merge penalties',
+      'Hashing artists/REM',
+      'Ensuring 100% as much as possible',
+      'Holding up the codebase',
+      'Normalizing whitespace',
+      'Logging meetings',
+      'Writing opens',
+      'Reviewing all files',
+      'Any of you quaids got a smint',
+      'Eating around the stinger',
+      'Raising mugs',
+      'Painting it blue',
+      'Shipping trial CDs',
+      'This is how we do it',
+      'Negotiating capabilities',
+      'Attaching consoles',
+      'Hot code-loading',
+      'It\'s a lot of math',
+      'Hacking the Charles Gibson',
+      'Participating in the frantic',
+      'That tip is the fix',
+      'Better than a saber saw'
+    ];
+    return GiddyUp.shuffle(messages).slice(0,6);
+  }.property(),
+  progressMessage: function(){
+    var total = this.get('progressTotal'),
+        complete = this.get('progressComplete'),
+        messages = this.get('progressMessages'),
+        index;
+    if(total === 0)
+      return '';
+    else {
+      index = Math.floor((complete / total) * messages.length);
+      return messages[index];
+    }
+  }.property('progressTotal', 'progressComplete', 'progressMessages')
 });
 
 GiddyUp.TestInstanceView = Ember.View.extend({
