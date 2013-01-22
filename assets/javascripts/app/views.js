@@ -1,3 +1,4 @@
+
 // Based on http://stackoverflow.com/a/2450976/18315
 GiddyUp.shuffle = function (myArray) {
   var i = myArray.length, j, tempi, tempj;
@@ -110,7 +111,8 @@ GiddyUp.TestInstancesView = Ember.View.extend({
       'Hacking the Charles Gibson',
       'Participating in the frantic',
       'That tip is the fix',
-      'Better than a saber saw'
+      'Better than a saber saw',
+      'Cloning Fonzies'
     ];
     return GiddyUp.shuffle(messages).slice(0,6);
   }.property(),
