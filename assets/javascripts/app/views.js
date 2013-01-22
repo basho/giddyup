@@ -112,7 +112,9 @@ GiddyUp.TestInstancesView = Ember.View.extend({
       'Participating in the frantic',
       'That tip is the fix',
       'Better than a saber saw',
-      'Cloning Fonzies'
+      'Cloning Fonzies',
+      'Exploring the Deep Amazon',
+      'Having a Taste'
     ];
     return GiddyUp.shuffle(messages).slice(0,6);
   }.property(),
