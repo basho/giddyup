@@ -104,3 +104,16 @@ platforms.each do |p|
   create_riak_test "verify_reset_bucket_props", tags
   create_riak_test "verify_kv_health_check", tags
 end
+
+## Riak EE-only tests
+platforms.each do |p|
+  %w{replication replication2 replication_ssl jmx_verify verify_snmp}.each do |t|
+    create_riak_test t, %w{riak_ee}, 'platform' => p
+  end
+  %w{previous legacy}.each do |v|
+    # FreeBSD was not supported before 1.2, so don't run legacy
+    # upgrades until 1.4
+    tags = (p =~ /freebsd/ && v == 'legacy') ? {'min_version' => '1.4.0'} : {}
+    create_riak_test 'replication_upgrade', %w{riak_ee}, tags.merge('platform' => p, 'upgrade_version' => v)
+  end
+end
