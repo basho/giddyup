@@ -8,7 +8,7 @@ class ReplicationMinVersion < ActiveRecord::Migration
     end
     say_with_time "Setting max_version on old replication tests to 1.4.99" do
       Test.where(:name => %w{replication replication_ssl replication_upgrade}).each do |test|
-        test.tags['max_version'] = '1.4.99'
+        test.tags['max_version'] ||= '1.4.99'
         test.save!
       end
     end
@@ -24,3 +24,4 @@ class ReplicationMinVersion < ActiveRecord::Migration
     end
   end
 end
+r
