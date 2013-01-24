@@ -24,4 +24,3 @@ class ReplicationMinVersion < ActiveRecord::Migration
     end
   end
 end
-r
