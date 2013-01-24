@@ -107,13 +107,23 @@ end
 
 ## Riak EE-only tests
 platforms.each do |p|
-  %w{replication replication2 replication_ssl jmx_verify verify_snmp}.each do |t|
+  %w{jmx_verify verify_snmp}.each do |t|
     create_riak_test t, %w{riak_ee}, 'platform' => p
+  end
+  %w{replication replication_ssl}.each do |t|
+    # "Classic" repl is going to be removed in the version after 1.4
+    create_riak_test t, %w{riak_ee}, 'platform' => p, 'max_version' => '1.4.99'
+  end
+  %w{replication2 replication2_dirty}.each do |t|
+    # "New" repl is only in 1.3 and later
+    create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.3.0'
   end
   %w{previous legacy}.each do |v|
     # FreeBSD was not supported before 1.2, so don't run legacy
     # upgrades until 1.4
     tags = (p =~ /freebsd/ && v == 'legacy') ? {'min_version' => '1.4.0'} : {}
-    create_riak_test 'replication_upgrade', %w{riak_ee}, tags.merge('platform' => p, 'upgrade_version' => v)
+    # "Classic" repl is going to be removed in the version after 1.4
+    create_riak_test 'replication_upgrade', %w{riak_ee},
+                     tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => '1.4.99')
   end
 end
