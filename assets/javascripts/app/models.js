@@ -15,6 +15,9 @@ GiddyUp.TestInstanceStatus = Ember.ArrayProxy.extend(Ember.SortableMixin, {
 
   totalBinding: 'length',
   latestBinding: 'firstObject.success',
+  stillLoading: function(){
+    return this.someProperty('isLoaded', false);
+  }.property('@each.isLoaded'),
 
   percent: function(){
     var total = this.get('total'),

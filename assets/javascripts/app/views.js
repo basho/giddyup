@@ -167,14 +167,17 @@ GiddyUp.TestInstanceBubbleView = Ember.View.extend({
   attributeBindings: ['title'],
   statusClass: function(){
     var total = this.get('content.status.total'),
-        latest = this.get('content.status.latest');
+        latest = this.get('content.status.latest'),
+        stillLoading = this.get('content.status.stillLoading');
     if(total === 0 || total === null || total === undefined)
       return '';
+    else if(stillLoading)
+      return 'badge-inverse';
     else if(latest)
       return 'badge-success';
     else
       return 'badge-important';
-  }.property('content.status.total', 'content.status.latest'),
+  }.property('content.status.total', 'content.status.latest', 'content.status.stillLoading'),
   title: function(){
     var percent = this.get('content.status.percent');
     if(percent !== null && percent !== undefined)
