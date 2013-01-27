@@ -172,7 +172,7 @@ GiddyUp.TestInstanceBubbleView = Ember.View.extend({
     if(total === 0 || total === null || total === undefined)
       return '';
     else if(stillLoading)
-      return 'badge-inverse';
+      return 'badge-loading';
     else if(latest)
       return 'badge-success';
     else
