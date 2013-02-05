@@ -43,6 +43,7 @@ riak_tests = %w{
   verify_leave
   verify_link_walk_urls
   verify_listkeys
+  verify_mr_prereduce_node_down
   verify_riak_lager
   verify_riak_stats
   verify_search
