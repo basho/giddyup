@@ -90,7 +90,6 @@ GiddyUp.TestInstancesView = Ember.View.extend({
     var messages = [
       'Reticulating splines',
       'Reversing Parfitt notation',
-      'Amortizing merge penalties',
       'Hashing artists/REM',
       'Ensuring 100% as much as possible',
       'Holding up the codebase',
@@ -104,9 +103,6 @@ GiddyUp.TestInstancesView = Ember.View.extend({
       'Painting it blue',
       'Shipping trial CDs',
       'This is how we do it',
-      'Negotiating capabilities',
-      'Attaching consoles',
-      'Hot code-loading',
       'It\'s a lot of math',
       'Hacking the Charles Gibson',
       'Participating in the frantic',
@@ -114,10 +110,11 @@ GiddyUp.TestInstancesView = Ember.View.extend({
       'Better than a saber saw',
       'Cloning Fonzies',
       'Exploring the Deep Amazon',
-      'Having a Taste',
+      'Having a taste',
       'Breaking eye contact',
       'Initializing XML co-processors',
-      'Bursting from chests'
+      'Bursting from chests',
+      'Removing unfunny quips'
     ];
     return GiddyUp.shuffle(messages).slice(0,6);
   }.property(),
