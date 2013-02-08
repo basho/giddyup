@@ -19,5 +19,5 @@ end
 unless ENV['RACK_ENV'] == 'production'
   use Rake::Pipeline::Middleware, "Assetfile"
 end
-use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/stylesheets", "/javascripts", "/images"], :root => "public"
+use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/stylesheets", "/javascripts", "/images", "/fonts"], :root => "public"
 run GiddyUp::Application.adapter
