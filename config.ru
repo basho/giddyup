@@ -16,6 +16,8 @@ use Rack::Rewrite do
   rewrite %r{^(.*)\/$}, '$1/index.html'
 end
 
-use Rake::Pipeline::Middleware, "Assetfile"
+unless ENV['RACK_ENV'] == 'production'
+  use Rake::Pipeline::Middleware, "Assetfile"
+end
 use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/stylesheets", "/javascripts", "/images"], :root => "public"
 run GiddyUp::Application.adapter
