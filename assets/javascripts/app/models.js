@@ -6,7 +6,14 @@ GiddyUp.Project = DS.Model.extend({
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.belongsTo('GiddyUp.Project'),
-  test_instances: DS.hasMany('GiddyUp.TestInstance')
+  test_instances: DS.hasMany('GiddyUp.TestInstance'),
+  sortable_id: function(){
+    var id = this.get('id');
+    while(id.length < 6){ // 1MM scorecards should be enough ;)
+      id = "0" + id;
+    }
+    return id;
+  }.property('id')
 });
 
 GiddyUp.TestInstanceStatus = Ember.ArrayProxy.extend(Ember.SortableMixin, {

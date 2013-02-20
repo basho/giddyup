@@ -5,7 +5,7 @@ GiddyUp.ProjectsController = Ember.ArrayController.extend({
 });
 
 GiddyUp.ScorecardsController = Ember.ArrayController.extend({
-  sortProperties: ['name'],
+  sortProperties: ['sortable_id'],
   sortAscending: false
 });
 
