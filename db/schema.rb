@@ -11,7 +11,15 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 2013012411121359047565) do
+ActiveRecord::Schema.define(:version => 2013030409251362410730) do
+
+  create_table "artifacts", :force => true do |t|
+    t.string   "url"
+    t.string   "content_type"
+    t.integer  "test_result_id"
+    t.datetime "created_at",     :null => false
+    t.datetime "updated_at",     :null => false
+  end
 
   create_table "projects", :force => true do |t|
     t.string "name"
@@ -40,7 +48,6 @@ ActiveRecord::Schema.define(:version => 2013012411121359047565) do
     t.integer  "scorecard_id"
     t.datetime "created_at",   :null => false
     t.datetime "updated_at",   :null => false
-    t.string   "log_url"
     t.string   "long_version"
   end
 

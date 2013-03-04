@@ -24,11 +24,11 @@ class TestResult < ActiveRecord::Base
   # status boolean -- did it pass or not
   # author string -- who ran it
   # test_id
-  # platform_id
   # scorecard_id
   default_scope includes(:test)
   belongs_to :test
   belongs_to :scorecard
+  has_many :artifacts
 
   def status=(val)
     case val
@@ -41,11 +41,23 @@ class TestResult < ActiveRecord::Base
     end
   end
 
+  def log_url
+    artifacts.first.url
+  end
+
   def body
     Excon.get(log_url).body
   rescue Excon::Errors::Error
     ""
   end
+end
+
+class Artifact < ActiveRecord::Base
+  # url string
+  # content_type string
+  # test_result_id
+  default_scope order(:test_result_id, :created_at)
+  belongs_to :test_result
 end
 
 class Project < ActiveRecord::Base
