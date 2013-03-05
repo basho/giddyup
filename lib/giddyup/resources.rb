@@ -168,15 +168,15 @@ module GiddyUp
     end
   end
 
-  class LogResource < Resource
+  class ArtifactResource < Resource
     def resource_exists?
       return false unless request.path_info[:id]
-      @test_result = TestResult.find(request.path_info[:id])
-      @test_result.present?
+      @artifact = Artifact.find(request.path_info[:id])
+      @artifact.present?
     end
 
     def to_json
-      LogSerializer.new(@test_result).to_json
+      ArtifactSerializer.new(@artifact).to_json
     end
   end
 
@@ -325,7 +325,7 @@ module GiddyUp
     add ['live'], LiveResource
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
-    add ['logs', :id], LogResource
+    add ['artifacts', :id], ArtifactResource
     add ['tests', :id], TestResource
     add ['tests'], TestsResource
     add ['test_instances', :id], TestInstanceResource
