@@ -1,3 +1,4 @@
+# -*- mode: ruby -*-
 require 'rake-pipeline-web-filters'
 require 'uglifier'
 
