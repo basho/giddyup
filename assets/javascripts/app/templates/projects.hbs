@@ -1,0 +1,12 @@
+<img class="cowboy" src="/images/cowboy.png" />
+<div class="navbar" style="margin-bottom: 0">
+  <div class="navbar-inner">
+    {{#linkTo "projects" class="brand"}}GiddyUp{{/linkTo}}
+    <ul class="nav">
+    {{#each controller itemViewClass="GiddyUp.ProjectItemView"}}
+      {{#linkTo "project" this}}{{name}}{{/linkTo}}
+    {{/each}}
+    </ul>
+  </div>
+</div>
+{{outlet}}

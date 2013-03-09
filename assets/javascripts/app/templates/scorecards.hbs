@@ -1,0 +1,10 @@
+<div class="navbar">
+  <div class="navbar-inner scorecards">
+    <ul class="nav">
+      {{#each controller itemViewClass="GiddyUp.ScorecardItemView"}}
+      {{#linkTo "scorecard" this}}{{name}}{{/linkTo}}
+      {{/each}}
+    </ul>
+  </div>
+</div>
+{{outlet}}
