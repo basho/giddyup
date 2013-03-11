@@ -38,7 +38,7 @@ GiddyUp.quipsFor = function(obj){
   if(quipMap.has(obj)){
     return quipMap.get(obj);
   } else {
-    var oQuips = GiddyUp.rotate(sQuips, new Date().now()).slice(0,6);
+    var oQuips = GiddyUp.rotate(sQuips, Date.now()).slice(0,7);
     quipMap.set(obj, oQuips);
     return oQuips;
   }

@@ -2,25 +2,41 @@
 // progress of proxied models.
 GiddyUp.ProgressMixin = Ember.Mixin.create({
   isLoaded: function(){
-    if(this.get('length') === 0)
-      return false;
-    else
-      return this.everyProperty('isLoaded');
-  }.property('length', '@each.isLoaded'),
+    return this.get('progressTotal') === this.get('progressComplete');
+  }.property('progressTotal', 'progressComplete'),
 
   progressTotal: Ember.computed.alias('length'),
 
   progressComplete: function(){
-    return this.filterProperty('isLoaded', true).length;
-  }.property('@each.isLoaded'),
+    return this.get('content').filterProperty('isLoaded').length;
+  }.property('content', 'content.@each.isLoaded'),
 
   progressPercent: function(){
     var total = this.get('progressTotal'),
         complete = this.get('progressComplete');
 
-    if(total === 0)
+    if(total < 1 || !complete)
       return 0.0;
     else
-      return (total / complete) * 100.0;
-  }.property('progressTotal', 'progressComplete')
+      return (complete / total) * 100.0;
+  }.property('progressTotal', 'progressComplete'),
+
+  // TODO: Should this be on a view?
+  progressStyle: function(){
+    var percent = Math.round(this.get('progressPercent'));
+    return "width: " + percent + "%";
+  }.property('@each.isLoaded', 'progressPercent'),
+
+  progressMessages: function(){
+    var content = this.get('content');
+    return GiddyUp.quipsFor(content);
+  }.property('content'),
+
+  progressMessage: function(){
+    var percent = this.get('progressPercent'),
+        quips = this.get('progressMessages');
+
+    index = Math.floor((percent / 100.0) * (quips.length - 1));
+    return quips[index];
+  }.property('progressPercent', 'progressMessages')
 });

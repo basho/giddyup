@@ -50,15 +50,6 @@ helper('testInstanceDesc', function(testInstance){
   return parts.join(' / ');
 }, 'name', 'backend', 'platform', 'upgradeVersion');
 
-helper('progressMessage', function(o){
-  var quips = GiddyUp.quipsFor(o),
-      percent = o.get('progressPercent'),
-      index;
-
-  index = Math.floor((percent / 100.0) * quips.length);
-  return quips[index];
-}, 'progressPercent');
-
 helper('timeAgoInWords', function(date){
   // Based roughly on distance_of_time_in_words from Ruby on Rails,
   // with ideas from John Resig's "prettyDate" function.
