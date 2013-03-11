@@ -2,9 +2,9 @@ require('quips');
 
 var helper = Ember.Handlebars.registerBoundHelper;
 
-helper('testInstanceAbbr', function(testInstance){
-  var backend = testInstance.get('backend'),
-      upgradeVersion = testInstance.get('upgradeVersion'),
+helper('testInstanceAbbr', function(){
+  var backend = arguments[0],
+      upgradeVersion = arguments[1],
       parts = [];
 
   switch(backend){
@@ -31,7 +31,7 @@ helper('testInstanceAbbr', function(testInstance){
      return 'U';
   else
      return parts.join('');
-}, 'backend', 'upgradeVersion');
+});
 
 var testInstanceDescProps = ['name',
                              'backend',
@@ -52,17 +52,12 @@ helper('testInstanceDesc', function(testInstance){
 
 helper('progressMessage', function(o){
   var quips = GiddyUp.quipsFor(o),
-      total = o.get('progressTotal'),
-      complete = o.get('progressComplete'),
+      percent = o.get('progressPercent'),
       index;
 
-  if(total === 0)
-    return '';
-  else {
-    index = Math.floor((complete / total) * quips.length);
-    return quips[index];
-  }
-}, 'progressTotal', 'progressComplete');
+  index = Math.floor((percent / 100.0) * quips.length);
+  return quips[index];
+}, 'progressPercent');
 
 helper('timeAgoInWords', function(date){
   // Based roughly on distance_of_time_in_words from Ruby on Rails,

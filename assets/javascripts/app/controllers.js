@@ -1,4 +1,11 @@
 require('matrix');
+require('progress');
+
+GiddyUp.ApplicationController = Ember.Controller.extend({
+  toggleHelp: function(){
+    $('#help').fadeToggle(250);
+  }
+});
 
 GiddyUp.ProjectsController = Ember.ArrayController.extend({
   sortProperties: ['name']
@@ -9,18 +16,15 @@ GiddyUp.ScorecardsController = Ember.ArrayController.extend({
   sortAscending: false
 });
 
-GiddyUp.TestInstancesController = GiddyUp.MatrixController.extend({
-  itemController: 'testInstance',
-  dimensions: ['name', 'platform'],
-  orderByProperties: ['backend', 'upgradeVersion'],
+GiddyUp.TestInstancesController = GiddyUp.MatrixController.extend(
+  GiddyUp.ProgressMixin,
+  {
+    dimensions: ['name', 'platform'],
+    orderByProperties: ['backend', 'upgradeVersion']
+  }
+);
 
-  isLoaded: function(){
-    return this.everyProperty('isLoaded', true);
-  }.property('@each.isLoaded')
-});
-
-GiddyUp.TestInstanceController = Ember.ObjectController.extend({
-  resultsLoaded: function(){
-    return this.get('testResults').everyProperty('isLoaded', true);
-  }.property('testResults.@each.isLoaded')
+GiddyUp.TestResultsController = Ember.ArrayController.extend({
+  sortProperties: ['createdAt'],
+  sortAscending: false
 });

@@ -1,6 +1,6 @@
-source :rubygems
+source "https://rubygems.org"
 
-gem 'bundler', "~> 1.2.0"
+gem 'bundler', "~> 1.3.0"
 gem 'webmachine'
 gem 'rack'
 gem 'activerecord', :require => 'active_record'
@@ -17,5 +17,4 @@ group :assets do
   gem 'rake-pipeline-web-filters'
   gem 'uglifier'
   gem 'tilt'
-  # gem 'therubyracer', :platforms => :ruby
 end

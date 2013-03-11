@@ -40,6 +40,19 @@ GiddyUp.ProjectsRoute = Ember.Route.extend({
 GiddyUp.ProjectsIndexRoute = Ember.Route.extend({
   setupController: function(){
     this.controllerFor('projects').set('selectedItem', null);
+  },
+  renderTemplate: function(){
+    this.render('help/projects', { into: 'application', outlet: 'help' });
+  }
+});
+
+GiddyUp.ProjectIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    var scorecards = this.controllerFor('scorecards');
+    scorecards.set('selectedItem', null);
+  },
+  renderTemplate: function(){
+    this.render('help/scorecards', { into: 'application', outlet: 'help' });
   }
 });
 
@@ -51,11 +64,8 @@ GiddyUp.ProjectRoute = Ember.Route.extend({
     var scorecards = this.controllerFor('scorecards'),
         projects = this.controllerFor('projects');
 
-    this._super(controller, model);
-
     projects.set('selectedItem', model);
     scorecards.set('model', model.get('scorecards'));
-    scorecards.set('selectedItem', null);
   }
 });
 
@@ -66,9 +76,43 @@ GiddyUp.ScorecardRoute = Ember.Route.extend({
   setupController: function(controller, model){
     var testInstances = this.controllerFor('test_instances'),
         scorecards = this.controllerFor('scorecards');
-    this._super(controller, model);
 
     scorecards.set('selectedItem', model);
-    testInstances.set('model', model.get('test_instances'));
+    testInstances.set('model', model.get('testInstances'));
+  }
+});
+
+GiddyUp.ScorecardIndexRoute = Ember.Route.extend({
+  renderTemplate: function(){
+    this.render('help/matrix', {into: 'application', outlet: 'help'});
+  }
+});
+
+GiddyUp.TestInstanceRoute = Ember.Route.extend({
+  model: function(params){
+    var id = params.test_instance_id.match(/^\d+-\d+/)[0];
+    return GiddyUp.TestInstance.find(id);
+  },
+  serialize: function(model, params){
+    var segments = [],
+        attrs = ['id', 'name', 'platform', 'backend', 'upgradeVersion'];
+    attrs.forEach(function(attrName){
+      var attr = model.get(attrName);
+      if(attr)
+        segments.push(attr);
+    });
+    return { test_instance_id: segments.join('-') };
+  },
+  setupController: function(controller, model){
+    var testResults = this.controllerFor('test_results');
+
+    testResults.set('model', model.get('testResults'));
+  }
+});
+
+GiddyUp.TestInstanceIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    var testResults = this.controllerFor('test_results');
+    testResults.set('selectedItem', null)
   }
 });

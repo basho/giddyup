@@ -25,19 +25,20 @@ var Vector = Ember.ArrayController.extend({
   }
 });
 
-var createIndex = function(props, values, obp) {
+var createIndex = function(props, values, obp, container) {
   if (props.length === 0) {
     return [];
   } else {
     var prop = props.get('firstObject');
     var range = values.get('firstObject');
     return range.map(function(key) {
-      var subtree = createIndex(props.slice(1), values.slice(1), obp);
+      var subtree = createIndex(props.slice(1), values.slice(1), obp, container);
       return Vector.create({
         key: key,
         indexProperty: prop,
         orderByProperties: obp,
-        model: subtree
+        content: subtree,
+        container: container
       });
     });
   }
@@ -48,23 +49,25 @@ GiddyUp.MatrixController = Ember.ArrayController.extend({
   orderByProperties: [],
   dimensionValues: function() {
     var dimensions = this.get('dimensions'),
-    content = Ember.A(this.get('model'));
+    content = Ember.A(this.get('content'));
 
     return Ember.A(dimensions).map(function(dimension) {
       return content.getEach(dimension).uniq().sort();
     });
-  }.property('dimensions', 'model').volatile(),
+  }.property('dimensions', 'content', '@each.isLoaded'),
 
   matrix: function() {
-    var content = this.get('model'),
-    dimensions = this.get('dimensions'),
-    dimensionValues = this.get('dimensionValues'),
-    obp = this.get('orderByProperties'),
-    index;
+    var content = this.get('content'),
+        container = this.get('container'),
+        dimensions = this.get('dimensions'),
+        dimensionValues = this.get('dimensionValues'),
+        obp = this.get('orderByProperties'),
+        index;
 
     // Recursively build the index buckets
     index = Vector.create({
-      content: createIndex(dimensions, dimensionValues, obp)
+      container: container,
+      content: createIndex(dimensions, dimensionValues, obp, container)
     });
 
     // Now insert the items
@@ -75,9 +78,13 @@ GiddyUp.MatrixController = Ember.ArrayController.extend({
     }, this);
 
     return index;
-  }.property('model', 'dimensions', 'dimensionValues'),
+  }.property('content',
+             '@each.isLoaded',
+             'dimensions',
+             'dimensionValues',
+             'orderByProperties'),
 
   columnNames: function(){
-    this.get('dimensionValues.lastObject');
-  }.property('dimensionValues.@each')
+    return this.get('dimensionValues.lastObject');
+  }.property('dimensionValues')
 });
