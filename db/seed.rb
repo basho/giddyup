@@ -106,6 +106,14 @@ platforms.each do |p|
   create_riak_test "verify_kv_health_check", tags
 end
 
+## Riak 1.3.1+
+platforms.each do |p|
+  next if p =~ /fedora-15/
+  tags = {'platform' => p, 'min_version' => '1.3.1'}
+  create_riak_test 'verify_secondary_index_reformat', tags.merge('backend' => 'eleveldb')
+  create_riak_test 'pr_pw', tags
+end
+
 ## Riak EE-only tests
 platforms.each do |p|
   %w{jmx_verify verify_snmp}.each do |t|
