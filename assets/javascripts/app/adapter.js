@@ -11,7 +11,7 @@ GiddyUp.Adapter = DS.RESTAdapter.extend({
     success = function(json){
       Ember.run(this, function(){
         this.didFindMany(store, type, json);
-      })
+      });
     };
 
     while(rest.length > 0){

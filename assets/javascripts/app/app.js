@@ -1,3 +1,4 @@
+/* global GiddyUp:true */
 GiddyUp = Ember.Application.create({
   LOG_TRANSITIONS: true
 });

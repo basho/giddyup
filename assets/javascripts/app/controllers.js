@@ -1,3 +1,4 @@
+/* global $ */
 require('matrix');
 require('progress');
 

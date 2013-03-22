@@ -36,7 +36,7 @@ GiddyUp.ProgressMixin = Ember.Mixin.create({
     var percent = this.get('progressPercent'),
         quips = this.get('progressMessages');
 
-    index = Math.floor((percent / 100.0) * (quips.length - 1));
+    var index = Math.floor((percent / 100.0) * (quips.length - 1));
     return quips[index];
   }.property('progressPercent', 'progressMessages')
 });

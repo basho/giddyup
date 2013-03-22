@@ -113,6 +113,6 @@ GiddyUp.TestInstanceRoute = Ember.Route.extend({
 GiddyUp.TestInstanceIndexRoute = Ember.Route.extend({
   setupController: function(){
     var testResults = this.controllerFor('test_results');
-    testResults.set('selectedItem', null)
+    testResults.set('selectedItem', null);
   }
 });
