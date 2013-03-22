@@ -71,10 +71,11 @@ GiddyUp.MatrixController = Ember.ArrayController.extend({
     });
 
     // Now insert the items
-    content.forEach(function(item) {
+    content.forEach(function(item, idx) {
       var keys = dimensions.map(function(d) { return item.get(d); });
       var leaf = index.findByKeys(keys);
-      leaf.addObject(item);
+      var wrapped = this.objectAtContent(idx);
+      leaf.addObject(wrapped);
     }, this);
 
     return index;
