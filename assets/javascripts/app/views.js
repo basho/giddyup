@@ -2,6 +2,7 @@ require('selectable');
 
 GiddyUp.ProjectItemView = Ember.View.extend(GiddyUp.Selectable);
 GiddyUp.ScorecardItemView = Ember.View.extend(GiddyUp.Selectable);
+GiddyUp.TestResultItemView = Ember.View.extend(GiddyUp.Selectable);
 GiddyUp.HelpView = Ember.View.extend();
 
 GiddyUp.BubbleView = Ember.View.extend({

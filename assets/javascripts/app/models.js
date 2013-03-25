@@ -22,6 +22,14 @@ GiddyUp.TestResult = DS.Model.extend({
   testInstance: DS.belongsTo('GiddyUp.TestInstance'),
   status: DS.attr('boolean'),
   logUrl: DS.attr('string'),
+  // Hack until we can get real artifacts
+  log: function(){
+    return GiddyUp.Log.find(this.get('id'));
+  }.property('id'),
   createdAt: DS.attr('date'),
   longVersion: DS.attr('string')
+});
+
+GiddyUp.Log = DS.Model.extend({
+  body: DS.attr('string')
 });

@@ -33,23 +33,6 @@ helper('testInstanceAbbr', function(){
      return parts.join('');
 });
 
-var testInstanceDescProps = ['name',
-                             'backend',
-                             'platform',
-                             'upgradeVersion'];
-
-helper('testInstanceDesc', function(testInstance){
-  var props = testInstance.getProperties(testInstanceDescProps),
-      parts = [];
-
-  testInstanceDescProps.forEach(function(prop){
-    if (props[prop] !== null && props[prop] !== undefined)
-      parts.push(props[prop]);
-  });
-
-  return parts.join(' / ');
-}, 'name', 'backend', 'platform', 'upgradeVersion');
-
 helper('timeAgoInWords', function(date){
   // Based roughly on distance_of_time_in_words from Ruby on Rails,
   // with ideas from John Resig's "prettyDate" function.

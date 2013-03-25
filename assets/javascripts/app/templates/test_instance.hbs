@@ -1,0 +1,9 @@
+<div class="row-fluid">
+  <h4>{{descriptor}} {{#linkTo 'scorecard' this.scorecard class="btn btn-mini" activeClass="fakeActive"}}&times;&nbsp; Hide results{{/linkTo}}</h4>
+</div>
+<div class="row-fluid">
+  <div class="span3 well">
+    {{ render "test_results" }}
+  </div>
+  {{outlet}}
+</div>

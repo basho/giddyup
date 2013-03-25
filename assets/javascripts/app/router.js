@@ -22,7 +22,7 @@ GiddyUp.Router.map(function(){
   });
   //  /logs/:test_result_id
   //      Display the log of a test result in the full window
-  this.resource('log', {path: '/logs/:test_result_id' });
+  this.resource('log', {path: '/logs/:log_id' });
 });
 
 GiddyUp.IndexRoute = Ember.Route.extend({
@@ -105,7 +105,6 @@ GiddyUp.TestInstanceRoute = Ember.Route.extend({
   },
   setupController: function(controller, model){
     var testResults = this.controllerFor('test_results');
-
     testResults.set('model', model.get('testResults'));
   }
 });
@@ -114,5 +113,33 @@ GiddyUp.TestInstanceIndexRoute = Ember.Route.extend({
   setupController: function(){
     var testResults = this.controllerFor('test_results');
     testResults.set('selectedItem', null);
+    this.render('help/test_instance', {into: 'application', outlet: 'help'});
+    this.render();
+  }
+});
+
+GiddyUp.TestResultRoute = Ember.Route.extend({
+  model: function(params){
+    return GiddyUp.TestResult.find(params.test_result_id);
+  },
+  setupController: function(controller, model){
+    var testResults = this.controllerFor('test_results');
+    testResults.set('selectedItem', model);
+    this.render();
+    this.render('help/test_result', {into: 'application', outlet: 'help'});
+  }
+});
+
+GiddyUp.LogRoute = Ember.Route.extend({
+  helpWasShowing: false,
+  activate: function(){
+    $('img.cowboy').hide();
+    this.set('helpWasShowing', $('#help').is(':visible'))
+    $('#help').hide();
+  },
+  deactivate: function(){
+    $('img.cowboy').show();
+    if(this.get('helpWasShowing'))
+      $('#help').show();
   }
 });
