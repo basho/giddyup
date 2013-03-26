@@ -85,6 +85,7 @@ GiddyUp.ScorecardRoute = Ember.Route.extend({
 GiddyUp.ScorecardIndexRoute = Ember.Route.extend({
   renderTemplate: function(){
     this.render('help/matrix', {into: 'application', outlet: 'help'});
+    this.render('test_instances', {into: 'scorecard'});
   }
 });
 
@@ -106,6 +107,7 @@ GiddyUp.TestInstanceRoute = Ember.Route.extend({
   setupController: function(controller, model){
     var testResults = this.controllerFor('test_results');
     testResults.set('model', model.get('testResults'));
+    this.render('test_instance', {into: 'scorecard'});
   }
 });
 
