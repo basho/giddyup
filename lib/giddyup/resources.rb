@@ -10,8 +10,7 @@ module GiddyUp
     # indicates it should process inside a transaction.
     def initialize
       if transactional?
-        @connection = ActiveRecord::Base.connection
-        @connection.begin_db_transaction
+        db.begin_db_transaction
       end
     end
 
@@ -19,11 +18,11 @@ module GiddyUp
     # error (that is, if it's not a 2xx or 3xx response). Otherwise,
     # commits the transaction.
     def finish_request
-      if transactional?
+      if transactional? && !db.outside_transaction?
         if response.code < 400
-          @connection.commit_db_transaction
+          db.commit_db_transaction
         else
-          @connection.rollback_db_transaction
+          db.rollback_db_transaction
         end
       end
       super
@@ -32,6 +31,11 @@ module GiddyUp
     # Whether to open a transaction for the request. By default, true.
     def transactional?
       true
+    end
+
+    private
+    def db
+      ActiveRecord::Base.connection_pool.connection
     end
   end
 
@@ -61,7 +65,7 @@ module GiddyUp
       unless [204, 205, 304].include?(response.code)
         response.headers['Content-Type'] ||= "text/html"
       end
-      ActiveRecord::Base.clear_active_connections!
+      # ActiveRecord::Base.clear_active_connections!
     end
 
     def query_ids
@@ -169,14 +173,68 @@ module GiddyUp
   end
 
   class ArtifactResource < Resource
+    include TransactionalResource
+
+    def allowed_methods
+      if request.path_info[:id].present?
+        ['GET']
+      elsif request.path_info[:test_result_id].present?
+        ['PUT']
+      else
+        []
+      end
+    end
+
+    def content_types_provided
+      if resource_exists?
+        [ [ "application/json", :to_json ], [ @artifact.content_type, :to_raw ] ]
+      else
+        super
+      end
+    end
+
+    def content_types_accepted
+      [[ request.headers['content-type'], :accept_artifact ]]
+    end
+
     def resource_exists?
-      return false unless request.path_info[:id]
-      @artifact = Artifact.find(request.path_info[:id])
-      @artifact.present?
+      if request.get?
+        return false unless request.path_info[:id].present?
+        @artifact = Artifact.find(request.path_info[:id])
+        @artifact.present?
+      elsif request.path_info[:test_result_id].present?
+        @context = CreateArtifact.new(request.path_info[:test_result_id])
+        @context.can_create? ? false : 404
+      end
+    end
+
+    def accept_artifact
+      if @context.create_artifact('path' => request.path_tokens.join('/'),
+                                  'body' => request.body,
+                                  'content_type' => request.headers['content-type'])
+        artifact_uri = URI.join(request.base_uri.to_s, File.join("/artifacts", @context.artifact.id.to_s))
+        response.headers['Link'] = %Q[<#{artifact_uri}>; rel="canonical"]
+        true
+      else
+        false
+      end
     end
 
     def to_json
       ArtifactSerializer.new(@artifact).to_json
+    end
+
+    def to_raw
+      # Streaming all the way down
+      Fiber.new do
+        Excon.get(@artifact.url,
+                  :response_block => lambda {|chunk, remaining, size| Fiber.yield chunk })
+        nil
+      end
+    end
+
+    def transactional?
+      request.put?
     end
   end
 
@@ -326,6 +384,9 @@ module GiddyUp
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
     add ['artifacts', :id], ArtifactResource
+    add ['test_results', :test_result_id, 'artifacts', '*'], ArtifactResource do |request|
+      request.put?
+    end
     add ['tests', :id], TestResource
     add ['tests'], TestsResource
     add ['test_instances', :id], TestInstanceResource
