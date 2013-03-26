@@ -35,7 +35,7 @@ module GiddyUp
 
     private
     def db
-      ActiveRecord::Base.connection_pool.connection
+      ActiveRecord::Base.connection
     end
   end
 
@@ -61,11 +61,8 @@ module GiddyUp
     end
 
     def finish_request
-      # See seancribbs/webmachine-ruby#68
-      unless [204, 205, 304].include?(response.code)
-        response.headers['Content-Type'] ||= "text/html"
-      end
       super
+      ActiveRecord::Base.connection.close
     end
 
     def query_ids
