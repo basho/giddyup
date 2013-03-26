@@ -48,10 +48,17 @@ module GiddyUp
     attr_reader :artifact
     def initialize(test_result_id)
       @test_result = TestResult.find(test_result_id)
+      if @test_result.present?
+        @artifact = @test_result.artifacts.build
+      end
+    end
+
+    def id
+      @artifact.id ||= Artifact.next_id
     end
 
     def can_create?
-      @test_result.present?
+      @artifact.present?
     end
 
     def create_artifact(data)
@@ -69,8 +76,7 @@ module GiddyUp
       file.body = data['body'].to_s
       file.content_type = data['content_type'] || "text/plain"
       file.save
-      @artifact = Artifact.create!(:test_result => @test_result,
-                                   :url => file.public_url,
+      @artifact.update_attributes!(:url => file.public_url,
                                    :content_type => file.content_type)
       publish_artifact
       true

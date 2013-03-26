@@ -9,7 +9,7 @@ module GiddyUp
     # Starts a DB transaction on initialization if the resource
     # indicates it should process inside a transaction.
     def initialize
-      if transactional?
+      if transactional? && db.outside_transaction?
         db.begin_db_transaction
       end
     end
@@ -65,7 +65,7 @@ module GiddyUp
       unless [204, 205, 304].include?(response.code)
         response.headers['Content-Type'] ||= "text/html"
       end
-      # ActiveRecord::Base.clear_active_connections!
+      super
     end
 
     def query_ids
@@ -179,15 +179,16 @@ module GiddyUp
       if request.path_info[:id].present?
         ['GET']
       elsif request.path_info[:test_result_id].present?
-        ['PUT']
+        ['POST']
       else
         []
       end
     end
 
     def content_types_provided
-      if resource_exists?
-        [ [ "application/json", :to_json ], [ @artifact.content_type, :to_raw ] ]
+      if resource_exists? == true
+        [ [ "application/json", :to_json ],
+          [ @artifact.content_type, :to_raw ] ]
       else
         super
       end
@@ -208,16 +209,16 @@ module GiddyUp
       end
     end
 
+    def allow_missing_post?; true; end
+    def post_is_create?; true; end
+    def create_path
+      URI.join(request.base_uri.to_s, "/artifacts/#{@context.id}")
+    end
+
     def accept_artifact
-      if @context.create_artifact('path' => request.path_tokens.join('/'),
-                                  'body' => request.body,
-                                  'content_type' => request.headers['content-type'])
-        artifact_uri = URI.join(request.base_uri.to_s, File.join("/artifacts", @context.artifact.id.to_s))
-        response.headers['Link'] = %Q[<#{artifact_uri}>; rel="canonical"]
-        true
-      else
-        false
-      end
+      @context.create_artifact('path' => request.path_tokens.join('/'),
+                               'body' => request.body,
+                               'content_type' => request.headers['content-type'])
     end
 
     def to_json
@@ -385,7 +386,7 @@ module GiddyUp
     add ['scorecards'], ScorecardsResource
     add ['artifacts', :id], ArtifactResource
     add ['test_results', :test_result_id, 'artifacts', '*'], ArtifactResource do |request|
-      request.put?
+      request.post?
     end
     add ['tests', :id], TestResource
     add ['tests'], TestsResource
