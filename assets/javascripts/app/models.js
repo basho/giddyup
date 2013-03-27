@@ -45,8 +45,6 @@ GiddyUp.Artifact = DS.Model.extend({
 
     url = adapter.buildURL(root, id);
 
-    console.log(['fetching dat text', url, id, ctype]);
-
     $.ajax(url, {
       cache: false,
       accepts: {'text': ctype},
