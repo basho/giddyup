@@ -1,0 +1,7 @@
+<ul class="nav nav-list">
+  <li class="divider"></li>
+  <li class="nav-header">Artifacts</li>
+  {{#each controller itemViewClass="GiddyUp.ArtifactItemView"}}
+  {{#linkTo 'artifact' this}}{{mediaIcon contentType}} {{shortpath this.url}}{{/linkTo}}
+  {{/each}}
+</ul>

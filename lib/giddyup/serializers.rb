@@ -46,5 +46,5 @@ class ScorecardSerializer < ActiveModel::Serializer
 end
 
 class ArtifactSerializer < ActiveModel::Serializer
-  attributes :url, :content_type, :test_result_id
+  attributes :id, :url, :content_type, :test_result_id
 end

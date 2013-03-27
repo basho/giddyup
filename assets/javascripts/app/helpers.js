@@ -71,3 +71,41 @@ helper('timeAgoInWords', function(date){
     return distance_in_years + " years ago";
   }
 });
+
+helper('mediaIcon', function(ctype){
+  if(Ember.isNone(ctype))
+    return '';
+
+  var type = ctype.toString().split(";")[0].trim().split("/"),
+      major = type[0],
+      minor = type[1],
+      icon;
+  if(major === 'image'){
+    icon = 'icon-picture';
+  } else if(major === 'text') {
+    if(minor === 'csv'){
+      icon = 'icon-th';
+    } else {
+      icon = 'icon-pencil';
+    }
+  } else {
+    icon = 'icon-file';
+  }
+  return new Handlebars.SafeString('<i class=\"' + icon + '\"></i>');
+});
+
+helper('shortpath', function(url){
+  // We want to extract the shortest meaningful path from the given
+  // URL. For now we assume the file will either be named "ID.log"
+  // where ID is a number, or "ID/some/deep/path/to/tehfile.bmp". For
+  // the former, just return the full thing, for the latter, strip off
+  // the ID prefix.
+  if(Ember.isNone(url))
+    return '';
+
+  var path = url.split("/").slice(3);
+  if(path[0].match("^[0-9]+$"))
+    return path.slice(1).join("/");
+  else
+    return path.join('/');
+});

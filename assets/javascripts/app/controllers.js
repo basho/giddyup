@@ -59,10 +59,10 @@ GiddyUp.TestInstanceController = Ember.ObjectController.extend({
 
 GiddyUp.TestResultsController = Ember.ArrayController.extend({
   sortProperties: ['createdAt'],
-  sortAscending: false,
-  itemController: 'test_result'
+  sortAscending: false
 });
 
-GiddyUp.TestResultController = Ember.ObjectController.extend({
+GiddyUp.ArtifactsController = Ember.ArrayController.extend({});
 
+GiddyUp.ArtifactController = Ember.ObjectController.extend({
 });

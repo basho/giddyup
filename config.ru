@@ -14,6 +14,7 @@ Rack::Mime::MIME_TYPES['.woff'] = 'application/x-font-woff'
 
 use Rack::Rewrite do
   rewrite %r{^(.*)\/$}, '$1/index.html'
+  rewrite %r{^(.*)\/img\/(.*)$}, '$1/images/$2' # Hack for bootstrap
 end
 
 unless ENV['RACK_ENV'] == 'production'

@@ -15,14 +15,15 @@ GiddyUp.Router.map(function(){
         this.resource('test_instance', { path: ':test_instance_id' }, function(){
   //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id
   //      Display an individual test result
-          this.resource('test_result', { path: ':test_result_id' });
+          this.resource('test_result', { path: ':test_result_id' }, function(){
+  //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id/:artifact_id
+  //      Display a test result's artifact
+            this.resource('artifact', { path: 'artifacts/:artifact_id' });
+          });
         });
       });
    });
   });
-  //  /logs/:test_result_id
-  //      Display the log of a test result in the full window
-  this.resource('log', {path: '/logs/:log_id' });
 });
 
 GiddyUp.IndexRoute = Ember.Route.extend({
@@ -107,6 +108,8 @@ GiddyUp.TestInstanceRoute = Ember.Route.extend({
   setupController: function(controller, model){
     var testResults = this.controllerFor('test_results');
     testResults.set('model', model.get('testResults'));
+  },
+  renderTemplate: function(){
     this.render('test_instance', {into: 'scorecard'});
   }
 });
@@ -115,6 +118,8 @@ GiddyUp.TestInstanceIndexRoute = Ember.Route.extend({
   setupController: function(){
     var testResults = this.controllerFor('test_results');
     testResults.set('selectedItem', null);
+  },
+  renderTemplate: function(){
     this.render('help/test_instance', {into: 'application', outlet: 'help'});
     this.render();
   }
@@ -125,23 +130,39 @@ GiddyUp.TestResultRoute = Ember.Route.extend({
     return GiddyUp.TestResult.find(params.test_result_id);
   },
   setupController: function(controller, model){
-    var testResults = this.controllerFor('test_results');
+    var testResults = this.controllerFor('test_results'),
+        artifacts = this.controllerFor('artifacts');
     testResults.set('selectedItem', model);
-    this.render();
-    this.render('help/test_result', {into: 'application', outlet: 'help'});
+    artifacts.set('model', model.get('artifacts'));
+  },
+  renderTemplate: function(){
+    this.render('artifacts', {into: 'test_instance',
+                              outlet: 'artifacts' });
   }
 });
 
-GiddyUp.LogRoute = Ember.Route.extend({
-  helpWasShowing: false,
-  activate: function(){
-    $('img.cowboy').hide();
-    this.set('helpWasShowing', $('#help').is(':visible'))
-    $('#help').hide();
+GiddyUp.TestResultIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    var artifacts = this.controllerFor('artifacts'),
+        testResults = this.controllerFor('test_results');
+    artifacts.set('selectedItem', null);
   },
-  deactivate: function(){
-    $('img.cowboy').show();
-    if(this.get('helpWasShowing'))
-      $('#help').show();
+  renderTemplate: function(){
+    this.render('help/test_result', {into: 'application', outlet: 'help'});
+    this.render('test_instance/index', {into: 'test_instance'});
+  }
+});
+
+GiddyUp.ArtifactRoute = Ember.Route.extend({
+  model: function(params){
+    return GiddyUp.Artifact.find(params.artifact_id);
+  },
+  setupController: function(controller, model){
+    var artifacts = this.controllerFor('artifacts');
+    artifacts.set('selectedItem', model);
+  },
+  renderTemplate: function(){
+    this.render('help/artifact', {into: 'application', outlet: 'help'});
+    this.render('artifact', {into: 'test_instance'});
   }
 });

@@ -20,16 +20,45 @@ GiddyUp.TestInstance = DS.Model.extend({
 
 GiddyUp.TestResult = DS.Model.extend({
   testInstance: DS.belongsTo('GiddyUp.TestInstance'),
+  artifacts: DS.hasMany('GiddyUp.Artifact'),
   status: DS.attr('boolean'),
   logUrl: DS.attr('string'),
-  // Hack until we can get real artifacts
-  log: function(){
-    return GiddyUp.Log.find(this.get('id'));
-  }.property('id'),
   createdAt: DS.attr('date'),
   longVersion: DS.attr('string')
 });
 
-GiddyUp.Log = DS.Model.extend({
-  body: DS.attr('string')
+GiddyUp.Artifact = DS.Model.extend({
+  url: DS.attr('string'),
+  contentType: DS.attr('string'),
+  testResult: DS.belongsTo('GiddyUp.TestResult'),
+  text: function(){
+    var url = this.get('url'),
+        ctype = this.get('contentType'),
+        id = this.get('id');
+
+    if(Ember.isNone(ctype) || Ember.isNone(url) || !ctype.match(/^text/))
+      return '';
+
+    // l33t h4x - avert thine eyes
+    var adapter = GiddyUp.__container__.lookup('store:main').get('_adapter'),
+        root = adapter.rootForType(GiddyUp.Artifact);
+
+    url = adapter.buildURL(root, id);
+
+    console.log(['fetching dat text', url, id, ctype]);
+
+    $.ajax(url, {
+      cache: false,
+      accepts: {'text': ctype},
+      context: this,
+      dataType: 'text',
+      success: function(data){
+        this.set('text', data);
+      },
+      error: function(){
+        this.set('text', 'Could not load the log the GiddyUp server!');
+      }
+    });
+    return 'Loading...';
+  }.property('url', 'contentType')
 });

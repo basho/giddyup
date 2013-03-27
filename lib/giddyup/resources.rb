@@ -236,6 +236,22 @@ module GiddyUp
     end
   end
 
+  class ArtifactListResource < Resource
+    def resource_exists?
+      begin
+        @artifacts = Artifact.find(query_ids)
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
+    end
+
+    def to_json
+      ActiveModel::ArraySerializer.new(@artifacts, {:root => "artifacts"}).to_json
+    end
+  end
+
   class TestResultsResource < Resource
     def resource_exists?
       begin
@@ -381,6 +397,7 @@ module GiddyUp
     add ['live'], LiveResource
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
+    add ['artifacts'], ArtifactListResource
     add ['artifacts', :id], ArtifactResource
     add ['test_results', :test_result_id, 'artifacts', '*'], ArtifactResource do |request|
       request.post?
