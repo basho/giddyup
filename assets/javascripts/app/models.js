@@ -1,3 +1,4 @@
+/* global $ */
 GiddyUp.Project = DS.Model.extend({
   name: DS.attr('string'),
   scorecards: DS.hasMany('GiddyUp.Scorecard')
