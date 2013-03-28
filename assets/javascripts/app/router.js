@@ -1,143 +1,170 @@
-GiddyUp.Router = Ember.Router.extend({
-  root: Ember.Route.extend({
-    index: Ember.Route.extend({
-      route: '/',
-      redirectsTo: 'projects.index'
-    }),
+GiddyUp.Router.map(function(){
+  //  /
+  //      Redirects to /projects
 
-    showProject: Ember.Router.transitionTo('projects.show.index'),
-    showLog: Ember.Router.transitionTo('logs.show'),
+  //  /projects
+  //      The "root"
+  this.resource('projects', function(){
 
-    logs: Ember.Route.extend({
-      route: '/logs',
+    //  /projects/:project_id
+    //      Display scorecards, highlight selected project
+    this.resource('project', { path: ':project_id' }, function(){
 
-      connectOutlets: function(router) {
-        router.get('applicationController').set('chromeless', true);
-      },
+      //  /projects/:project_id/scorecards/:scorecard_id
+      //      Load tests in matrix, display matrix, lazy-load results
+      this.resource('scorecard', { path: 'scorecards/:scorecard_id' }, function(){
 
-      exit: function(router) {
-        router.get('applicationController').set('chromeless', false);
-      },
+        //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id
+        //      Display results for a bubble
+        this.resource('test_instance', { path: ':test_instance_id' }, function(){
 
-      show: Ember.Route.extend({
-        route: '/:log_id',
+          //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id
+          //      Display an individual test result
+          this.resource('test_result', { path: ':test_result_id' }, function(){
 
-        connectOutlets: function(router, context) {
-          router.get('applicationController').connectOutlet('log', 'log', context);
-        }
-      })
-    }),
+            //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id/:artifact_id
+            //      Display a test result's artifact
+            this.resource('artifact', { path: 'artifacts/:artifact_id' });
+          });
+        });
+      });
+   });
+  });
+});
 
-    projects: Ember.Route.extend({
-      route: '/projects',
+GiddyUp.IndexRoute = Ember.Route.extend({
+  redirect: function(){
+    this.transitionTo('projects');
+  }
+});
 
-      showScorecard: Ember.Router.transitionTo('projects.show.scorecard.show.index'),
+GiddyUp.ProjectsRoute = Ember.Route.extend({
+  model: function(){
+    return GiddyUp.Project.find();
+  }
+});
 
-      connectOutlets: function(router) {
-        router.get('applicationController').
-          connectOutlet('projects', 'projects', GiddyUp.Project.find());
-      },
+GiddyUp.ProjectsIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    this.controllerFor('projects').set('selectedItem', null);
+  },
+  renderTemplate: function(){
+    this.render('help/projects', { into: 'application', outlet: 'help' });
+  }
+});
 
-      index: Ember.Route.extend({
-        route: '/'
-      }),
+GiddyUp.ProjectIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    var scorecards = this.controllerFor('scorecards');
+    scorecards.set('selectedItem', null);
+  },
+  renderTemplate: function(){
+    this.render('help/scorecards', { into: 'application', outlet: 'help' });
+  }
+});
 
-      show: Ember.Route.extend({
-        route: '/:project_id',
+GiddyUp.ProjectRoute = Ember.Route.extend({
+  model: function(params){
+    return GiddyUp.Project.find(params.project_id);
+  },
+  setupController: function(controller, model){
+    var scorecards = this.controllerFor('scorecards'),
+        projects = this.controllerFor('projects');
 
-        connectOutlets: function(router, context) {
-          router.get('projectsController').set('selectedItem', context);
-          router.get('applicationController').
-            connectOutlet('scorecards', 'scorecards', context.get('scorecards'));
-        },
+    projects.set('selectedItem', model);
+    scorecards.set('model', model.get('scorecards'));
+  }
+});
 
-        exit: function(router){
-          if(!Ember.isNone(router.get('applicationController.scorecards'))){
-            router.get('projectsController').set('selectedItem', undefined);
-            router.get('applicationController').disconnectOutlet('scorecards');
-          }
-        },
+GiddyUp.ScorecardRoute = Ember.Route.extend({
+  model: function(params){
+    return GiddyUp.Scorecard.find(params.scorecard_id);
+  },
+  setupController: function(controller, model){
+    var testInstances = this.controllerFor('test_instances'),
+        scorecards = this.controllerFor('scorecards');
 
-        index: Ember.Route.extend({ route: '/' }),
+    scorecards.set('selectedItem', model);
+    testInstances.set('model', model.get('testInstances'));
+  }
+});
 
-        scorecard: Ember.Route.extend({
-          route: '/scorecards',
+GiddyUp.ScorecardIndexRoute = Ember.Route.extend({
+  renderTemplate: function(){
+    this.render('help/matrix', {into: 'application', outlet: 'help'});
+    this.render('test_instances', {into: 'scorecard'});
+  }
+});
 
-          index: Ember.Route.extend({ route: '/' }),
+GiddyUp.TestInstanceRoute = Ember.Route.extend({
+  model: function(params){
+    var id = params.test_instance_id.match(/^\d+-\d+/)[0];
+    return GiddyUp.TestInstance.find(id);
+  },
+  serialize: function(model, params){
+    var segments = [],
+        attrs = ['id', 'name', 'platform', 'backend', 'upgradeVersion'];
+    attrs.forEach(function(attrName){
+      var attr = model.get(attrName);
+      if(attr)
+        segments.push(attr);
+    });
+    return { test_instance_id: segments.join('-') };
+  },
+  setupController: function(controller, model){
+    var testResults = this.controllerFor('test_results');
+    testResults.set('model', model.get('testResults'));
+  },
+  renderTemplate: function(){
+    this.render('test_instance', {into: 'scorecard'});
+  }
+});
 
-          show: Ember.Route.extend({
-            route: '/:scorecard_id',
+GiddyUp.TestInstanceIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    var testResults = this.controllerFor('test_results');
+    testResults.set('selectedItem', null);
+  },
+  renderTemplate: function(){
+    this.render('help/test_instance', {into: 'application', outlet: 'help'});
+    this.render();
+  }
+});
 
-            showTestInstance: Ember.Router.transitionTo('projects.show.scorecard.show.testInstance.show'),
+GiddyUp.TestResultRoute = Ember.Route.extend({
+  model: function(params){
+    return GiddyUp.TestResult.find(params.test_result_id);
+  },
+  setupController: function(controller, model){
+    var testResults = this.controllerFor('test_results'),
+        artifacts = this.controllerFor('artifacts');
+    testResults.set('selectedItem', model);
+    artifacts.set('model', model.get('artifacts'));
+  }
+});
 
-            connectOutlets: function(router, context) {
-              router.get('scorecardsController').set('selectedItem', context);
-              router.get('applicationController').
-                connectOutlet('testInstances', 'testInstances', context.get('test_instances'));
-            },
+GiddyUp.TestResultIndexRoute = Ember.Route.extend({
+  setupController: function(){
+    var artifacts = this.controllerFor('artifacts'),
+        testResults = this.controllerFor('test_results');
+    artifacts.set('selectedItem', null);
+  },
+  renderTemplate: function(){
+    this.render('help/test_result', {into: 'application', outlet: 'help'});
+    this.render('test_instance/index', {into: 'test_instance'});
+  }
+});
 
-            exit: function(router) {
-              router.get('scorecardsController').set('selectedItem', undefined);
-              router.get('applicationController').disconnectOutlet('testInstances');
-            },
-
-            index: Ember.Route.extend({
-              route: '/'
-            }),
-
-            testInstance: Ember.Route.extend({
-              route: '/:test_instance_id',
-
-              serialize: function(router, context) {
-                var components = [context.get('id')],
-                    tag = context.get('tagString');
-
-                if(tag) components.push(tag);
-
-                return { test_instance_id: components.join('-') };
-              },
-
-              deserialize: function(router, params){
-                var tagString = params.test_instance_id,
-                    id;
-                id = tagString.split('-').slice(0,2).join('-');
-                return GiddyUp.TestInstance.find(id);
-              },
-
-              showTestResult: Ember.Router.transitionTo('projects.show.scorecard.show.testInstance.result'),
-
-              connectOutlets: function(router, context){
-                router.get('applicationController').
-                  connectOutlet('testInstance', 'testInstance', context);
-                router.get('testInstanceController').
-                  connectOutlet('testResults', 'testResults', context.get('test_results'));
-              },
-
-              exit: function(router){
-                router.get('testInstanceController').disconnectOutlet('testResults');
-                router.get('applicationController').disconnectOutlet('testInstance');
-              },
-
-              show: Ember.Route.extend({ route: '/' }),
-
-              result: Ember.Route.extend({
-                route: '/:test_result_id',
-
-                connectOutlets: function(router, context){
-                  router.get('testResultsController').set('selectedItem', context);
-                  router.get('testInstanceController').
-                    connectOutlet('testResult', 'testResult', context.get('log'));
-                },
-
-                exit: function(router) {
-                  router.get('testResultsController').set('selectedItem', undefined);
-                  router.get('testInstanceController').disconnectOutlet('testResult');
-                }
-              })
-            })
-          })
-        })
-      })
-    })
-  })
+GiddyUp.ArtifactRoute = Ember.Route.extend({
+  model: function(params){
+    return GiddyUp.Artifact.find(params.artifact_id);
+  },
+  setupController: function(controller, model){
+    var artifacts = this.controllerFor('artifacts');
+    artifacts.set('selectedItem', model);
+  },
+  renderTemplate: function(){
+    this.render('help/artifact', {into: 'application', outlet: 'help'});
+    this.render('artifact', {into: 'test_instance'});
+  }
 });

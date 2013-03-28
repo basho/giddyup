@@ -1,8 +1,12 @@
-GiddyUp.adapter = GiddyUp.Adapter.create();
-
 GiddyUp.Store = DS.Store.extend({
-  revision: 10,
-  adapter: GiddyUp.adapter
+  revision: 12,
+  adapter: 'GiddyUp.Adapter'
 });
 
-GiddyUp.store = GiddyUp.Store.create();
+GiddyUp.Adapter.configure('GiddyUp.Project', {
+  primaryKey: 'name'
+});
+
+GiddyUp.Adapter.configure('GiddyUp.Scorecard', {
+  project: { key: 'project' }
+});
