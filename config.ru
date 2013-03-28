@@ -6,6 +6,7 @@ Bundler.require
 
 require 'giddyup'
 require 'rack/static'
+require 'rack/deflater'
 require 'rack-rewrite'
 require 'rake-pipeline'
 require 'rake-pipeline/middleware'
@@ -17,8 +18,13 @@ use Rack::Rewrite do
   rewrite %r{^(.*)\/img\/(.*)$}, '$1/images/$2' # Hack for bootstrap
 end
 
-unless ENV['RACK_ENV'] == 'production'
+if ENV['RACK_ENV'] == 'production'
+  use Rack::Deflater
+else
   use Rake::Pipeline::Middleware, "Assetfile"
 end
-use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/stylesheets", "/javascripts", "/images", "/fonts"], :root => "public"
+
+use Rack::Static, :urls => ["/index.html", "/favicon.ico", "/stylesheets",
+                            "/javascripts", "/images", "/fonts"],
+                  :root => "public"
 run GiddyUp::Application.adapter

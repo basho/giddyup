@@ -33,7 +33,7 @@ namespace :db do
       f.write "class #{camelized_name} < ActiveRecord::Migration\n  def up\n  end\n\n  def down\n  end\nend\n"
     end
   end
-  
+
   task :migrate => :environment do
     ActiveRecord::Migration.verbose = ENV["VERBOSE"] ? ENV["VERBOSE"] == "true" : true
     ActiveRecord::Migrator.migrate([Pathname.new('db/migrate')], ENV["VERSION"] ? ENV["VERSION"].to_i : nil) do |migration|
@@ -53,7 +53,7 @@ namespace :db do
         result.log_url = GiddyUp::S3.directories.get(GiddyUp::LogBucket).files.new(:key => "#{result.id}.log").public_url
       rescue Excon::Errors::Error => e
         puts "  Failed! #{e.message.split(/\n/).first}"
-      else        
+      else
         result.save
       end
     end
