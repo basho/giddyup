@@ -1,0 +1,5 @@
+<ul class="nav nav-list">
+  {{#each controller itemViewClass="GiddyUp.ArtifactItemView"}}
+  {{#linkTo 'artifact' this}}{{mediaIcon contentType}} {{shortpath this.url}}{{/linkTo}}
+  {{/each}}
+</ul>

@@ -1,0 +1,24 @@
+<table class="table table-striped">
+  <thead>
+    <th></th>
+    {{#each column in columnNames}}
+      <th>{{ column }}</th>
+    {{/each}}
+  </thead>
+  <tbody>
+    {{#each row in matrix}}
+      <tr>
+        <td>{{ key }}</td>
+        {{#each cell in row}}
+          <td>
+            {{#each bubble in cell}}
+              {{#with bubble}}
+                {{ partial "test_instances/bubble" }}
+              {{/with}}
+            {{/each}}
+          </td>
+        {{/each}}
+      </tr>
+    {{/each}}
+  </tbody>
+</table>

@@ -1,14 +1,9 @@
 <div class="row-fluid">
-  <h4>{{view.descriptor}} <a class="btn btn-mini" {{action showScorecard controller.scorecard.content href=true}}>&times;&nbsp; Hide results</a></h4>
+  <h4>{{#linkTo 'scorecard' scorecard activeClass="fakeActive"}}{{scorecard.name}}{{/linkTo}} : {{descriptor}}</h4>
 </div>
-
 <div class="row-fluid">
   <div class="span3 well">
-    {{outlet testResults}}
+    {{ render "test_results" }}
   </div>
-  {{#if controller.testResult}}
-    <div class="span9">{{outlet testResult}}</div>
-  {{else}}
-    <div class="span9 well">Select a test result to view a log of its test run.</div>
-  {{/if}}
+  {{outlet}}
 </div>

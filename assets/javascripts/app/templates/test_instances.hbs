@@ -1,28 +1,5 @@
 {{#if isLoaded}}
-<table class="table table-striped">
-  <thead>
-    <th></th>
-    {{#each column in dimensionValues.lastObject}}
-      <th>{{column}}</th>
-    {{/each}}
-  </thead>
-  <tbody>
-    {{#each matrix}}
-      <tr>
-        <td>{{key}}</td>
-        {{#each this}}
-          <td>
-            {{#each this}}
-              <div>{{#view GiddyUp.TestInstanceBubbleView contentBinding="this"}}<a {{action showTestInstance this href="true"}}>{{view.abbr}}</a>{{/view}}</div>
-            {{/each}}
-          </td>
-          {{/each}}
-      </tr>
-      {{/each}}
-  </tbody>
-</table>
+  {{ partial "test_instances/matrix" }}
 {{else}}
-<div class="progress progress-striped active">
-  <div class="bar" {{bindAttr style="view.progressStyle"}}>{{view.progressMessage}}: {{view.progressComplete}} / {{view.progressTotal}}</div>
-</div>
+  {{ partial "test_instances/progress" }}
 {{/if}}

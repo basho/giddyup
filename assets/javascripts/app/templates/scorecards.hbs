@@ -1,7 +1,9 @@
-{{#if view.isLoaded}}
 <div class="navbar">
   <div class="navbar-inner scorecards">
-    {{view GiddyUp.ScorecardsCollectionView contentBinding="controller"}}
+    <ul class="nav">
+      {{#each controller itemViewClass="GiddyUp.ScorecardItemView"}}
+      {{#linkTo "scorecard" this}}{{name}}{{/linkTo}}
+      {{/each}}
+    </ul>
   </div>
 </div>
-{{/if}}

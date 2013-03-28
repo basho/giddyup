@@ -9,9 +9,8 @@ module GiddyUp
     # Starts a DB transaction on initialization if the resource
     # indicates it should process inside a transaction.
     def initialize
-      if transactional?
-        @connection = ActiveRecord::Base.connection
-        @connection.begin_db_transaction
+      if transactional? && db.outside_transaction?
+        db.begin_db_transaction
       end
     end
 
@@ -19,11 +18,11 @@ module GiddyUp
     # error (that is, if it's not a 2xx or 3xx response). Otherwise,
     # commits the transaction.
     def finish_request
-      if transactional?
+      if transactional? && !db.outside_transaction?
         if response.code < 400
-          @connection.commit_db_transaction
+          db.commit_db_transaction
         else
-          @connection.rollback_db_transaction
+          db.rollback_db_transaction
         end
       end
       super
@@ -32,6 +31,11 @@ module GiddyUp
     # Whether to open a transaction for the request. By default, true.
     def transactional?
       true
+    end
+
+    private
+    def db
+      ActiveRecord::Base.connection
     end
   end
 
@@ -57,11 +61,8 @@ module GiddyUp
     end
 
     def finish_request
-      # See seancribbs/webmachine-ruby#68
-      unless [204, 205, 304].include?(response.code)
-        response.headers['Content-Type'] ||= "text/html"
-      end
-      ActiveRecord::Base.clear_active_connections!
+      super
+      ActiveRecord::Base.connection.close
     end
 
     def query_ids
@@ -168,15 +169,86 @@ module GiddyUp
     end
   end
 
-  class LogResource < Resource
+  class ArtifactResource < Resource
+    include TransactionalResource
+
+    def allowed_methods
+      if request.path_info[:id].present?
+        ['GET']
+      elsif request.path_info[:test_result_id].present?
+        ['POST']
+      else
+        []
+      end
+    end
+
+    def content_types_provided
+      if resource_exists? == true
+        [ [ "application/json", :to_json ],
+          [ @artifact.content_type, :to_raw ] ]
+      else
+        super
+      end
+    end
+
+    def content_types_accepted
+      [[ request.headers['content-type'], :accept_artifact ]]
+    end
+
     def resource_exists?
-      return false unless request.path_info[:id]
-      @test_result = TestResult.find(request.path_info[:id])
-      @test_result.present?
+      if request.get?
+        return false unless request.path_info[:id].present?
+        @artifact = Artifact.find(request.path_info[:id])
+        @artifact.present?
+      elsif request.path_info[:test_result_id].present?
+        @context = CreateArtifact.new(request.path_info[:test_result_id])
+        @context.can_create? ? false : 404
+      end
+    end
+
+    def allow_missing_post?; true; end
+    def post_is_create?; true; end
+    def create_path
+      URI.join(request.base_uri.to_s, "/artifacts/#{@context.id}")
+    end
+
+    def accept_artifact
+      @context.create_artifact('path' => request.path_tokens.join('/'),
+                               'body' => request.body,
+                               'content_type' => request.headers['content-type'])
     end
 
     def to_json
-      LogSerializer.new(@test_result).to_json
+      ArtifactSerializer.new(@artifact).to_json
+    end
+
+    def to_raw
+      # Streaming all the way down
+      Fiber.new do
+        Excon.get(@artifact.url,
+                  :response_block => lambda {|chunk, remaining, size| Fiber.yield chunk })
+        nil
+      end
+    end
+
+    def transactional?
+      request.put?
+    end
+  end
+
+  class ArtifactListResource < Resource
+    def resource_exists?
+      begin
+        @artifacts = Artifact.find(query_ids)
+      rescue ActiveRecord::RecordNotFound
+        false
+      else
+        true
+      end
+    end
+
+    def to_json
+      ActiveModel::ArraySerializer.new(@artifacts, {:root => "artifacts"}).to_json
     end
   end
 
@@ -325,7 +397,11 @@ module GiddyUp
     add ['live'], LiveResource
     add ['scorecards', :id], ScorecardResource
     add ['scorecards'], ScorecardsResource
-    add ['logs', :id], LogResource
+    add ['artifacts'], ArtifactListResource
+    add ['artifacts', :id], ArtifactResource
+    add ['test_results', :test_result_id, 'artifacts', '*'], ArtifactResource do |request|
+      request.post?
+    end
     add ['tests', :id], TestResource
     add ['tests'], TestsResource
     add ['test_instances', :id], TestInstanceResource

@@ -1,12 +1,13 @@
-GiddyUp = Ember.Application.create();
+/* global GiddyUp:true */
+GiddyUp = Ember.Application.create({
+  LOG_TRANSITIONS: true
+});
 
-require('router');
+require('templates');
 require('adapter');
 require('store');
-
 require('models');
 require('controllers');
-require('templates');
+require('helpers');
 require('views');
-
-require('events');
+require('router');

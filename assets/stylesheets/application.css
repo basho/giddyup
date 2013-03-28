@@ -78,7 +78,6 @@ pre.abridged {
 }
 
 pre.unabridged {
-  margin-top: 20px;
   margin-bottom: 20px;
 }
 
@@ -108,13 +107,41 @@ pre.unabridged {
 .nav-list > .active > a,
 .nav-list > .active > a:hover {
   color: #3a87ad;
+  background: none;
   text-shadow: 0 1px 0 rgba(255, 255, 255, .6);
-  background-color: #e1eff6;
-  padding: 4px 15px 6px;
-  border: 1px solid #bde3eb;
+  padding: 4px auto;
+}
+
+.nav-list > li {
   -webkit-border-radius: 4px;
      -moz-border-radius: 4px;
           border-radius: 4px;
+  margin-left: -25px;
+  margin-right: -25px;
+  padding: 0 15px;
+}
+
+.nav-list > li.active {
+  background-color: #e1eff6;
+}
+
+.nav-list > li > ul {
+  padding-top: 4px;
+  padding-bottom: 6px;
+}
+
+.nav-list > li > ul > li {
+  margin-left: 0px;
+  padding-left: 7px;
+}
+
+.nav-list > li > ul > li.active {
+  background-color: #c3e4f4;
+  border: 1px solid #b5d4e2;
+}
+
+.nav-list > .active > a > [class^="icon-"] {
+  background-image: url("../img/glyphicons-halflings.png");
 }
 
 .scorecards {
@@ -143,7 +170,7 @@ pre.unabridged {
 }
 
 .label {
-  padding: 4px 12px 5px;
+  /* padding: 4px 12px 5px; */
   margin-right: 5px;
 }
 

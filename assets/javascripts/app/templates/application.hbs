@@ -1,16 +1,8 @@
 <div class="container-fluid">
-  {{#if chromeless}}
-    {{outlet log}}
-  {{else}}
-    <img class="cowboy" src="/images/cowboy.png" />
-    <div class="navbar" style="margin-bottom:0">
-      <div class="navbar-inner">
-        <a class="brand" href="#">GiddyUp</a>
-        {{outlet projects}}
-      </div>
-    </div>
-    {{outlet scorecards}}
-    {{outlet testInstance}}
-    {{outlet testInstances}}
-  {{/if}}
+  <img class="cowboy" src="/images/cowboy.png" {{action "toggleHelp"}}/>
+  <div id="help" class="popover left" style="right: 110px; left: auto; top: 40px; display: none">
+    <div class="arrow" style="top: 48px"></div>
+    {{ outlet "help" }}
+  </div>
+  {{outlet}}
 </div>
