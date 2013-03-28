@@ -1,8 +1,0 @@
-{{#with view}}
-  {{#if isLoaded}}
-    <a {{action showTestResult content href=true}}><span {{bindAttr class="labelClass"}}>{{labelText}}</span> {{timeAgo}} [{{versionString}}]</a>
-  {{else}}
-    <span class="label">Loading...</span>
-  {{/if}}
-{{/with}}
-
