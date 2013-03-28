@@ -1,23 +1,29 @@
 GiddyUp.Router.map(function(){
   //  /
   //      Redirects to /projects
+
   //  /projects
   //      The "root"
   this.resource('projects', function(){
-  //  /projects/:project_id
-  //      Display scorecards, highlight selected project
+
+    //  /projects/:project_id
+    //      Display scorecards, highlight selected project
     this.resource('project', { path: ':project_id' }, function(){
-  //  /projects/:project_id/scorecards/:scorecard_id
-  //      Load tests in matrix, display matrix, lazy-load results
+
+      //  /projects/:project_id/scorecards/:scorecard_id
+      //      Load tests in matrix, display matrix, lazy-load results
       this.resource('scorecard', { path: 'scorecards/:scorecard_id' }, function(){
-  //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id
-  //      Display results for a bubble
+
+        //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id
+        //      Display results for a bubble
         this.resource('test_instance', { path: ':test_instance_id' }, function(){
-  //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id
-  //      Display an individual test result
+
+          //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id
+          //      Display an individual test result
           this.resource('test_result', { path: ':test_result_id' }, function(){
-  //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id/:artifact_id
-  //      Display a test result's artifact
+
+            //  /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id/:artifact_id
+            //      Display a test result's artifact
             this.resource('artifact', { path: 'artifacts/:artifact_id' });
           });
         });
