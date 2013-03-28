@@ -7,6 +7,7 @@ GiddyUp.ArtifactItemView = Ember.View.extend(GiddyUp.Selectable);
 GiddyUp.HelpView = Ember.View.extend();
 
 GiddyUp.ArtifactView = Ember.View.extend({
+  classNames: ['span9'],
   templateName: function(){
     var ctype = this.get('controller.contentType'),
         type, major, minor;

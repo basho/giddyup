@@ -1,5 +1,8 @@
 <ul class="nav nav-list">
   {{#each controller itemViewClass="GiddyUp.TestResultItemView"}}
   {{#linkTo 'test_result' this}}{{ partial "test_result/status" }} {{timeAgoInWords createdAt}} [{{longVersion}}]{{/linkTo}}
+  {{#if view.isActive}}
+    {{ render "artifacts" }}
+  {{/if}}
   {{/each}}
 </ul>

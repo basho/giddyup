@@ -5,7 +5,7 @@ GiddyUp.ProgressMixin = Ember.Mixin.create({
     return this.get('progressTotal') === this.get('progressComplete');
   }.property('progressTotal', 'progressComplete'),
 
-  progressTotal: Ember.computed.alias('length'),
+  progressTotal: Ember.computed.alias('content.length'),
 
   progressComplete: function(){
     return this.get('content').filterProperty('isLoaded').length;

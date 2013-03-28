@@ -134,10 +134,6 @@ GiddyUp.TestResultRoute = Ember.Route.extend({
         artifacts = this.controllerFor('artifacts');
     testResults.set('selectedItem', model);
     artifacts.set('model', model.get('artifacts'));
-  },
-  renderTemplate: function(){
-    this.render('artifacts', {into: 'test_instance',
-                              outlet: 'artifacts' });
   }
 });
 
