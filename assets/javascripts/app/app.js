@@ -1,6 +1,6 @@
 /* global GiddyUp:true */
 GiddyUp = Ember.Application.create({
-  LOG_TRANSITIONS: true
+  // LOG_TRANSITIONS: true
 });
 
 require('templates');
