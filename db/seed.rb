@@ -114,6 +114,20 @@ platforms.each do |p|
   create_riak_test 'pr_pw', tags
 end
 
+## Riak 1.4
+platforms.each do |p|
+  next if p =~ /fedora-15/ || p =~ /ubuntu.*32$/
+  tags = {'platform' => p, 'min_version' => '1.4.0'}
+  # Tests without a backend defined
+  %w{bucket_props_roundtrip mapred_basic_compat mapred_buffer_prereduce
+     mapred_dead_pipe mapred_javascript post_generate_key
+     pipe_verify_basics pipe_verify_examples pipe_verify_exceptions
+     pipe_verify_handoff pipe_verify_handoff_blocking
+     pipe_verify_restart_input_forwarding pipe_verify_sink_types}.each do |t|
+    create_riak_test t, tags
+  end
+end
+
 ## Riak EE-only tests
 platforms.each do |p|
   %w{jmx_verify verify_snmp}.each do |t|
@@ -134,5 +148,10 @@ platforms.each do |p|
     # "Classic" repl is going to be removed in the version after 1.4
     create_riak_test 'replication_upgrade', %w{riak_ee},
                      tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => '1.4.99')
+  end
+
+  %w{replication2_fsschedule replication2_pg}.each do |t|
+    next if p =~ /ubuntu.*32/ || p =~ /fedora-15/
+    create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
   end
 end
