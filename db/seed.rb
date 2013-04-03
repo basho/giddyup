@@ -126,6 +126,9 @@ platforms.each do |p|
      pipe_verify_restart_input_forwarding pipe_verify_sink_types}.each do |t|
     create_riak_test t, tags
   end
+  %w{previous legacy}.each do |u|
+    create_riak_test "verify_riak_object_reformat", tags.merge("upgrade_version" => u)
+  end
 end
 
 ## Riak EE-only tests
