@@ -123,7 +123,8 @@ platforms.each do |p|
      mapred_dead_pipe mapred_javascript post_generate_key
      pipe_verify_basics pipe_verify_examples pipe_verify_exceptions
      pipe_verify_handoff pipe_verify_handoff_blocking
-     pipe_verify_restart_input_forwarding pipe_verify_sink_types}.each do |t|
+     pipe_verify_restart_input_forwarding pipe_verify_sink_types
+     verify_api_timeouts}.each do |t|
     create_riak_test t, tags
   end
   %w{previous legacy}.each do |u|
