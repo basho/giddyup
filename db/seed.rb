@@ -154,7 +154,7 @@ platforms.each do |p|
                      tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => '1.4.99')
   end
 
-  %w{replication2_fsschedule replication2_pg}.each do |t|
+  %w{replication2_fsschedule replication2_pg replication2_ssl}.each do |t|
     next if p =~ /ubuntu.*32/ || p =~ /fedora-15/
     create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
   end
