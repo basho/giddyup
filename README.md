@@ -52,3 +52,12 @@ migration now. the end.
 ## Screenshot
 
 ![Screenshot](https://raw.github.com/basho/giddyup/master/screenshot.png "Screenshot")
+
+## Reading the Scores
+
+Each combination of test and platform will either succeede or fail. Success is indicated by a green
+badge, failure by a red badge.
+
+The text of a badge indicates the data store followed by the relative version. "U" indicates neither
+was specified. "L" indicates eleveldb, "M" uses memory, and "B" indicates bitcask.  After the optional
+memory specified, the relative version is specified. "-1" indicates previous; "-2" indicates legacy.
