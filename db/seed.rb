@@ -166,7 +166,7 @@ platforms.each do |p|
     end
   end
 
-  %w{replication2_fsschedule replication2_ssl
+  %w{replication2_fsschedule replication2_ssl rt_cascading
      replication2_pg:test_basic_pg_mode_repl13
      replication2_pg:test_basic_pg_mode_mixed
      replication2_pg:test_12_pg_mode_repl12
