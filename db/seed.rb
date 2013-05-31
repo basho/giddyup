@@ -50,6 +50,11 @@ riak_tests = %w{
   verify_staged_clustering
 }
 
+PLATFORM_SKIPS = {
+  '1.4' => /ubuntu.*32|fedora-15/,
+  '1.3' => /fedora-15/
+}
+
 def create_riak_test(name, *args)
   tags = args.pop || {}
   projects = args.first || %w{riak riak_ee}
@@ -100,7 +105,7 @@ end
 
 ## Riak 1.3 features
 platforms.each do |p|
-  next if p =~ /fedora-15/
+  next if p =~ PLATFORM_SKIPS['1.3']
   tags = {'platform' => p, 'min_version' => '1.3.0'}
   create_riak_test "verify_reset_bucket_props", tags
   create_riak_test "verify_kv_health_check", tags
@@ -108,7 +113,7 @@ end
 
 ## Riak 1.3.1+
 platforms.each do |p|
-  next if p =~ /fedora-15/
+  next if p =~ PLATFORM_SKIPS['1.3']
   tags = {'platform' => p, 'min_version' => '1.3.1'}
   create_riak_test 'verify_secondary_index_reformat', tags.merge('backend' => 'eleveldb')
   create_riak_test 'pr_pw', tags
@@ -116,7 +121,7 @@ end
 
 ## Riak 1.4
 platforms.each do |p|
-  next if p =~ /fedora-15/ || p =~ /ubuntu.*32$/
+  next if p =~ PLATFORM_SKIPS['1.4']
   tags = {'platform' => p, 'min_version' => '1.4.0'}
   # Tests without a backend defined
   %w{bucket_props_roundtrip mapred_basic_compat mapred_buffer_prereduce
@@ -152,10 +157,17 @@ platforms.each do |p|
     # "Classic" repl is going to be removed in the version after 1.4
     create_riak_test 'replication_upgrade', %w{riak_ee},
                      tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => '1.4.99')
+
+    # "New" repl can upgrade from previous in 1.3, legacy in 1.4
+    unless p =~ PLATFORM_SKIPS['1.4']
+      create_riak_test 'replication2_upgrade', %w{riak_ee},
+                       {'platform' => p, 'upgrade_version' => v,
+                        'min_version' => v == 'legacy' ? '1.4.0' : '1.3.0' }.merge(tags)
+    end
   end
 
   %w{replication2_fsschedule replication2_pg replication2_ssl}.each do |t|
-    next if p =~ /ubuntu.*32/ || p =~ /fedora-15/
+    next if p =~ PLATFORM_SKIPS['1.4']
     create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
   end
 end
