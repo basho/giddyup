@@ -132,8 +132,13 @@ platforms.each do |p|
      verify_asis_put verify_api_timeouts}.each do |t|
     create_riak_test t, tags
   end
+  # Upgrades
   %w{previous legacy}.each do |u|
     create_riak_test "verify_riak_object_reformat", tags.merge("upgrade_version" => u)
+  end
+  # Multiple backends on dynamic ring test
+  backends.each do |b|
+    create_riak_test 'verify_dynamic_ring', tags.merge('backend' => b)
   end
 end
 
