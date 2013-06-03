@@ -50,6 +50,11 @@ riak_tests = %w{
   verify_staged_clustering
 }
 
+PLATFORM_SKIPS = {
+  '1.4' => /ubuntu.*32|fedora-15/,
+  '1.3' => /fedora-15/
+}
+
 def create_riak_test(name, *args)
   tags = args.pop || {}
   projects = args.first || %w{riak riak_ee}
@@ -100,7 +105,7 @@ end
 
 ## Riak 1.3 features
 platforms.each do |p|
-  next if p =~ /fedora-15/
+  next if p =~ PLATFORM_SKIPS['1.3']
   tags = {'platform' => p, 'min_version' => '1.3.0'}
   create_riak_test "verify_reset_bucket_props", tags
   create_riak_test "verify_kv_health_check", tags
@@ -108,10 +113,33 @@ end
 
 ## Riak 1.3.1+
 platforms.each do |p|
-  next if p =~ /fedora-15/
+  next if p =~ PLATFORM_SKIPS['1.3']
   tags = {'platform' => p, 'min_version' => '1.3.1'}
   create_riak_test 'verify_secondary_index_reformat', tags.merge('backend' => 'eleveldb')
   create_riak_test 'pr_pw', tags
+end
+
+## Riak 1.4
+platforms.each do |p|
+  next if p =~ PLATFORM_SKIPS['1.4']
+  tags = {'platform' => p, 'min_version' => '1.4.0'}
+  # Tests without a backend defined
+  %w{bucket_props_roundtrip mapred_basic_compat mapred_buffer_prereduce
+     mapred_dead_pipe mapred_javascript post_generate_key
+     pipe_verify_basics pipe_verify_examples pipe_verify_exceptions
+     pipe_verify_handoff pipe_verify_handoff_blocking
+     pipe_verify_restart_input_forwarding pipe_verify_sink_types
+     verify_asis_put verify_api_timeouts}.each do |t|
+    create_riak_test t, tags
+  end
+  # Upgrades
+  %w{previous legacy}.each do |u|
+    create_riak_test "verify_riak_object_reformat", tags.merge("upgrade_version" => u)
+  end
+  # Multiple backends on dynamic ring test
+  backends.each do |b|
+    create_riak_test 'verify_dynamic_ring', tags.merge('backend' => b)
+  end
 end
 
 ## Riak EE-only tests
@@ -134,5 +162,25 @@ platforms.each do |p|
     # "Classic" repl is going to be removed in the version after 1.4
     create_riak_test 'replication_upgrade', %w{riak_ee},
                      tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => '1.4.99')
+
+    # "New" repl can upgrade from previous in 1.3, legacy in 1.4
+    unless p =~ PLATFORM_SKIPS['1.4']
+      create_riak_test 'replication2_upgrade', %w{riak_ee},
+                       {'platform' => p, 'upgrade_version' => v,
+                        'min_version' => v == 'legacy' ? '1.4.0' : '1.3.0' }.merge(tags)
+    end
+  end
+
+  %w{replication2_fsschedule replication2_ssl rt_cascading
+     replication2_pg:test_basic_pg_mode_repl13
+     replication2_pg:test_basic_pg_mode_mixed
+     replication2_pg:test_12_pg_mode_repl12
+     replication2_pg:test_12_pg_mode_repl_mixed
+     replication2_pg:test_mixed_pg
+     replication2_pg:test_multiplie_sink_pg
+     replication2_pg:test_bidirectional_pg
+     replication2_pg:test_pg_proxy }.each do |t|
+    next if p =~ PLATFORM_SKIPS['1.4']
+    create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
   end
 end
