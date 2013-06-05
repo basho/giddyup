@@ -129,7 +129,7 @@ platforms.each do |p|
      pipe_verify_basics pipe_verify_examples pipe_verify_exceptions
      pipe_verify_handoff pipe_verify_handoff_blocking
      pipe_verify_restart_input_forwarding pipe_verify_sink_types
-     verify_asis_put verify_api_timeouts}.each do |t|
+     verify_asis_put verify_api_timeouts verify_counter_converge}.each do |t|
     create_riak_test t, tags
   end
   # Upgrades
