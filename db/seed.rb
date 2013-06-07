@@ -19,7 +19,7 @@ platforms = %w{
 
 backends = %w{
   bitcask
-  leveldb
+  eleveldb
   memory
 }
 
