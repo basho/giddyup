@@ -140,6 +140,13 @@ platforms.each do |p|
   backends.each do |b|
     create_riak_test 'verify_dynamic_ring', tags.merge('backend' => b)
   end
+  # New 2I tests
+  %w{eleveldb memory}.each do |b|
+    %w{verify_2i_stream verify_2i_limit verify_2i_returnterms
+       verify_cs_bucket}.each do |t|
+      create_riak_test t, tags.merge('backend' => b)
+    end
+  end
 end
 
 ## Riak EE-only tests
