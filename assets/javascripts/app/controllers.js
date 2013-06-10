@@ -27,10 +27,16 @@ GiddyUp.TestInstancesController = GiddyUp.MatrixController.extend(
 );
 
 GiddyUp.TestInstanceController = Ember.ObjectController.extend({
+  testResults: function(){
+    return GiddyUp.TestResultsController.create({
+      content: this.get('content.testResults')
+    });
+  }.property('content.testResults'),
+
   status: function(){
-    var length = this.get('testResults.length'),
-        isLoaded = this.get('testResults').everyProperty('isLoaded'),
-        latestStatus = this.get('testResults.lastObject.status');
+    var length = this.get('content.testResults.length'),
+        isLoaded = this.get('content.testResults').everyProperty('isLoaded'),
+        latestStatus = this.get('testResults.firstObject.status');
     if(length === 0){
       return null;
     } else if(isLoaded === true){
@@ -38,9 +44,9 @@ GiddyUp.TestInstanceController = Ember.ObjectController.extend({
     } else {
       return undefined;
     }
-  }.property('testResults.length',
-             'testResults.@each.isLoaded',
-             'testResults.lastObject.status'),
+  }.property('content.testResults.length',
+             'content.testResults.@each.isLoaded',
+             'testResults.firstObject.status'),
 
   descriptor: function(){
     var name = this.get('name'),
