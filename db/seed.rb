@@ -186,7 +186,16 @@ platforms.each do |p|
      replication2_pg:test_mixed_pg
      replication2_pg:test_multiplie_sink_pg
      replication2_pg:test_bidirectional_pg
-     replication2_pg:test_pg_proxy }.each do |t|
+     replication2_pg:test_pg_proxy
+     replication2_pg:test_basic_pg_mode_repl13_ssl
+     replication2_pg:test_basic_pg_mode_mixed_ssl
+     replication2_pg:test_12_pg_mode_repl12_ssl
+     replication2_pg:test_12_pg_mode_repl_mixed_ssl
+     replication2_pg:test_mixed_pg_ssl
+     replication2_pg:test_multiple_sink_pg_ssl
+     replication2_pg:test_bidirectional_pg_ssl
+     replication2_pg:test_pg_proxy_ssl
+    }.each do |t|
     next if p =~ PLATFORM_SKIPS['1.4']
     create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
   end
