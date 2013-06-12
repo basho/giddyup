@@ -3,19 +3,10 @@
     <div class="navbar-inner scorecards">
       <ul class="nav">
         {{#each row in matrix}}
-          {{#if row.hasOneChild}}
-            {{#view GiddyUp.ScorecardItemView controllerBinding="row.target" contentBinding="row.firstObject"}}
-            {{#linkTo "scorecard" row.firstObject}}{{ row.firstObject.name }}{{/linkTo}}
-            {{/view}}
+          {{#if hasOneChild}}
+            {{ partial "scorecards/nav_link" }}
           {{else}}
-            <li class="dropdown">
-              <a class="dropdown-toggle" href="" {{action "toggleDropdown"}}>{{ key }}&nbsp;<b class="caret"></b></a>
-              <ul class="dropdown-menu">
-                {{#each scorecard in row}}
-                  <li>{{#linkTo "scorecard" scorecard}}{{ scorecard.name }}{{/linkTo}}
-                {{/each}}
-              </ul>
-            </li>
+            {{ partial "scorecards/dropdown" }}
           {{/if}}
         {{/each}}
       </ul>
