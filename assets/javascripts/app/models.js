@@ -7,7 +7,22 @@ GiddyUp.Project = DS.Model.extend({
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
   project: DS.belongsTo('GiddyUp.Project'),
-  testInstances: DS.hasMany('GiddyUp.TestInstance')
+  testInstances: DS.hasMany('GiddyUp.TestInstance'),
+  version: function(){
+    var name = this.get('name'),
+        num_version = /\d+(?:\.\d+)+/.exec(name);
+
+    if(num_version === undefined || num_version === null){
+      return name;
+    } else {
+      num_version = num_version[0];
+      digits = num_version.split('.');
+      for(var i = 0; i < (3 - digits.length); i++){
+          num_version += ".0";
+      }
+      return num_version;
+    }
+  }.property('name')
 });
 
 GiddyUp.TestInstance = DS.Model.extend({

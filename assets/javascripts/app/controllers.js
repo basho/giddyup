@@ -1,6 +1,7 @@
 /* global $ */
 require('matrix');
 require('progress');
+require('dropdown');
 
 GiddyUp.ApplicationController = Ember.Controller.extend({
   toggleHelp: function(){
@@ -12,8 +13,12 @@ GiddyUp.ProjectsController = Ember.ArrayController.extend({
   sortProperties: ['name']
 });
 
-GiddyUp.ScorecardsController = Ember.ArrayController.extend({
-  sortProperties: ['name'],
+GiddyUp.ScorecardsController = GiddyUp.MatrixController.extend(
+  GiddyUp.ProgressMixin,
+  GiddyUp.DropdownMixin,
+  {
+  dimensions: ['version'],
+  orderByProperties: ['name'],
   sortAscending: false
 });
 

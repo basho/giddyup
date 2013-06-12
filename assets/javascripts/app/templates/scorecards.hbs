@@ -1,9 +1,18 @@
-<div class="navbar">
-  <div class="navbar-inner scorecards">
-    <ul class="nav">
-      {{#each controller itemViewClass="GiddyUp.ScorecardItemView"}}
-      {{#linkTo "scorecard" this}}{{name}}{{/linkTo}}
-      {{/each}}
-    </ul>
+{{#if isLoaded}}
+  <div class="navbar">
+    <div class="navbar-inner scorecards">
+      <ul class="nav">
+        {{#each row in matrix}}
+          <li class="dropdown">
+            <a class="dropdown-toggle" href="" {{action "toggleDropdown"}}>{{ key }}&nbsp;<b class="caret"></b></a>
+            <ul class="dropdown-menu">
+              {{#each scorecard in row}}
+                <li>{{#linkTo "scorecard" scorecard}}{{ scorecard.name }}{{/linkTo}}
+              {{/each}}
+            </ul>
+          </li>
+        {{/each}}
+      </ul>
+    </div>
   </div>
-</div>
+{{/if}}
