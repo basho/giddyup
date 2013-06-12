@@ -22,7 +22,10 @@ var Vector = Ember.ArrayController.extend({
     } else {
       return subtree.findByKeys(keys.slice(1));
     }
-  }
+  },
+  hasOneChild: function(){
+    return this.get('content.length') === 1;
+  }.property('content.length')
 });
 
 var createIndex = function(props, values, obp, container, target) {
