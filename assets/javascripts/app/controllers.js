@@ -17,10 +17,15 @@ GiddyUp.ScorecardsController = GiddyUp.MatrixController.extend(
   GiddyUp.ProgressMixin,
   GiddyUp.DropdownMixin,
   {
-  dimensions: ['version'],
-  orderByProperties: ['name'],
-  sortAscending: false
-});
+    dimensions: ['version'],
+    orderByProperties: ['name'],
+    matrix: function(){
+      var index = this._super();
+      index.set('sortAscending', false);
+      return index;
+    }.property('content', 'dimensions', 'dimensionValues')
+  }
+);
 
 GiddyUp.TestInstancesController = GiddyUp.MatrixController.extend(
   GiddyUp.ProgressMixin,
