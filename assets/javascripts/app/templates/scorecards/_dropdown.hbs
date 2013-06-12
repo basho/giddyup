@@ -1,0 +1,13 @@
+{{#view GiddyUp.DropdownSelectableView contentBinding="row"
+                                       controllerBinding="row.target"
+                                       selectedTextProperty="name"
+                                       unselectedTextBinding="row.key"}}
+  <a class="dropdown-toggle" href="" {{action "toggleDropdown"}}>{{ view.togglerText }}&nbsp;<b class="caret"></b></a>
+  <ul class="dropdown-menu">
+    {{#each scorecard in row}}
+      {{#view GiddyUp.ScorecardItemView controllerBinding="row.target" contentBinding="scorecard"}}
+      {{#linkTo "scorecard" scorecard}}{{ scorecard.name }}{{/linkTo}}
+      {{/view}}
+    {{/each}}
+  </ul>
+{{/view}}
