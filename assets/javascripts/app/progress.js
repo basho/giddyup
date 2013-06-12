@@ -2,8 +2,8 @@
 // progress of proxied models.
 GiddyUp.ProgressMixin = Ember.Mixin.create({
   isLoaded: function(){
-    return this.get('progressTotal') === this.get('progressComplete');
-  }.property('progressTotal', 'progressComplete'),
+    return this.get('content').everyProperty('isLoaded');
+  }.property('content', 'content.@each', 'content.@each.isLoaded'),
 
   progressTotal: Ember.computed.alias('content.length'),
 

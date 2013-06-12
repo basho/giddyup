@@ -46,3 +46,30 @@ GiddyUp.BubbleView = Ember.View.extend({
     return classes.join(' ');
   }.property('content.status')
 });
+
+GiddyUp.DropdownSelectableView = Ember.View.extend({
+  tagName: 'li',
+  dropdown: true,
+  classNameBindings: ['dropdown', 'isActive:active'],
+  selectedTextProperty: null,
+  unselectedText: null,
+
+  isActive: function(){
+    var content = this.get('content'),
+        item = this.get('controller.selectedItem');
+    return !Ember.isNone(item) && content.contains(item);
+  }.property('controller.selectedItem', 'content'),
+
+  togglerText: function(){
+    var active = this.get('isActive'),
+        textProp = this.get('selectedTextProperty'),
+        unselected = this.get('unselectedText'),
+        selectedItem = this.get('controller.selectedItem');
+
+    if(active){
+      return selectedItem.get(textProp);
+    } else {
+      return unselected;
+    }
+  }.property('isActive', 'selectedTextProperty', 'unselectedText')
+});

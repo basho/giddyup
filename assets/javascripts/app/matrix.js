@@ -22,23 +22,27 @@ var Vector = Ember.ArrayController.extend({
     } else {
       return subtree.findByKeys(keys.slice(1));
     }
-  }
+  },
+  hasOneChild: function(){
+    return this.get('content.length') === 1;
+  }.property('content.length')
 });
 
-var createIndex = function(props, values, obp, container) {
+var createIndex = function(props, values, obp, container, target) {
   if (props.length === 0) {
     return [];
   } else {
     var prop = props.get('firstObject');
     var range = values.get('firstObject');
     return range.map(function(key) {
-      var subtree = createIndex(props.slice(1), values.slice(1), obp, container);
+      var subtree = createIndex(props.slice(1), values.slice(1), obp, container, target);
       return Vector.create({
         key: key,
         indexProperty: prop,
         orderByProperties: obp,
         content: subtree,
-        container: container
+        container: container,
+        target: target
       });
     });
   }
@@ -67,7 +71,7 @@ GiddyUp.MatrixController = Ember.ArrayController.extend({
     // Recursively build the index buckets
     index = Vector.create({
       container: container,
-      content: createIndex(dimensions, dimensionValues, obp, container)
+      content: createIndex(dimensions, dimensionValues, obp, container, this)
     });
 
     // Now insert the items
