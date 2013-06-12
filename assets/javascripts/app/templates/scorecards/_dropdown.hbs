@@ -1,8 +1,8 @@
-<li class="dropdown">
+{{#view GiddyUp.DropdownSelectableView contentBinding="row" controllerBinding="row.target"}}
   <a class="dropdown-toggle" href="" {{action "toggleDropdown"}}>{{ row.key }}&nbsp;<b class="caret"></b></a>
   <ul class="dropdown-menu">
     {{#each scorecard in row}}
       <li>{{#linkTo "scorecard" scorecard}}{{ scorecard.name }}{{/linkTo}}
     {{/each}}
   </ul>
-</li>
+{{/view}}
