@@ -195,6 +195,7 @@ platforms.each do |p|
      replication2_pg:test_multiple_sink_pg_ssl
      replication2_pg:test_bidirectional_pg_ssl
      replication2_pg:test_pg_proxy_ssl
+     verify_counter_repl
     }.each do |t|
     next if p =~ PLATFORM_SKIPS['1.4']
     create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
