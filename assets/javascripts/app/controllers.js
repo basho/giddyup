@@ -78,7 +78,10 @@ GiddyUp.TestResultsController = Ember.ArrayController.extend({
   sortAscending: false
 });
 
-GiddyUp.ArtifactsController = Ember.ArrayController.extend(GiddyUp.ProgressMixin);
+GiddyUp.ArtifactsController = Ember.ArrayController.extend(GiddyUp.ProgressMixin,
+{
+  sortProperties: ['id']
+});
 
 GiddyUp.ArtifactController = Ember.ObjectController.extend({
 });
