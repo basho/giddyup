@@ -3,7 +3,7 @@ class DeprecateUbuntuThirtyTwoBit < ActiveRecord::Migration
     say_with_time "Setting max version on ubuntu-1004-32 tests to 1.3.99" do
       Test.where(['tests.tags::hstore @> ?',
                   HstoreSerializer.dump('platform' => 'ubuntu-1004-32')]).each do |test|
-        unless test.tags['max_version'] && test.tags['max_version'] != '1.3.99'
+        unless test.tags['max_version'] && test.tags['max_version'] == '1.3.99'
           test.tags['max_version'] = '1.3.99'
           test.save!
         end
