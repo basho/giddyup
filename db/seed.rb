@@ -184,7 +184,7 @@ platforms.each do |p|
      replication2_pg:test_12_pg_mode_repl12
      replication2_pg:test_12_pg_mode_repl_mixed
      replication2_pg:test_mixed_pg
-     replication2_pg:test_multiplie_sink_pg
+     replication2_pg:test_multiple_sink_pg
      replication2_pg:test_bidirectional_pg
      replication2_pg:test_pg_proxy
      replication2_pg:test_basic_pg_mode_repl13_ssl
