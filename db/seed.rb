@@ -154,9 +154,11 @@ platforms.each do |p|
   %w{jmx_verify verify_snmp}.each do |t|
     create_riak_test t, %w{riak_ee}, 'platform' => p
   end
+  repl1_max = p =~ PLATFORM_SKIPS['1.4'] ? '1.3.99' : '1.4.99'
   %w{replication replication_ssl}.each do |t|
+    next if p =~ PLATFORM_SKIPS['1.4']
     # "Classic" repl is going to be removed in the version after 1.4
-    create_riak_test t, %w{riak_ee}, 'platform' => p, 'max_version' => '1.4.99'
+    create_riak_test t, %w{riak_ee}, 'platform' => p, 'max_version' => repl1_max
   end
   %w{replication2 replication2_dirty}.each do |t|
     # "New" repl is only in 1.3 and later
@@ -168,7 +170,7 @@ platforms.each do |p|
     tags = (p =~ /freebsd/ && v == 'legacy') ? {'min_version' => '1.4.0'} : {}
     # "Classic" repl is going to be removed in the version after 1.4
     create_riak_test 'replication_upgrade', %w{riak_ee},
-                     tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => '1.4.99')
+                     tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => repl1_max)
 
     # "New" repl can upgrade from previous in 1.3, legacy in 1.4
     unless p =~ PLATFORM_SKIPS['1.4']
