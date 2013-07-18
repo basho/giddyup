@@ -1,4 +1,4 @@
-$projects = %w{riak riak_ee riak_cs stanchion}.inject({}) do |hash, key|
+$projects = %w{riak riak_ee riak_cs}.inject({}) do |hash, key|
   hash.merge key => Project.find_or_create_by_name(key)
 end
 
@@ -202,5 +202,19 @@ platforms.each do |p|
     }.each do |t|
     next if p =~ PLATFORM_SKIPS['1.4']
     create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
+  end
+end
+
+# Riak CS tests
+platforms.each do |p|
+  # Riak CS started using giddyup after the Riak 1.4 cycle and uses
+  # the same platforms as Riak , so we filter out platforms that
+  # aren't supported in that version.
+  next if p =~ PLATFORM_SKIPS['1.4']
+  %w{cs296_regression_test cs347_regression_test cs436_regression_test
+     cs512_regression_test external_client_tests list_objects_test
+     mp_upload_test object_get_conditional_test object_get_test repl_test
+     stats_test too_large_entity_test}.each do |cstest|
+    create_riak_test cstest, %w{riak_cs}, 'platform' => p
   end
 end
