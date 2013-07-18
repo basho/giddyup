@@ -20,7 +20,13 @@ public/javascripts
 public/stylesheets
 
 # Foreman local dev
-.env
+.env*
 
 # RVM
 .rvmrc
+
+# Bundler
+bin/
+
+# SQL dumps
+*.sql
