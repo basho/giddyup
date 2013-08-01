@@ -147,6 +147,12 @@ platforms.each do |p|
       create_riak_test t, tags.merge('backend' => b)
     end
   end
+  # Riak 1.4.1
+  create_riak_test "riak_control_upgrade", tags.merge('min_version' => '1.4.1')
+  %w{eleveldb memory}.each do |b|
+    create_riak_test "verify_2i_timeout", tags.merge('backend' => b,
+                                                     'min_version' => '1.4.1')
+  end
 end
 
 ## Riak EE-only tests
