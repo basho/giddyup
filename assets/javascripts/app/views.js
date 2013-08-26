@@ -40,6 +40,9 @@ GiddyUp.BubbleView = Ember.View.extend({
     if(status === false) {
       classes.push('badge-important');
     }
+    if(status === 'warning') {
+        classes.push('badge-warning');
+    }
     if(status === undefined) {
       classes.push('badge-loading');
     }
