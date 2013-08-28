@@ -46,27 +46,28 @@ GiddyUp.TestInstanceController = Ember.ObjectController.extend({
   status: function(){
     var length = this.get('content.testResults.length'),
         isLoaded = this.get('content.testResults').everyProperty('isLoaded'),
-        allSuccess = this.get('testResults').everyProperty('status');
-        anySuccess = this.get('testResults').someProperty('status');
+        allSuccess, anySuccess;
     if(length === 0){
       return null;
     } else if(isLoaded === true){
-        if (allSuccess) {
-            // all test runs succeeded
-            return true;
-        }
-        if (anySuccess) {
-            // some runs succeeded, some failed
-            return 'warning';
-        }
-        // all runs failed
-        return false;
+      allSuccess = this.get('testResults').everyProperty('status');
+      anySuccess = this.get('testResults').someProperty('status');
+      if (allSuccess) {
+        // all test runs succeeded
+        return true;
+      }
+      if (anySuccess) {
+          // some runs succeeded, some failed
+        return 'warning';
+      }
+      // all runs failed
+      return false;
     } else {
       return undefined;
     }
   }.property('content.testResults.length',
              'content.testResults.@each.isLoaded',
-             'testResults.firstObject.status'),
+             'content.testResults.@each.status'),
 
   descriptor: function(){
     var name = this.get('name'),
