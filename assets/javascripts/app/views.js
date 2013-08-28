@@ -30,6 +30,27 @@ GiddyUp.ArtifactView = Ember.View.extend({
 
 GiddyUp.BubbleView = Ember.View.extend({
   tagName: 'div',
+  backgroundStyle: function(){
+    var status = this.get('content.status'),
+        testResults, gradient, stepSize,
+        red = "#b94a48", green = "#468847";
+    if(status === 'warning'){
+      testResults = this.get('content.testResults').getEach('status').slice(0,4);
+      stepSize = 100 / testResults.get('length');
+      gradient = "linear-gradient(right";
+      testResults.forEach(function(st, idx){
+        var color = (st === true) ? green : red;
+        gradient += ", " + color + " " + (stepSize * idx) + "%";
+        gradient += ", " + color + " " + (stepSize * (idx+1)) + "%";
+      });
+      gradient += ")";
+      return Ember.A(["-moz-", "-ms-", "-o-", "-webkit-", ""]).
+        map(function(prefix){ return "background-image: " + prefix + gradient; }).
+        join("; ");
+    } else {
+      return "";
+    }
+  }.property('content.status'),
   statusClasses: function(){
     var status = this.get('content.status'),
         classes = ['badge'];
@@ -41,7 +62,7 @@ GiddyUp.BubbleView = Ember.View.extend({
       classes.push('badge-important');
     }
     if(status === 'warning') {
-        classes.push('badge-warning');
+      classes.push('badge-warning');
     }
     if(status === undefined) {
       classes.push('badge-loading');
