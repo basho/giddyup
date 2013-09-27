@@ -51,6 +51,7 @@ riak_tests = %w{
 }
 
 PLATFORM_SKIPS = {
+  '2.0' => /ubuntu(-11|.*32)|fedora-15/,
   '1.4' => /ubuntu.*32|fedora-15/,
   '1.3' => /fedora-15/
 }
@@ -59,6 +60,7 @@ def create_riak_test(name, *args)
   tags = args.pop || {}
   projects = args.first || %w{riak riak_ee}
   unless Test.where(:name => name).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+    $stdout.puts "Creating test #{name} with #{tags.inspect} for projects #{projects.inspect}"
     if tags['platform'] =~ /fedora-15/
       tags['max_version'] = '1.2.99'
     end
@@ -154,6 +156,24 @@ platforms.each do |p|
     create_riak_test "verify_2i_timeout", tags.merge('backend' => b,
                                                      'min_version' => '1.4.1')
   end
+  # Riak 1.4.2
+  create_riak_test 'mapred_http_errors', tags.merge('min_version' => '1.4.2')
+end
+
+## Riak 2.0
+platforms.each do |p|
+  next if p =~ PLATFORM_SKIPS['2.0']
+  tags = {'platform' => p, 'min_version' => '2.0.0'}
+  ## Yokozuna tests
+  yz = %w{aae_test yokozuna_essential yz_errors yz_fallback
+     yz_flag_transitions yz_index_admin yz_languages
+     yz_mapreduce yz_pb yz_rs_migration yz_rt yz_schema_admin
+     yz_siblings yz_wm_extract_test}
+  core = %w{bucket_types verify_dt_converge}
+  (yz + core).each do |t|
+    create_riak_test t, tags
+  end
+  create_riak_test 'handoff_ttl', tags.merge('backend' => 'memory')
 end
 
 ## Riak EE-only tests
