@@ -51,7 +51,7 @@ riak_tests = %w{
 }
 
 PLATFORM_SKIPS = {
-  '2.0' => /ubuntu(-11|.*32)|fedora-15/,
+  '2.0' => /ubuntu(-11|.*32)|fedora-15|smartos/,
   '1.4' => /ubuntu.*32|fedora-15/,
   '1.3' => /fedora-15/
 }
@@ -59,7 +59,7 @@ PLATFORM_SKIPS = {
 def create_riak_test(name, *args)
   tags = args.pop || {}
   projects = args.first || %w{riak riak_ee}
-  unless Test.where(:name => name).where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ]).exists?
+  unless Test.where(:name => name).tagged(tags).exists?
     $stdout.puts "Creating test #{name} with #{tags.inspect} for projects #{projects.inspect}"
     if tags['platform'] =~ /fedora-15/
       tags['max_version'] = '1.2.99'
@@ -157,6 +157,7 @@ platforms.each do |p|
                                                      'min_version' => '1.4.1')
   end
   # Riak 1.4.2
+  tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
   create_riak_test 'mapred_http_errors', tags.merge('min_version' => '1.4.2')
 end
 
@@ -201,6 +202,7 @@ platforms.each do |p|
 
     # "New" repl can upgrade from previous in 1.3, legacy in 1.4
     unless p =~ PLATFORM_SKIPS['1.4']
+      tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
       create_riak_test 'replication2_upgrade', %w{riak_ee},
                        {'platform' => p, 'upgrade_version' => v,
                         'min_version' => v == 'legacy' ? '1.4.0' : '1.3.0' }.merge(tags)
@@ -228,7 +230,9 @@ platforms.each do |p|
      repl_rt_heartbeat
     }.each do |t|
     next if p =~ PLATFORM_SKIPS['1.4']
-    create_riak_test t, %w{riak_ee}, 'platform' => p, 'min_version' => '1.4.0'
+    tags = {'platform' => p, 'min_version' => '1.4.0'}
+    tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
+    create_riak_test t, %w{riak_ee}, tags
   end
 end
 

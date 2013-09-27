@@ -18,6 +18,10 @@ class Test < ActiveRecord::Base
     scope.where(["((NOT exist(tests.tags::hstore, 'min_version')) OR (tests.tags::hstore -> ARRAY['min_version'] <= ARRAY[?]))", version]).
       where(["((NOT exist(tests.tags::hstore, 'max_version')) OR (tests.tags::hstore -> ARRAY['max_version'] >= ARRAY[?]))", version])
   end
+
+  def self.tagged(tags, scope=self)
+    scope.where(['tests.tags::hstore @> ?', HstoreSerializer.dump(tags) ])
+  end
 end
 
 class TestResult < ActiveRecord::Base
