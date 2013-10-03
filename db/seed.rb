@@ -201,12 +201,16 @@ platforms.each do |p|
     create_riak_test 'replication_upgrade', %w{riak_ee},
                      tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => repl1_max)
 
-    # "New" repl can upgrade from previous in 1.3, legacy in 1.4
+    # New repl upgrade
     unless p =~ PLATFORM_SKIPS['1.4']
-      tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
+      if p =~ PLATFORM_SKIPS['2.0']
+        # We need to ensure we don't add legacy for 1.4, see migration Repl2Legacy14
+        next if v == 'legacy'
+        tags = tags.merge('max_version' => '1.4.99')
+      end
       create_riak_test 'replication2_upgrade', %w{riak_ee},
                        {'platform' => p, 'upgrade_version' => v,
-                        'min_version' => v == 'legacy' ? '1.4.0' : '1.3.0' }.merge(tags)
+                        'min_version' => v == 'legacy' ? '2.0.0' : '1.4.0' }.merge(tags)
     end
   end
 
