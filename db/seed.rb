@@ -167,7 +167,7 @@ platforms.each do |p|
      yz_mapreduce yz_pb yz_rs_migration yz_rt yz_schema_admin
      yz_siblings yz_wm_extract_test yz_solr_start_timeout}
   core = %w{bucket_types verify_dt_converge http_security
-            pb_security}
+            pb_security cuttlefish_configuration}
   (yz + core).each do |t|
     create_riak_test t, tags
   end
