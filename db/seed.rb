@@ -210,6 +210,7 @@ platforms.each do |p|
     end
   end
 
+  # Riak EE 1.4
   %w{replication2_fsschedule replication2_ssl rt_cascading
      replication2_pg:test_basic_pg_mode_repl13
      replication2_pg:test_basic_pg_mode_mixed
@@ -235,12 +236,19 @@ platforms.each do |p|
     tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
     create_riak_test t, %w{riak_ee}, tags
   end
+
+  # Riak EE 2.0
+  %w{repl_reduced}.each do |t|
+    next if p =~ PLATFORM_SKIPS['2.0']
+    tags = {'platform' => p, 'min_version' => '2.0.0'}
+    create_riak_test t, %w{riak_ee}, tags
+  end
 end
 
 # Riak CS tests
 platforms.each do |p|
   # Riak CS started using giddyup after the Riak 1.4 cycle and uses
-  # the same platforms as Riak , so we filter out platforms that
+  # the same platforms as Riak, so we filter out platforms that
   # aren't supported in that version.
   next if p =~ PLATFORM_SKIPS['1.4']
   %w{cs296_regression_test cs347_regression_test cs436_regression_test
