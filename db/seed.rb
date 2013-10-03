@@ -7,7 +7,6 @@ platforms = %w{
   ubuntu-1004-64
   ubuntu-1104-64
   ubuntu-1204-64
-  fedora-15-64
   fedora-17-64
   centos-5-64
   centos-6-64
@@ -61,9 +60,6 @@ def create_riak_test(name, *args)
   projects = args.first || %w{riak riak_ee}
   unless Test.where(:name => name).tagged(tags).exists?
     $stdout.puts "Creating test #{name} with #{tags.inspect} for projects #{projects.inspect}"
-    if tags['platform'] =~ /fedora-15/
-      tags['max_version'] = '1.2.99'
-    end
     test = Test.create(:name => name, :tags => tags)
     projects.each do |p|
       $projects[p].tests << test
@@ -199,18 +195,23 @@ platforms.each do |p|
     tags = (p =~ /freebsd/ && v == 'legacy') ? {'min_version' => '1.4.0'} : {}
     # "Classic" repl is going to be removed in the version after 1.4
     create_riak_test 'replication_upgrade', %w{riak_ee},
-                     tags.merge('platform' => p, 'upgrade_version' => v, 'max_version' => repl1_max)
+         tags.merge('platform' => p, 'upgrade_version' => v,
+                    'max_version' => repl1_max)
 
     # New repl upgrade
     unless p =~ PLATFORM_SKIPS['1.4']
       if p =~ PLATFORM_SKIPS['2.0']
-        # We need to ensure we don't add legacy for 1.4, see migration Repl2Legacy14
+        # We need to ensure we don't add legacy for 1.4, see migration
+        # Repl2Legacy14
         next if v == 'legacy'
         tags = tags.merge('max_version' => '1.4.99')
       end
+      repl2_min = (v == 'legacy') ? '2.0.0' : '1.4.0'
+      # Don't inject tests with disjoint ranges
+      next if tags['max_version'] && tags['max_version'] < repl2_min
       create_riak_test 'replication2_upgrade', %w{riak_ee},
-                       {'platform' => p, 'upgrade_version' => v,
-                        'min_version' => v == 'legacy' ? '2.0.0' : '1.4.0' }.merge(tags)
+                       tags.merge({'platform' => p, 'upgrade_version' => v,
+                                   'min_version' => repl2_min})
     end
   end
 
