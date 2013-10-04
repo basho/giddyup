@@ -243,7 +243,7 @@ platforms.each do |p|
   end
 
   # Riak EE 2.0
-  %w{repl_reduced}.each do |t|
+  %w{repl_reduced repl_rt_ack}.each do |t|
     next if p =~ PLATFORM_SKIPS['2.0']
     tags = {'platform' => p, 'min_version' => '2.0.0'}
     create_riak_test t, %w{riak_ee}, tags
