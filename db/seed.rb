@@ -164,7 +164,7 @@ platforms.each do |p|
   ## Yokozuna tests
   yz = %w{aae_test yokozuna_essential yz_errors yz_fallback
      yz_flag_transitions yz_index_admin yz_languages
-     yz_mapreduce yz_pb yz_rs_migration yz_rt yz_schema_admin
+     yz_mapreduce yz_pb yz_rs_migration yz_schema_admin
      yz_siblings yz_wm_extract_test yz_solr_start_timeout}
   core = %w{bucket_types verify_dt_converge http_security
             pb_security cuttlefish_configuration}
