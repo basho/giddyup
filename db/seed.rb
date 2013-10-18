@@ -169,7 +169,7 @@ platforms.each do |p|
   ## Core tests
   core = %w{verify_dt_converge http_security
             pb_security cuttlefish_configuration
-            riak_control_authentication}
+            riak_control_authentication cluster_meta_basic}
   (yz + core).each do |t|
     create_riak_test t, tags
   end
