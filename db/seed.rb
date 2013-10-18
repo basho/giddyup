@@ -166,12 +166,24 @@ platforms.each do |p|
      yz_flag_transitions yz_index_admin yz_languages
      yz_mapreduce yz_pb yz_rs_migration yz_schema_admin
      yz_siblings yz_wm_extract_test yz_solr_start_timeout}
-  core = %w{bucket_types verify_dt_converge http_security
-            pb_security cuttlefish_configuration}
+  ## Core tests
+  core = %w{verify_dt_converge http_security
+            pb_security cuttlefish_configuration
+            riak_control_authentication}
   (yz + core).each do |t|
     create_riak_test t, tags
   end
+  ## Bucket types need leveldb so the 2i sections run
+  %w{bucket_types http_bucket_types}.each do |t|
+    create_riak_test t, tags.merge('backend' => 'eleveldb')
+  end
   create_riak_test 'handoff_ttl', tags.merge('backend' => 'memory')
+  ## Upgrade tests
+  %w{verify_handoff_mixed}.each do |t|
+    %w{previous legacy}.each do |u|
+      create_riak_test t, tags.merge('upgrade_version' => u)
+    end
+  end
 end
 
 ## Riak EE-only tests
