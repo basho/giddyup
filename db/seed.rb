@@ -113,7 +113,8 @@ end
 platforms.each do |p|
   next if p =~ PLATFORM_SKIPS['1.3']
   tags = {'platform' => p, 'min_version' => '1.3.1'}
-  create_riak_test 'verify_secondary_index_reformat', tags.merge('backend' => 'eleveldb')
+  create_riak_test 'verify_secondary_index_reformat', tags.merge('backend' => 'eleveldb',
+                                                                 'max_version' => '1.4.99')
   create_riak_test 'pr_pw', tags
 end
 
