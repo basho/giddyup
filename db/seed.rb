@@ -258,8 +258,13 @@ platforms.each do |p|
     create_riak_test t, %w{riak_ee}, tags
   end
 
+  # Riak EE 1.4.4.
+  tags = {'platform' => p, 'min_version' => '1.4.4'}
+  tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
+  create_riak_test 'replication2_rt_sink_connection', tags
+
   # Riak EE 2.0
-  %w{repl_reduced repl_rt_ack}.each do |t|
+  %w{replication2_rt_sink_connection repl_reduced repl_rt_ack}.each do |t|
     next if p =~ PLATFORM_SKIPS['2.0']
     tags = {'platform' => p, 'min_version' => '2.0.0'}
     create_riak_test t, %w{riak_ee}, tags
