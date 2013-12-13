@@ -4,7 +4,6 @@ class Fix2iAaeBackends < ActiveRecord::Migration
           name = 'verify_2i_aae'
           Test.where(name: name).each do |t|
               backend = t.tags['backend']
-              say "Found test with tag #{backend}"
               unless t.tags['backend']
                   %w{eleveldb memory multi}.each do |b|
                       Test.create!(:name => name,
