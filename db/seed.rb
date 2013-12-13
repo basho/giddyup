@@ -157,7 +157,10 @@ platforms.each do |p|
   tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
   create_riak_test 'mapred_http_errors', tags.merge('min_version' => '1.4.2')
   # Riak 1.4.4
-  create_riak_test 'verify_2i_aae', tags.merge('min_version' => '1.4.4')
+  %w{eleveldb memory multi}.each do |b|
+      create_riak_test 'verify_2i_aae', tags.merge('min_version' => '1.4.4',
+                                                  'backend' => b)
+  end
 end
 
 ## Riak 2.0
