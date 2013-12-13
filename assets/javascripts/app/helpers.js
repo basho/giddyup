@@ -14,6 +14,8 @@ helper('testInstanceAbbr', function(){
         parts.push('L'); break;
     case 'memory':
         parts.push('M'); break;
+    case 'multi':
+        parts.push('N'); break;
     default:
         break;
   }
