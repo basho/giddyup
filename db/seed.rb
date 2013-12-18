@@ -3,7 +3,6 @@ $projects = %w{riak riak_ee riak_cs}.inject({}) do |hash, key|
 end
 
 platforms = %w{
-  ubuntu-1004-32
   ubuntu-1004-64
   ubuntu-1104-64
   ubuntu-1204-64

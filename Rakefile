@@ -2,6 +2,7 @@ $: << 'lib'
 require 'bundler/setup'
 require 'rake-pipeline'
 require 'pathname'
+require 'date'
 
 task :environment do
   Bundler.require(:default, ENV["RACK_ENV"] || :development)
