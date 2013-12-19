@@ -144,6 +144,11 @@ platforms.each do |p|
        verify_cs_bucket}.each do |t|
       create_riak_test t, tags.merge('backend' => b)
     end
+    %w{previous legacy}.each do |u|
+        create_riak_test "verify_2i_mixed_cluster",
+            tags.merge('upgrade_version' => u,
+                      'backend' => b)
+    end
   end
   # Riak 1.4.1
   create_riak_test "riak_control_upgrade", tags.merge('min_version' => '1.4.1')
