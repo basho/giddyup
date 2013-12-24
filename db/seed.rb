@@ -173,9 +173,10 @@ platforms.each do |p|
   tags = {'platform' => p, 'min_version' => '2.0.0'}
   ## Yokozuna tests
   yz = %w{aae_test yokozuna_essential yz_errors yz_fallback
-     yz_flag_transitions yz_index_admin yz_languages
-     yz_mapreduce yz_pb yz_rs_migration yz_schema_admin
-     yz_siblings yz_wm_extract_test yz_solr_start_timeout}
+     yz_dt_test yz_monitor_solr yz_security yz_stat_test
+     yz_index_admin yz_languages yz_mapreduce yz_pb yz_rs_migration
+     yz_schema_admin yz_siblings yz_wm_extract_test
+     yz_solr_start_timeout}
   ## Core tests
   core = %w{verify_dt_converge http_security
             pb_security cuttlefish_configuration
@@ -270,7 +271,7 @@ platforms.each do |p|
   unless p =~ PLATFORM_SKIPS['1.4']
     tags = {'platform' => p, 'min_version' => '1.4.4'}
     tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
-    create_riak_test 'replication2_rt_sink_connection', %w{riak_ee} tags
+    create_riak_test 'replication2_rt_sink_connection', %w{riak_ee}, tags
     create_riak_test 'replication2_connections', %w{riak_ee}, tags
     create_riak_test 'repl_aae_fullsync', %w{riak_ee}, tags
   end
