@@ -171,12 +171,14 @@ end
 platforms.each do |p|
   next if p =~ PLATFORM_SKIPS['2.0']
   tags = {'platform' => p, 'min_version' => '2.0.0'}
+
   ## Yokozuna tests
-  yz = %w{aae_test yokozuna_essential yz_errors yz_fallback
-     yz_dt_test yz_monitor_solr yz_security yz_stat_test
-     yz_index_admin yz_languages yz_mapreduce yz_pb yz_rs_migration
-     yz_schema_admin yz_siblings yz_wm_extract_test
-     yz_solr_start_timeout}
+  yz = %w{aae_test yokozuna_essential yz_errors yz_fallback yz_dt_test
+          yz_monitor_solr yz_security yz_stat_test yz_index_admin
+          yz_languages yz_mapreduce yz_pb yz_rs_migration_test
+          yz_schema_admin yz_siblings yz_wm_extract_test
+          yz_solr_start_timeout}
+
   ## Core tests
   core = %w{verify_dt_converge http_security
             pb_security cuttlefish_configuration
