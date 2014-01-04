@@ -13,22 +13,19 @@ GiddyUp.ProjectsController = Ember.ArrayController.extend({
   sortProperties: ['name']
 });
 
-GiddyUp.ScorecardsController = Ember.ArrayController.extend({
-  sortProperties: ['version']
-});
-// GiddyUp.MatrixController.extend(
-//   GiddyUp.ProgressMixin,
-//   GiddyUp.DropdownMixin,
-//   {
-//     dimensions: ['version'],
-//     orderByProperties: ['name'],
-//     matrix: function(){
-//       var index = this._super();
-//       index.set('sortAscending', false);
-//       return index;
-//     }.property('content', 'dimensions', 'dimensionValues')
-//   }
-// );
+GiddyUp.ScorecardsController = GiddyUp.MatrixController.extend(
+  GiddyUp.ProgressMixin,
+  GiddyUp.DropdownMixin,
+  {
+    dimensions: ['version'],
+    orderByProperties: ['name'],
+    matrix: function(){
+      var index = this._super();
+      index.set('sortAscending', false);
+      return index;
+    }.property('content', 'dimensions', 'dimensionValues')
+  }
+);
 
 GiddyUp.TestInstancesController = GiddyUp.MatrixController.extend(
   GiddyUp.ProgressMixin,

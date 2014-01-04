@@ -1,11 +1,17 @@
 {{#if isLoaded}}
-  <div class="navbar">
-    <div class="navbar-inner scorecards">
-      <ul class="nav">
-        {{#each scorecard in controller itemViewClass="GiddyUp.ScorecardItemView"}}
-          {{#link-to "scorecard" scorecard}}{{scorecard.version}}{{/link-to}}
+<div class="navbar">
+  <div class="navbar-inner scorecards">
+    <ul class="nav">
+        {{#each row in matrix}}
+          {{#if hasOneChild}}
+            <!-- one child -->
+            {{partial "scorecards/nav_link"}}
+          {{else}}
+            <!-- dropdown -->
+            {{ partial "scorecards/dropdown" }}
+          {{/if}}
         {{/each}}
-      </ul>
-    </div>
+    </ul>
   </div>
+</div>
 {{/if}}

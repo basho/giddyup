@@ -58,7 +58,7 @@ GiddyUp.MatrixController = Ember.ArrayController.extend({
     return Ember.A(dimensions).map(function(dimension) {
       return content.getEach(dimension).uniq().sort();
     });
-  }.property('dimensions', 'content'),
+  }.property('dimensions', 'content', 'content.@each'),
 
   matrix: function() {
     var content = this.get('content'),
@@ -85,7 +85,8 @@ GiddyUp.MatrixController = Ember.ArrayController.extend({
     return index;
   }.property('content',
              'dimensions',
-             'dimensionValues'),
+             'dimensionValues',
+             'content.@each'),
 
   columnNames: Ember.computed.alias('dimensionValues.lastObject')
 });
