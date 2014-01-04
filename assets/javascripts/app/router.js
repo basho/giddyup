@@ -40,7 +40,7 @@ GiddyUp.IndexRoute = Ember.Route.extend({
 
 GiddyUp.ProjectsRoute = Ember.Route.extend({
   model: function(){
-    return GiddyUp.Project.find();
+    return this.store.find('project');
   }
 });
 
@@ -65,7 +65,7 @@ GiddyUp.ProjectIndexRoute = Ember.Route.extend({
 
 GiddyUp.ProjectRoute = Ember.Route.extend({
   model: function(params){
-    return GiddyUp.Project.find(params.project_id);
+    return this.store.find('project', params.project_id);
   },
   setupController: function(controller, model){
     var scorecards = this.controllerFor('scorecards'),
@@ -78,7 +78,7 @@ GiddyUp.ProjectRoute = Ember.Route.extend({
 
 GiddyUp.ScorecardRoute = Ember.Route.extend({
   model: function(params){
-    return GiddyUp.Scorecard.find(params.scorecard_id);
+    return this.store.find('scorecard', params.scorecard_id);
   },
   setupController: function(controller, model){
     var testInstances = this.controllerFor('test_instances'),
@@ -99,7 +99,7 @@ GiddyUp.ScorecardIndexRoute = Ember.Route.extend({
 GiddyUp.TestInstanceRoute = Ember.Route.extend({
   model: function(params){
     var id = params.test_instance_id.match(/^\d+-\d+/)[0];
-    return GiddyUp.TestInstance.find(id);
+    return this.store.find('test_instance', id);
   },
   serialize: function(model, params){
     var segments = [],
@@ -133,7 +133,7 @@ GiddyUp.TestInstanceIndexRoute = Ember.Route.extend({
 
 GiddyUp.TestResultRoute = Ember.Route.extend({
   model: function(params){
-    return GiddyUp.TestResult.find(params.test_result_id);
+    return this.store.find('test_result', params.test_result_id);
   },
   setupController: function(controller, model){
     var testResults = this.controllerFor('test_results'),
@@ -157,7 +157,7 @@ GiddyUp.TestResultIndexRoute = Ember.Route.extend({
 
 GiddyUp.ArtifactRoute = Ember.Route.extend({
   model: function(params){
-    return GiddyUp.Artifact.find(params.artifact_id);
+    return this.store.find('artifact', params.artifact_id);
   },
   setupController: function(controller, model){
     var artifacts = this.controllerFor('artifacts');

@@ -1,6 +1,10 @@
 class ProjectSerializer < ActiveModel::Serializer
-  attributes :name, :scorecard_ids
+  attributes :id, :name, :scorecard_ids
   has_many :tests
+
+  def id
+    object.name
+  end
 
   def include_tests?
     scope == :filtered
@@ -33,9 +37,9 @@ class TestSerializer < ActiveModel::Serializer
 end
 
 class ScorecardSerializer < ActiveModel::Serializer
-  attributes :id, :name, :project, :test_instance_ids
+  attributes :id, :name, :project_id, :test_instance_ids
 
-  def project
+  def project_id
     # We key the project off the name
     object.project.name
   end

@@ -1,9 +1,9 @@
 <div class="navbar" style="margin-bottom: 0">
   <div class="navbar-inner">
-    {{#linkTo "projects" class="brand"}}GiddyUp{{/linkTo}}
+    {{#link-to "projects" class="brand"}}GiddyUp{{/link-to}}
     <ul class="nav">
     {{#each controller itemViewClass="GiddyUp.ProjectItemView"}}
-      {{#linkTo "project" this}}{{name}}{{/linkTo}}
+      {{#link-to "project" this}} {{ name }} {{/link-to}}
     {{/each}}
     </ul>
   </div>

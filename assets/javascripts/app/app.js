@@ -5,7 +5,7 @@ GiddyUp = Ember.Application.create({
 
 require('templates');
 require('adapter');
-require('store');
+// require('store');
 require('models');
 require('controllers');
 require('helpers');
