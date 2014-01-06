@@ -2,7 +2,7 @@
                                        controllerBinding="row.target"
                                        selectedTextProperty="name"
                                        unselectedTextBinding="row.key"}}
-  <a class="dropdown-toggle" href="" {{action "toggleDropdown"}}>{{ view.togglerText }}&nbsp;<b class="caret"></b></a>
+  <a class="dropdown-toggle" href="" {{action "toggleDropdown" view}}>{{ view.togglerText }}&nbsp;<b class="caret"></b></a>
   <ul class="dropdown-menu">
     {{#each scorecard in row}}
       {{#view GiddyUp.ScorecardItemView controllerBinding="row.target" contentBinding="scorecard"}}

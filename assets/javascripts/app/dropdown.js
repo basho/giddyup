@@ -1,18 +1,21 @@
 /* global $ */
 GiddyUp.DropdownMixin = Ember.Mixin.create({
-  toggleDropdown: function(){
-    var $dropdown = $(event.target).parents('li.dropdown');
-    $('li.dropdown.open').not($dropdown).removeClass('open');
-    $dropdown.toggleClass('open');
+  actions: {
+    toggleDropdown: function(view){
+      var $dropdown = $(view.get('element'));
+      $('li.dropdown.open').not($dropdown).removeClass('open');
+      $dropdown.toggleClass('open');
+    }
   }
 });
 
-// I don't really like putting this here, but I seem not to have any
-// option. Thanks Ember.
-$(function(){
-  $('html').click(function(event){
-    if($(event.target).is('a.dropdown-toggle'))
+// Can't put this on GiddyUp.ApplicationView because that doesn't
+// always fill the whole screen.
+(function($){
+  $('html').click(function(evt){
+    // Close dropdowns
+    if($(evt.target).is('a.dropdown-toggle'))
       return false;
     $('li.dropdown.open').removeClass('open');
-  })
-});
+  });
+})(Ember.$);
