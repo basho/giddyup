@@ -6,7 +6,7 @@ GiddyUp.Project = DS.Model.extend({
 
 GiddyUp.Scorecard = DS.Model.extend({
   name: DS.attr('string'),
-  project: DS.belongsTo(),
+  project: DS.belongsTo('project'),
   testInstances: DS.hasMany({async: true}),
   version: function(){
     var name = this.get('name'),
@@ -26,7 +26,7 @@ GiddyUp.Scorecard = DS.Model.extend({
 });
 
 GiddyUp.TestInstance = DS.Model.extend({
-  scorecard: DS.belongsTo({async: true}),
+  scorecard: DS.belongsTo('scorecard', {async: true}),
   testResults: DS.hasMany({async: true}),
   name: DS.attr('string'),
   platform: DS.attr('string'),
@@ -35,7 +35,7 @@ GiddyUp.TestInstance = DS.Model.extend({
 });
 
 GiddyUp.TestResult = DS.Model.extend({
-  testInstance: DS.belongsTo({async: true}),
+  testInstance: DS.belongsTo('test_instance', {async: true}),
   artifacts: DS.hasMany({async: true}),
   status: DS.attr('boolean'),
   logUrl: DS.attr('string'),
@@ -46,7 +46,7 @@ GiddyUp.TestResult = DS.Model.extend({
 GiddyUp.Artifact = DS.Model.extend({
   url: DS.attr('string'),
   contentType: DS.attr('string'),
-  testResult: DS.belongsTo({async: true}),
+  testResult: DS.belongsTo('test_result', {async: true}),
   text: function(){
     var url = this.get('url'),
         ctype = this.get('contentType'),
