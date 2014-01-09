@@ -199,6 +199,9 @@ platforms.each do |p|
       create_riak_test t, tags.merge('upgrade_version' => u)
     end
   end
+  # verify_no_writes_on_read valid for 1.4+ but not backporting in
+  # riak_test, only valid on bitcask backend
+  create_riak_test 'verify_no_writes_on_read', tags.merge('backend' => 'bitcask')
 end
 
 ## Riak EE-only tests
