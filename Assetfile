@@ -1,31 +1,54 @@
 # -*- mode: ruby -*-
 require 'rake-pipeline-web-filters'
 require 'uglifier'
+require 'tilt'
+require 'execjs'
+
+# Copied from react-rails for now, loldeps
+module ::React
+  module JSX
+    def self.context
+      @context ||=
+        begin
+          contents =
+            # If execjs uses therubyracer, there is no 'global'. Make sure
+            # we have it so JSX script can work properly.
+            'var global = global || this;' +
+            File.read(File.expand_path("../assets/javascripts/vendor/JSXTransformer-0.8.0.js",
+                                       __FILE__))
+          ExecJS.compile(contents)
+        end
+    end
+
+    def self.transform(code)
+      result = context.call('JSXTransformer.transform', code)
+      return result['code']
+    end
+
+    class Filter < Rake::Pipeline::Filter
+      def generate_output(inputs, output)
+        inputs.each do |input|
+          output.write ::React::JSX::transform(input.read)
+        end
+      end
+    end
+  end
+end
 
 output 'public/javascripts'
 input 'assets/javascripts' do
-
   match 'vendor/**/*.js' do
     files = %w(
       vendor/minispade.js
       vendor/jquery.js
-      vendor/handlebars.js
-      vendor/ember.js
-      vendor/ember-data.js
+      vendor/react-0.8.0.js
     )
+
     concat files, 'vendor.js'
   end
 
-  match '**/*.hbs' do
-    handlebars(
-      :key_name_proc => proc { |input|
-        input.path.sub(%r(^app/templates/), '').sub(/\.hbs$/, '')
-      }
-    )
-    concat 'app/templates.js'
-  end
-
   match '{app,config,lib}/**/*.js' do
+    filter React::JSX::Filter
     minispade(
       string: true,
       rewrite_requires: true,
