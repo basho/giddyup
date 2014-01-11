@@ -42,6 +42,7 @@ input 'assets/javascripts' do
       vendor/minispade.js
       vendor/jquery.js
       vendor/react-0.8.0.js
+      vendor/routie.js
     )
 
     concat files, 'vendor.js'
