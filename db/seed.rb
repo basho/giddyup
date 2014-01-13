@@ -1,4 +1,4 @@
-$projects = %w{riak riak_ee riak_cs}.inject({}) do |hash, key|
+$projects = %w{riak riak_ee riak_cs eunit}.inject({}) do |hash, key|
   hash.merge key => Project.find_or_create_by_name(key)
 end
 
@@ -303,4 +303,16 @@ platforms.each do |p|
      stats_test too_large_entity_test}.each do |cstest|
     create_riak_test cstest, %w{riak_cs}, 'platform' => p
   end
+end
+
+# Eunit and Dialyzer tests, including dependencies we have forks on
+%w{ basho_stats bear bitcask canola cluster_info cuttlefish ebloom
+    eleveldb eper erlang_js folsom getopt lager lager_syslog
+    merge_index mochiweb neotoma node_package pbkdf2 poolboy
+    protobuffs ranch riak_api riak_auth_mods riak_control riak_core
+    riak_dt riak_ensemble riakc riak_jmx riak_kv riak_pb riak_pipe
+    riak_repl riak_repl_pb_api riak_search riak_snmp riak_sysmon
+    riaknostic sext sidejob syslog webmachine yokozuna }.each do |t|
+  create_riak_test "#{t}:eunit", %w{eunit}, {}
+  create_riak_test "#{t}:dialyzer", %w{eunit}, {}
 end
