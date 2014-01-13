@@ -310,7 +310,7 @@ end
     eleveldb eper erlang_js folsom getopt lager lager_syslog
     merge_index mochiweb neotoma node_package pbkdf2 poolboy
     protobuffs ranch riak_api riak_auth_mods riak_control riak_core
-    riak_dt riak_ensemble riakc riak_jmx riak_kv riak_pb riak_pipe
+    riak_dt riak_ensemble riak_jmx riak_kv riak_pb riak_pipe
     riak_repl riak_repl_pb_api riak_search riak_snmp riak_sysmon
     riaknostic sext sidejob syslog webmachine yokozuna }.each do |t|
   create_riak_test "#{t}:eunit", %w{eunit}, {}
