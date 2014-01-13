@@ -1,4 +1,4 @@
-$projects = %w{riak riak_ee riak_cs eunit}.inject({}) do |hash, key|
+$projects = %w{riak riak_ee riak_cs smoke-tests}.inject({}) do |hash, key|
   hash.merge key => Project.find_or_create_by_name(key)
 end
 
@@ -313,6 +313,6 @@ end
     riak_dt riak_ensemble riak_jmx riak_kv riak_pb riak_pipe
     riak_repl riak_repl_pb_api riak_search riak_snmp riak_sysmon
     riaknostic sext sidejob syslog webmachine yokozuna }.each do |t|
-  create_riak_test "#{t}:eunit", %w{eunit}, {}
-  create_riak_test "#{t}:dialyzer", %w{eunit}, {}
+  create_riak_test "#{t}:eunit", %w{smoke-tests}, {'platform' => 'centos-6-64'}
+  create_riak_test "#{t}:dialyzer", %w{smoke-tests}, {'platform' => 'centos-6-64'}
 end
