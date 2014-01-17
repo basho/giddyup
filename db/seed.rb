@@ -192,7 +192,9 @@ platforms.each do |p|
   %w{bucket_types http_bucket_types}.each do |t|
     create_riak_test t, tags.merge('backend' => 'eleveldb')
   end
-  create_riak_test 'handoff_ttl', tags.merge('backend' => 'memory')
+  %w{handoff_ttl overload}.each do |t|
+    create_riak_test t, tags.merge('backend' => 'memory')
+  end
   ## Upgrade tests
   %w{verify_handoff_mixed}.each do |t|
     %w{previous legacy}.each do |u|
