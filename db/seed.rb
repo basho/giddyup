@@ -184,7 +184,7 @@ platforms.each do |p|
             pb_security cuttlefish_configuration
             riak_control_authentication cluster_meta_basic
             verify_counter_capability verify_crdt_capability
-            sibling_explosion}
+            sibling_explosion pb_cipher_suites}
   (yz + core).each do |t|
     create_riak_test t, tags
   end
@@ -284,7 +284,8 @@ platforms.each do |p|
   # Riak EE 2.0
   %w{replication2_rt_sink_connection repl_reduced
      replication2_connections repl_rt_ack repl_aae_fullsync
-     verify_dvv_repl repl_bucket_types replication_object_reformat}.each do |t|
+     verify_dvv_repl repl_bucket_types replication_object_reformat
+     replication2_console_tests}.each do |t|
     next if p =~ PLATFORM_SKIPS['2.0']
     tags = {'platform' => p, 'min_version' => '2.0.0'}
     create_riak_test t, %w{riak_ee}, tags
