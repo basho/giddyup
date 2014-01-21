@@ -285,7 +285,7 @@ platforms.each do |p|
 
   # Riak EE 2.0
   %w{replication2_rt_sink_connection repl_reduced
-     replication2_connections repl_rt_ack repl_aae_fullsync
+     replication2_connections repl_aae_fullsync
      verify_dvv_repl repl_bucket_types replication_object_reformat
      replication2_console_tests}.each do |t|
     next if p =~ PLATFORM_SKIPS['2.0']
