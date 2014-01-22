@@ -284,12 +284,19 @@ platforms.each do |p|
   end
 
   # Riak EE 2.0
-  %w{replication2_rt_sink_connection repl_reduced
+  %w{replication2_rt_sink_connection
      replication2_connections repl_aae_fullsync
      verify_dvv_repl repl_bucket_types replication_object_reformat
      replication2_console_tests}.each do |t|
     next if p =~ PLATFORM_SKIPS['2.0']
     tags = {'platform' => p, 'min_version' => '2.0.0'}
+    create_riak_test t, %w{riak_ee}, tags
+  end
+
+  # Riak EE 2.1
+  %w{repl_reduced}.each do |t|
+    next if p =~ PLATFORM_SKIPS['2.0']
+    tags = {'platform' => p, 'min_version' => '2.1.0'}
     create_riak_test t, %w{riak_ee}, tags
   end
 end
