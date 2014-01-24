@@ -184,7 +184,7 @@ platforms.each do |p|
             pb_security cuttlefish_configuration
             riak_control_authentication cluster_meta_basic
             verify_counter_capability verify_crdt_capability
-            sibling_explosion pb_cipher_suites}
+            sibling_explosion pb_cipher_suites riak_admin_console_tests}
   (yz + core).each do |t|
     create_riak_test t, tags
   end
