@@ -323,7 +323,9 @@ end
     riak_dt riak_ensemble riak_jmx riak_kv riak_pb riak_pipe
     riak_repl riak_repl_pb_api riak_search riak_snmp riak_sysmon
     riaknostic sext sidejob syslog webmachine yokozuna }.each do |t|
-  create_riak_test "#{t}:eunit", %w{smoke-tests}, {'platform' => 'ubuntu-1204-64'}
-  create_riak_test "#{t}:dialyzer", %w{smoke-tests}, {'platform' => 'ubuntu-1204-64'}
-  create_riak_test "#{t}:xref", %w{smoke-tests}, {'platform' => 'ubuntu-1204-64'}
+  %w{ubuntu-1204-64 unofficial}.each do |p|
+    create_riak_test "#{t}:eunit", %w{smoke-tests}, {'platform' => p}
+    create_riak_test "#{t}:dialyzer", %w{smoke-tests}, {'platform' => p}
+    create_riak_test "#{t}:xref", %w{smoke-tests}, {'platform' => p}
+  end
 end
