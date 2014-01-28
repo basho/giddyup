@@ -325,4 +325,5 @@ end
     riaknostic sext sidejob syslog webmachine yokozuna }.each do |t|
   create_riak_test "#{t}:eunit", %w{smoke-tests}, {'platform' => 'ubuntu-1204-64'}
   create_riak_test "#{t}:dialyzer", %w{smoke-tests}, {'platform' => 'ubuntu-1204-64'}
+  create_riak_test "#{t}:xref", %w{smoke-tests}, {'platform' => 'ubuntu-1204-64'}
 end
