@@ -293,10 +293,7 @@ platforms.each do |p|
   end
 
   # Riak EE 2.0
-  %w{replication
-     replication_ssl
-     replication_upgrade
-     replication2_rt_sink_connection
+  %w{replication2_rt_sink_connection
      replication2_connections
      repl_aae_fullsync
      verify_dvv_repl
