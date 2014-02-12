@@ -283,6 +283,15 @@ platforms.each do |p|
     create_riak_test 'repl_aae_fullsync', %w{riak_ee}, tags
   end
 
+  # Riak EE 1.4.8.
+  unless p =~ PLATFORM_SKIPS['1.4']
+    tags = {'platform' => p, 'min_version' => '1.4.8'}
+    tags = tags.merge('max_version' => '1.4.99') if p =~ PLATFORM_SKIPS['2.0']
+    create_riak_test 'replication', %w{riak_ee}, tags
+    create_riak_test 'replication_ssl', %w{riak_ee}, tags
+    create_riak_test 'replication_upgrade', %w{riak_ee}, tags
+  end
+
   # Riak EE 2.0
   %w{replication
      replication_ssl
