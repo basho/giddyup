@@ -165,6 +165,10 @@ platforms.each do |p|
       create_riak_test 'verify_2i_aae', tags.merge('min_version' => '1.4.4',
                                                   'backend' => b)
   end
+  # max_version should already be set if the platform is skipped for
+  # 2.0
+  create_riak_test 'verify_aae', tags.merge('min_version' => '1.4.8')
+  create_riak_test 'verify_object_limits', tags.merge('min_version' => '1.4.8')
 end
 
 ## Riak 2.0
