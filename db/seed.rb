@@ -304,7 +304,8 @@ platforms.each do |p|
      repl_bucket_types
      replication_object_reformat
      replication2_console_tests
-     repl_consistent_object_filter}.each do |t|
+     repl_consistent_object_filter
+     repl_aae_fullsync_custom_n_test}.each do |t|
     next if p =~ PLATFORM_SKIPS['2.0']
     tags = {'platform' => p, 'min_version' => '2.0.0'}
     create_riak_test t, %w{riak_ee}, tags
