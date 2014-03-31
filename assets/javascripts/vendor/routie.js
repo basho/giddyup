@@ -150,7 +150,7 @@
       window.location.hash = path;
 
       if (silent) {
-        setTimeout(function() { 
+        setTimeout(function() {
           addListener();
         }, 1);
       }
@@ -204,5 +204,5 @@
   addListener();
 
   w[reference] = routie;
-   
+
 })(window);

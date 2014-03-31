@@ -14,7 +14,7 @@ module ::React
             # If execjs uses therubyracer, there is no 'global'. Make sure
             # we have it so JSX script can work properly.
             'var global = global || this;' +
-            File.read(File.expand_path("../assets/javascripts/tools/JSXTransformer-0.8.0.js",
+            File.read(File.expand_path("../assets/javascripts/tools/JSXTransformer-0.10.0.js",
                                        __FILE__))
           ExecJS.compile(contents)
         end
@@ -39,9 +39,11 @@ output 'public/javascripts'
 input 'assets/javascripts' do
   match 'vendor/**/*.js' do
     files = %w(
+      vendor/es5-shim.js
+      vendor/es5-sham.js
       vendor/minispade.js
       vendor/jquery.js
-      vendor/react-0.8.0.js
+      vendor/react-0.10.0.js
       vendor/routie.js
     )
 

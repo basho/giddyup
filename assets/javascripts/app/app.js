@@ -1,10 +1,18 @@
 /** @jsx React.DOM */
 var GiddyUp = window.GiddyUp = {
-    // projects: {},
-    showing: {}
+    projects: [],
+    projectsById: {},
+    showing: {},
+    activeAjax: [],
+    guid: 0
 };
 
-var sortBy = function(prop) {
+GiddyUp.nextGuid = function(){
+    GiddyUp.guid += 1;
+    return GiddyUp.guid;
+};
+
+GiddyUp.sortBy = function(prop) {
     return function(a,b) {
         if(a[prop] < b[prop]) return -1;
         if(a[prop] > b[prop]) return 1;
@@ -12,90 +20,51 @@ var sortBy = function(prop) {
     };
 };
 
+var Nav = React.createClass({
+    render: function(){
+        var children = [<ProjectsNav key="projects"
+                        showing={this.props.showing} />];
+
+        if(this.props.showing.project_id) {
+            var pid = this.props.showing.project_id;
+            var project = GiddyUp.projectsById[pid];
+            if(project){
+                children.push(<ScorecardsNav key={pid + "/scorecards"}
+                              project={project}
+                              showing={this.props.showing} />);
+            }
+        }
+        return (<div>{children}</div>);
+    }
+});
+
 var App = React.createClass({
     render: function(){
         return (
                 <div className="container-fluid">
-                  <ProjectsNav />
-                  <Help showing={this.props.showing} />
+                  <Nav showing={this.props.showing} />
+                  <Help content={Help[this.props.help]} />
+                  <Loading queue={this.props.loading} />
                 </div>
         );
     }
 });
 
-var Help = React.createClass({
-    getInitialState: function(){
-        return {visible: false};
-    },
-    handleClick: function(event){
-        this.setState({visible: !this.state.visible});
-    },
-    render: function(){
-        var helpStyle = {
-            right: "110px",
-            left: "auto",
-            top: "40px",
-            display: this.state.visible ? "block" : "none"
-        };
-        return <div>
-                 <img className="cowboy" src="/images/cowboy.png" onClick={this.handleClick} />
-                 <div id="help" className="popover left" style={helpStyle}>
-                   <div className="arrow" style={{top: 48}} />
-                     <h3 className="popover-title">Welcome to GiddyUp!</h3>
+GiddyUp.render = function() {
+    window.requestAnimationFrame(function(){
+        React.renderComponent(<App showing={GiddyUp.showing}
+                                   help={GiddyUp.help}
+                                   loading={GiddyUp.activeAjax} />,
+                              document.getElementById('app'));
+    });
+};
 
-                     <div className="popover-content">
-                       <p>GiddyUp is an API and user-interface to test results we collect
-                          from <code>riak_test</code>. I'm your guide, <em>Artie</em>, the
-                          Lone Testing Ranger.</p>
+require('polyfills');
+require('help');
+require('loading');
+require('projects');
+require('scorecards');
+require('raf');
+require('routes');
 
-                       <p>To get started, click a project to see which versions we've wrangled.</p>
-                     </div>
-                  </div>
-              </div>;
-    }
-});
-
-var ProjectsNav = React.createClass({
-    getInitialState: function(){
-        return { projects: [] };
-    },
-    componentDidMount: function(){
-        var self = this;
-        $.getJSON('/projects', function(result){
-            var projects = result['projects'].sort(sortBy('name'));
-            self.setState({
-                projects: projects
-            });
-        });
-    },
-    render: function() {
-        var projects = this.state.projects.map(function(project) {
-            var key = project.name;
-            return <ProjectNavLink key={key} project={project} />;
-        });
-        return (
-                <div className="navbar" style={{marginBottom: 0}} >
-                  <div className="navbar-inner">
-                    <a href="#/projects" className="brand">GiddyUp</a>
-                    <ul className="nav">
-                      {projects}
-                    </ul>
-                  </div>
-                </div>
-        );
-    }
-});
-
-var ProjectNavLink = React.createClass({
-    render: function(){
-        var url = "#/projects/" + this.props.project.name;
-        return <li>
-                  <a href={url}> {this.props.project.name} </a>
-               </li>;
-    }
-});
-
-
-
-React.renderComponent(<App />,
-                      document.getElementById('app'));
+routie.navigateToHash();
