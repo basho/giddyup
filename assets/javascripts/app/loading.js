@@ -8,7 +8,7 @@ Loading = React.createClass({
             display: (this.props.queue.length > 0) ? "block" : "none"
         };
         var queue = this.props.queue.map(function(req){
-            return (<li key={req.id}> {req.helpText} </li>);
+            return (<li key={req.id}> - {req.helpText} </li>);
         });
         return (
             <div className="popover bottom" style={statusStyle}>
@@ -17,7 +17,7 @@ Loading = React.createClass({
               <div className="popover-content">
                 <p>I've got <span className="text-info"> {queue.length} </span>
                 more steers to herd.</p>
-                <ul> { queue } </ul>
+                <ul className="unstyled"> { queue } </ul>
               </div>
             </div>
         );
