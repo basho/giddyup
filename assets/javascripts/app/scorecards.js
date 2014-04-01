@@ -38,7 +38,7 @@ ScorecardsNav = React.createClass({
 
 ScorecardNavGroup = React.createClass({
     getInitialState: function(){
-        return { dropdown: false };
+        return { dropdown: false, lastEvent: null };
     },
     className: function(){
         var id = this.props.showing.scorecard_id,
@@ -59,15 +59,29 @@ ScorecardNavGroup = React.createClass({
             return this.props.version;
         }
     },
-    handleClick: function(){
-        this.setState({ dropdown: (!this.state.dropdown) });
-        return false;
+    handleClick: function(evt){
+        evt.nativeEvent.guid = GiddyUp.nextGuid();
+        this.setState({ dropdown: (!this.state.dropdown),
+                        lastEvent: evt.nativeEvent.guid });
+        evt.preventDefault();
+    },
+    handleDocumentClick: function(evt) {
+        if(this.state.lastEvent === evt.guid)
+            return;
+        this.setState({dropdown: false, lastEvent: null});
+    },
+    componentDidMount: function(){
+        window.addEventListener('click', this.handleDocumentClick);
+    },
+    componentWillUnmount: function(){
+        window.removeEventListener('click', this.handleDocumentClick);
     },
     render: function(){
         if(this.props.scorecards.length == 1) {
             return (<ScorecardNavLink
                     showing={this.props.showing}
-                    scorecard={this.props.scorecards[0]} />);
+                    scorecard={this.props.scorecards[0]}
+                    solo={true} />);
         } else {
             var self = this;
             var classname = this.className();
@@ -76,7 +90,8 @@ ScorecardNavGroup = React.createClass({
                 return (
                         <ScorecardNavLink scorecard={s}
                         key={s.id}
-                        showing={self.props.showing} />);
+                        showing={self.props.showing}
+                        solo={false} />);
             });
             return (<li className={classname}>
                     <a href="#" className="dropdown-toggle"
@@ -92,7 +107,7 @@ ScorecardNavGroup = React.createClass({
 
 ScorecardNavLink = React.createClass({
     render: function(){
-        var active = (this.props.showing.scorecard_id ==
+        var active = (this.props.solo && this.props.showing.scorecard_id ==
                       this.props.scorecard.id),
             url = '#' + routie.lookup('scorecard', {
                 scorecard_id: this.props.scorecard.id,
@@ -145,6 +160,7 @@ GiddyUp.fetchScorecards = function(project, cb){
         cb(project.scorecards);
     } else {
         $.ajax({
+            type: "POST",  // No request splitting, yay
             dataType: "json",
             url:"/scorecards",
             data:{ids: project.scorecard_ids},

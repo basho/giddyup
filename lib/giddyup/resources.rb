@@ -39,6 +39,22 @@ module GiddyUp
     end
   end
 
+  module FetchViaPost
+    def is_authorized?(auth)
+      true
+    end
+
+    def allowed_methods
+      %W[GET HEAD POST]
+    end
+
+    def process_post
+      response.headers['Content-Type'] = 'application/json'
+      response.body = to_json
+      true
+    end
+  end
+
   # Base class for resources
   class Resource < Webmachine::Resource
     include Webmachine::Resource::Authentication
@@ -66,8 +82,12 @@ module GiddyUp
     end
 
     def query_ids
-      return [] unless request.uri.query
-      request.uri.query.split(/\&/).inject([]) do |ids, pair|
+      return [] unless (request.uri.query || request.post?)
+      idtext = case
+               when request.get? then request.uri.query
+               when request.post? then request.body.to_s
+               end
+      idtext.split(/\&/).inject([]) do |ids, pair|
         key, value = pair.split(/\=/)
         if key && value && CGI.unescape(key) == 'ids[]'
           ids << CGI.unescape(value)
@@ -75,6 +95,7 @@ module GiddyUp
         ids
       end
     end
+
   end
 
   class LiveResource < Webmachine::Resource
@@ -298,6 +319,8 @@ module GiddyUp
   end
 
   class ScorecardsResource < Resource
+    include FetchViaPost
+
     def resource_exists?
       begin
         @scorecards = Scorecard.find(query_ids)
@@ -330,6 +353,8 @@ module GiddyUp
   end
 
   class TestInstancesResource < Resource
+    include FetchViaPost
+
     def resource_exists?
       begin
         @test_instances = query_ids.map do |id|
@@ -413,5 +438,6 @@ module GiddyUp
     add ['test_results'], TestResultsResource
     add ['projects', :name], ProjectResource
     add ['projects'], ProjectsListResource
+    add ['wmtrace', '*'], Webmachine::Trace::TraceResource
   end
 end
