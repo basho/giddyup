@@ -54,12 +54,10 @@ GiddyUp.fetchProjects = function(cb){
      }).done(function(result){
         var projects = result['projects'].sort(GiddyUp.sortBy('name'));
         GiddyUp.projects = projects;
-        cb(projects);
         projects.forEach(function(p){
             GiddyUp.projectsById[p.name] = p;
-            // GiddyUp.fetchScorecards(p);
         });
-        GiddyUp.render()
+        cb(projects);
     });
   }
 };
