@@ -31,7 +31,6 @@ riak_tests = %w{
   partition_repair
   riaknostic_rt
   rt_basic_test
-  verify_backup_restore
   verify_build_cluster
   verify_busy_dist_port
   verify_capabilities
@@ -169,6 +168,11 @@ platforms.each do |p|
   # 2.0
   create_riak_test 'verify_aae', tags.merge('min_version' => '1.4.8')
   create_riak_test 'verify_object_limits', tags.merge('min_version' => '1.4.8')
+end
+
+## 1.4 Deprecations
+%w{verify_backup_restore}.each do |t|
+  create_riak_test t, 'max_version' => '1.4.99'
 end
 
 ## Riak 2.0
