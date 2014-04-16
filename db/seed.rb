@@ -194,7 +194,10 @@ platforms.each do |p|
             verify_counter_capability verify_crdt_capability
             sibling_explosion pb_cipher_suites riak_admin_console_tests
             verify_dt_context}
-  (yz + core).each do |t|
+
+  sc = %w{ensemble_basic ensemble_basic2 ensemble_basic3 ensemble_basic4
+          ensemble_interleave ensemble_sync}
+  (yz + core + sc).each do |t|
     create_riak_test t, tags
   end
   ## Bucket types need leveldb so the 2i sections run
