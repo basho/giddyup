@@ -213,6 +213,9 @@ platforms.each do |p|
       create_riak_test t, tags.merge('upgrade_version' => u)
     end
   end
+  create_riak_test 'verify_dt_upgrade', tags.merge('upgrade_version' => 'previous')
+  create_riak_test 'verify_dt_upgrade', tags.merge('upgrade_version' => 'legacy',
+                                                   'min_version' => '2.1.0')
   # verify_no_writes_on_read valid for 1.4+ but not backporting in
   # riak_test, only valid on bitcask backend
   create_riak_test 'verify_no_writes_on_read', tags.merge('backend' => 'bitcask')
