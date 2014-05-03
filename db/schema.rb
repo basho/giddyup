@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 2014050116361398983772) do
+ActiveRecord::Schema.define(:version => 2014050311451399139157) do
 
   create_table "artifacts", :force => true do |t|
     t.string   "url"
@@ -41,7 +41,7 @@ ActiveRecord::Schema.define(:version => 2014050116361398983772) do
     t.integer "project_id"
   end
 
-  add_index "scorecards", ["project_id"], :name => "index_scorecards_on_project_id"
+  add_index "scorecards", ["project_id", "name"], :name => "index_scorecards_on_project_id_and_name"
 
   create_table "test_results", :force => true do |t|
     t.boolean  "status"
