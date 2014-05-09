@@ -32,7 +32,7 @@ class TestResult < ActiveRecord::Base
   default_scope includes(:test)
   belongs_to :test
   belongs_to :scorecard
-  has_many :artifacts
+  has_many :artifacts, :dependent => :destroy
 
   def status=(val)
     case val
@@ -68,13 +68,13 @@ class Project < ActiveRecord::Base
   # name string -- 'riak' or 'riak_ee' or 'riak_cs'
   validates_uniqueness_of :name
   default_scope includes(:scorecards)
-  has_many :scorecards
+  has_many :scorecards, :dependent => :destroy
   has_and_belongs_to_many :tests
 end
 
 class Scorecard < ActiveRecord::Base
   # name string -- the flattened version/build
-  has_many :test_results
+  has_many :test_results, :dependent => :destroy
   belongs_to :project
 
   def tests
