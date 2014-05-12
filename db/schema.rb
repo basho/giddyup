@@ -11,7 +11,7 @@
 #
 # It's strongly recommended to check this file into your version control system.
 
-ActiveRecord::Schema.define(:version => 2014050311451399139157) do
+ActiveRecord::Schema.define(:version => 2014051209401399905630) do
 
   create_table "artifacts", :force => true do |t|
     t.string   "url"
