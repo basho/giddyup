@@ -40,7 +40,6 @@ riak_tests = %w{
   verify_leave
   verify_link_walk_urls
   verify_listkeys
-  verify_listkeys_eqcfsm
   verify_mr_prereduce_node_down
   verify_riak_lager
   verify_riak_stats
@@ -195,7 +194,7 @@ platforms.each do |p|
             riak_control_authentication cluster_meta_basic
             verify_counter_capability verify_crdt_capability
             sibling_explosion pb_cipher_suites riak_admin_console_tests
-            verify_dt_context}
+            verify_dt_context verify_listkeys_eqcfsm}
 
   sc = %w{ensemble_basic ensemble_basic2 ensemble_basic3 ensemble_basic4
           ensemble_interleave ensemble_sync}
