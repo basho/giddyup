@@ -311,6 +311,7 @@ platforms.each do |p|
   # Riak EE 2.0
   %w{replication2_rt_sink_connection
      replication_stats
+     repl_cancel_fullsync
      replication2_connections
      repl_aae_fullsync
      verify_dvv_repl
