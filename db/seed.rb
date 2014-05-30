@@ -312,6 +312,7 @@ platforms.each do |p|
   %w{replication2_rt_sink_connection
      replication_stats
      repl_cancel_fullsync
+     repl_location_failures
      replication2_connections
      repl_aae_fullsync
      verify_dvv_repl
