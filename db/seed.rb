@@ -23,7 +23,6 @@ backends = %w{
 
 riak_tests = %w{
   basic_command_line
-  client_java_verify
   gh_riak_core_154
   gh_riak_core_155
   gh_riak_core_176
@@ -78,10 +77,12 @@ platforms.each do |p|
   end
 end
 
-## Special handling for Ruby and Python tests
+## Special handling for client tests
 platforms.each do |p|
-  create_riak_test "client_ruby_verify", 'platform' => p, 'backend' => 'memory'
-  create_riak_test "client_python_verify", 'platform' => p, 'backend' => 'eleveldb'
+  tags = {'platform' => p, 'max_version' => '1.4.99'}
+  create_riak_test "client_java_verify", tags
+  create_riak_test "client_ruby_verify", tags.merge('backend' => 'memory')
+  create_riak_test "client_python_verify", tags.merge('backend' => 'eleveldb')
 end
 
 ## Test upgrades on only persistent backends, from two different versions
