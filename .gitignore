@@ -6,3 +6,6 @@ deps
 priv/log/*.log
 ebin/
 log/
+priv/www/javascripts
+priv/www/stylesheets
+.rebar/
