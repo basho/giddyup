@@ -1,0 +1,8 @@
+.eunit
+deps
+*.o
+*.beam
+*.plt
+priv/log/*.log
+ebin/
+log/

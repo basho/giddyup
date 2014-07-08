@@ -1,0 +1,16 @@
+{application, giddyup,
+ [
+  {description, "riak_test scorecard"},
+  {vsn, "1"},
+  {registered, []},
+  {applications, [
+                  kernel,
+                  stdlib,
+                  lager,
+                  epgsql,
+                  webmachine
+                 ]},
+  %% {included_applications, [poolboy]},
+  {mod, { giddyup_app, []}},
+  {env, []}
+ ]}.
