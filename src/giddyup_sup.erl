@@ -29,6 +29,6 @@ init([]) ->
         %% Pool over pgsql
         poolboy:child_spec(giddyup_sql, giddyup_config:pool_args(), giddyup_config:db_params()),
         %% Webmachine listener
-        {proplists:get_value(name, WebConfig), {webmachine_mochiweb, start, WebConfig},
+        {proplists:get_value(name, WebConfig), {webmachine_mochiweb, start, [WebConfig]},
          permanent, 5000, worker, [webmachine_mochiweb, mochiweb_socket_server]}
        ]} }.

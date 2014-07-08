@@ -35,8 +35,11 @@ allowed_methods(ReqData, Context) ->
 %% @doc Generates an etag for the asset being served.
 -spec generate_etag(wrq:reqdata(), #context{}) ->
                            {list(), wrq:reqdata(), #context{}}.
-generate_etag(ReqData, #context{fileinfo=FileInfo}=Context) ->
-    {mochihex:to_hex(erlang:phash2(FileInfo)), ReqData, Context}.
+generate_etag(ReqData, #context{fileinfo={ok, #file_info{inode=Inode, mode=Mode, mtime=MTime}}}=Context) ->
+    {mochihex:to_hex(crypto:hash(sha, term_to_binary([Inode, Mode, MTime]))), ReqData, Context};
+generate_etag(ReqData, Context) ->
+    {undefined, ReqData, Context}.
+
 
 %% @doc Determines the time the asset was last modified
 -spec last_modified(wrq:reqdata(), #context{}) ->
