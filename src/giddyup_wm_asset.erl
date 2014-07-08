@@ -8,6 +8,7 @@
          generate_etag/2,
          last_modified/2,
          resource_exists/2,
+         encodings_provided/2,
          content_types_provided/2]).
 
 -include_lib("webmachine/include/webmachine.hrl").
@@ -49,6 +50,12 @@ last_modified(ReqData, #context{fileinfo={ok, #file_info{mtime=MTime}}}=Context)
     {MTime, ReqData, Context};
 last_modified(RD, Context) ->
     {undefined, RD, Context}.
+
+encodings_provided(RD, Context) ->
+    {[{"identity", fun(X) -> X end},
+      {"gzip", fun zlib:gzip/1},
+      {"deflate", fun zlib:zip/1}], RD, Context}.
+
 
 %% @doc Given a series of request tokens, normalize to priv dir file.
 -spec normalize_filepath(list()) -> list().
