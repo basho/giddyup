@@ -1,3 +1,4 @@
+%% @doc Lists the available projects as JSON
 -module(giddyup_wm_projects).
 
 -record(context, {projects}).
@@ -12,6 +13,8 @@
          content_types_provided/2,
          to_json/2]).
 
+-include_lib("webmachine/include/webmachine.hrl").
+
 routes() ->
     [{["projects"], ?MODULE, []}].
 
@@ -24,8 +27,8 @@ service_available(RD, Context) ->
             {true, RD, Context#context{projects=Projects}};
         Error ->
             Body = io_lib:format("Error: ~p~n", [Error]),
-            RD1 = wrq:set_resp_header("Content-Type", "text/plain", 
-                                      wrq:set_resp_body(Body, RD)),            
+            RD1 = wrq:set_resp_header("Content-Type", "text/plain",
+                                      wrq:set_resp_body(Body, RD)),
             {false, RD1, Context}
     end.
 
@@ -34,10 +37,9 @@ content_types_provided(RD, Context) ->
 
 to_json(RD, #context{projects=Projects}=Context) ->
     JSON = mochijson2:encode(
-             {struct, 
+             {struct,
               [{projects,
                 [ {struct, [{name, Name}]} || {_Id, Name} <- Projects]
                }]
              }),
     {JSON, RD, Context}.
-    

@@ -37,7 +37,7 @@ extract_env() ->
 
 
 pool_args() ->
-    [{name, {local, pgsql}},
+    [{name, {local, giddyup_sql}},
      {worker_module, giddyup_sql},
      {size, 5},
      {max_overflow, 5}].
@@ -70,5 +70,6 @@ spec_name(Scheme, Ip, Port) ->
 
 dispatch() ->
     lists:flatten([
-                  giddyup_wm_asset:routes() 
+                   giddyup_wm_projects:routes(),
+                   giddyup_wm_asset:routes()
                   ]).
