@@ -4,7 +4,8 @@
                    project_id_q/0,
                    suite_q/0,
                    scorecards_q/0,
-                   full_matrix_q/0]}).
+                   full_matrix_q/0,
+                   artifacts_q/0]}).
 
 -include_lib("epgsql/include/pgsql.hrl").
 
@@ -25,7 +26,8 @@
          scorecards/1,
          scorecard_exists/1,
          %% matrix/1,
-         full_matrix/1
+         full_matrix/1,
+         artifacts/1
         ]).
 
 %%---------------------
@@ -73,6 +75,9 @@ scorecards(ProjectID) ->
 
 full_matrix(ScorecardID) ->
     ?QUERY(full_matrix_q(), [ScorecardID]).
+
+artifacts(TestResultID) ->
+    ?QUERY(artifacts_q(), [TestResultID]).
 
 %%---------------------
 %% Query statement defs
@@ -132,3 +137,9 @@ full_matrix_q() ->
     "   AND (tests.min_version IS NULL OR tests.min_version <= scorecards.name) "
     "   AND (tests.max_version IS NULL OR tests.max_version >= scorecards.name) "
     "ORDER BY tests.name, platform, backend, upgrade_version, test_results.created_at DESC".
+
+artifacts_q() ->
+    "SELECT id, url, content_type, created_at "
+    "FROM artifacts "
+    "WHERE test_result_id = $1 "
+    "ORDER BY created_at DESC".
