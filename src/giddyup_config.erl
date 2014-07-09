@@ -70,6 +70,8 @@ spec_name(Scheme, Ip, Port) ->
 
 dispatch() ->
     lists:flatten([
+                   giddyup_wm_scorecards:routes(),
+                   giddyup_wm_suite:routes(),
                    giddyup_wm_projects:routes(),
                    giddyup_wm_asset:routes()
                   ]).
