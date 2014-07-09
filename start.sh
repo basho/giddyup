@@ -4,5 +4,7 @@ MODE="$1"
 EXTRA_ARGS="$2"
 if [[ "$MODE" = "dev" ]]; then
     EXTRA_ARGS="$EXTRA_ARGS -s reloader"
+else
+    EXTRA_ARGS="$EXTRA_ARGS -noshell -noinput"
 fi
-exec erl -pa $PWD/ebin $PWD/deps/*/ebin -noshell -noinput -sname giddyup -config $MODE.config -s giddyup $EXTRA_ARGS
+exec erl -pa $PWD/ebin $PWD/deps/*/ebin -sname giddyup -config $MODE.config -s giddyup $EXTRA_ARGS

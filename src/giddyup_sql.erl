@@ -1,6 +1,10 @@
 %% @doc SQL worker process wrapper and queries/updates
 -module(giddyup_sql).
--compile({inline, [projects_q/0, project_id_q/0, suite_q/0, scorecards_q/0]}).
+-compile({inline, [projects_q/0,
+                   project_id_q/0,
+                   suite_q/0,
+                   scorecards_q/0,
+                   full_matrix_q/0]}).
 
 -include_lib("epgsql/include/pgsql.hrl").
 
@@ -13,10 +17,15 @@
          ]).
 
 -export([
+         q/1,
+         q/2,
          projects/0,
          project_exists/1,
          suite/3,
-         scorecards/1
+         scorecards/1,
+         scorecard_exists/1,
+         %% matrix/1,
+         full_matrix/1
         ]).
 
 %%---------------------
@@ -32,17 +41,38 @@ extract_column_names(Columns) ->
 %%---------------------
 %% Query calls
 %%---------------------
+q(SQL) ->
+    ?QUERY(SQL).
+
+q(SQL, Params) ->
+    ?QUERY(SQL, Params).
+
 projects() ->
     ?QUERY(projects_q()).
 
 project_exists(Name) ->
     ?QUERY(project_id_q(), [Name]).
 
+scorecard_exists(ID) ->
+    case ?QUERY(scorecard_id_q(), [ID]) of
+        %%
+        {ok, _, [_]} ->
+            true;
+        _ ->
+            false
+    end.
+
 suite(ProjectID, Platform, Version) ->
     ?QUERY(suite_q(), [ProjectID, Platform, Version]).
 
 scorecards(ProjectID) ->
     ?QUERY(scorecards_q(), [ProjectID]).
+
+%% matrix(ScorecardID) ->
+%%     ?QUERY(matrix_q(), [ScorecardID]).
+
+full_matrix(ScorecardID) ->
+    ?QUERY(full_matrix_q(), [ScorecardID]).
 
 %%---------------------
 %% Query statement defs
@@ -69,6 +99,9 @@ scorecards_q() ->
     "WHERE projects.id = scorecards.project_id AND projects.name = $1"
     "ORDER BY scorecards.name DESC".
 
+scorecard_id_q() ->
+    "SELECT 't'::bool FROM scorecards WHERE scorecards.id = $1".
+
 suite_q() ->
     "SELECT tests.* FROM tests, projects_tests "
     "WHERE tests.id = projects_tests.test_id"
@@ -79,16 +112,23 @@ suite_q() ->
     "ORDER BY name, backend, upgrade_version".
 
 %% matrix_q() ->
-%%     "SELECT tests.* FROM tests, projects_tests "
-%%     "WHERE tests.id = projects_tests.test_id AND projects_tests.project_id = $1 "
-%%     "   AND (tests.min_version IS NULL OR tests.min_version <= $2) "
-%%     "   AND (tests.max_version IS NULL OR tests.max_version >= $2) "
+%%     "SELECT tests.* "
+%%     "FROM scorecards, projects_tests, tests "
+%%     "WHERE scorecards.id = $1 "
+%%     "   AND projects_tests.project_id = scorecards.project_id "
+%%     "   AND projects_tests.test_id = tests.id "
+%%     "   AND (tests.min_version IS NULL OR tests.min_version <= scorecards.name) "
+%%     "   AND (tests.max_version IS NULL OR tests.max_version >= scorecards.name) "
 %%     "ORDER BY name, platform, backend, upgrade_version".
 
-%% all_results_q() ->
-%%     "SELECT * FROM test_results WHERE scorecard_id = $1 "
-%%     "ORDER BY test_id ASC, created_at DESC".
-
-%% results_q() ->
-%%     "SELECT * FROM test_results WHERE test_id = $1 "
-%%     "ORDER BY created_at DESC".
+full_matrix_q() ->
+    "SELECT tests.id AS test_id, tests.name, platform, backend, upgrade_version, "
+    "       test_results.id AS result_id, status, long_version, test_results.created_at "
+    "FROM scorecards, projects_tests, tests LEFT OUTER JOIN test_results "
+    "   ON (tests.id = test_results.test_id AND test_results.scorecard_id = $1) "
+    "WHERE scorecards.id = $1 "
+    "   AND projects_tests.project_id = scorecards.project_id "
+    "   AND projects_tests.test_id = tests.id "
+    "   AND (tests.min_version IS NULL OR tests.min_version <= scorecards.name) "
+    "   AND (tests.max_version IS NULL OR tests.max_version >= scorecards.name) "
+    "ORDER BY tests.name, platform, backend, upgrade_version, test_results.created_at DESC".

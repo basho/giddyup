@@ -1,5 +1,6 @@
 -module(giddyup).
--export([start/0]).
+-export([start/0,
+         isotime/1]).
 
 start() ->
     _ = [ application:start(Dep) || Dep <- resolve_deps(giddyup),
@@ -32,3 +33,8 @@ resolve_deps(App) ->
 is_otp_base_app(kernel) -> true;
 is_otp_base_app(stdlib) -> true;
 is_otp_base_app(_) -> false.
+
+isotime({{Y,Mo,D},{H,Mi,S}}) ->
+    ISO = io_lib:format("~w-~.2.0w-~.2.0wT~.2.0w:~.2.0w:~6.3.0fZ",
+                        [Y, Mo, D, H, Mi, S]),
+    unicode:characters_to_binary(ISO).
