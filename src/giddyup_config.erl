@@ -26,13 +26,14 @@ extract_env() ->
     S3_AKID = os:getenv("S3_AKID"),
     S3_BUCKET = env_or_default("S3_BUCKET", "basho-giddyup-dev"),
     S3_SECRET = os:getenv("S3_SECRET"),
+    S3_HOST = env_or_default("S3_HOST", "s3.amazonaws.com"),
     _ = [ application:set_env(giddyup, Key, Value) ||
             {Key, Value} <- [{http_ip, IP},
                              {http_port, list_to_integer(Port)},
                              {db_url, element(2, http_uri:parse(DB, ?SCHEME_DEFAULTS))},
                              {user, AuthUser},
                              {password, AuthPass},
-                             {s3, {S3_AKID, S3_SECRET, S3_BUCKET}}]],
+                             {s3, {S3_AKID, S3_SECRET, S3_HOST, S3_BUCKET}}]],
     ok.
 
 
