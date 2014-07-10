@@ -1,15 +1,13 @@
-%% @doc Constructs a test-suite for a given platform and version
+%% @doc Lists scorecards for the selected project
 -module(giddyup_wm_scorecards).
 -compile({inline, [encode_scorecard/1]}).
 
 -export([init/1,
          routes/0,
          resource_exists/2,
-         content_types_provided/2,
-         to_json/2,
-         encodings_provided/2]).
+         to_json/2]).
 
--include_lib("webmachine/include/webmachine.hrl").
+-include_lib("giddyup_wm.hrl").
 
 -record(context, {project, scorecards}).
 
@@ -18,14 +16,6 @@ routes() ->
 
 init([]) ->
     {ok, #context{}}.
-
-encodings_provided(RD, Context) ->
-    {[{"identity", fun(X) -> X end},
-      {"gzip", fun zlib:gzip/1},
-      {"deflate", fun zlib:zip/1}], RD, Context}.
-
-content_types_provided(RD, Context) ->
-    {[{"application/json", to_json}], RD, Context}.
 
 resource_exists(RD, Context) ->
     Project = wrq:path_info(project, RD),

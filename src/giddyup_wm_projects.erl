@@ -6,14 +6,9 @@
 -export([init/1,
          routes/0,
          service_available/2,
-         %% allowed_methods/2,
-         %% generate_etag/2,
-         %% last_modified/2,
-         %% resource_exists/2,
-         content_types_provided/2,
          to_json/2]).
 
--include_lib("webmachine/include/webmachine.hrl").
+-include_lib("giddyup_wm.hrl").
 
 routes() ->
     [{["projects"], ?MODULE, []}].
@@ -31,9 +26,6 @@ service_available(RD, Context) ->
                                       wrq:set_resp_body(Body, RD)),
             {false, RD1, Context}
     end.
-
-content_types_provided(RD, Context) ->
-    {[{"application/json", to_json}], RD, Context}.
 
 to_json(RD, #context{projects=Projects}=Context) ->
     JSON = mochijson2:encode(

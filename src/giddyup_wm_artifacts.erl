@@ -4,27 +4,17 @@
 -export([init/1,
          routes/0,
          resource_exists/2,
-         content_types_provided/2,
-         to_json/2,
-         encodings_provided/2]).
+         to_json/2]).
 
 -record(context, {test_result, artifacts}).
 
--include_lib("webmachine/include/webmachine.hrl").
+-include("giddyup_wm.hrl").
 
 init([]) ->
     {ok, #context{}}.
 
 routes() ->
     [{["test_results", id, "artifacts"], ?MODULE, []}].
-
-encodings_provided(RD, Context) ->
-    {[{"identity", fun(X) -> X end},
-      {"gzip", fun zlib:gzip/1},
-      {"deflate", fun zlib:zip/1}], RD, Context}.
-
-content_types_provided(RD, Context) ->
-    {[{"application/json", to_json}], RD, Context}.
 
 resource_exists(RD, Context) ->
     ID = list_to_integer(wrq:path_info(id, RD)),

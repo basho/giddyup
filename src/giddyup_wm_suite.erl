@@ -4,11 +4,9 @@
 -export([init/1,
          routes/0,
          resource_exists/2,
-         content_types_provided/2,
-         to_json/2,
-         encodings_provided/2]).
+         to_json/2]).
 
--include_lib("webmachine/include/webmachine.hrl").
+-include("giddyup_wm.hrl").
 
 -record(context, {project, platform, version, test_cols, tests}).
 
@@ -21,7 +19,7 @@ routes() ->
 
 init([]) ->
     {ok, #context{}}.
-            
+
 resource_exists(RD, Context) ->
     Project = wrq:path_info(project, RD),
     Platform = wrq:get_qs_value("platform", RD),
@@ -42,17 +40,9 @@ resource_exists(RD, Context) ->
         _ ->
             {false, RD, Context}
     end.
-    
-encodings_provided(RD, Context) ->
-    {[{"identity", fun(X) -> X end},
-      {"gzip", fun zlib:gzip/1},
-      {"deflate", fun zlib:zip/1}], RD, Context}.
 
-content_types_provided(RD, Context) ->
-    {[{"application/json", to_json}], RD, Context}.
-
-to_json(RD, #context{project=Project, 
-                     test_cols=Cols, 
+to_json(RD, #context{project=Project,
+                     test_cols=Cols,
                      tests=Tests}=Context) ->
     JSON = {struct,
             [{project, [{name, Project},
@@ -69,7 +59,6 @@ encode_test(Columns, TestT) ->
     {value, ID, Props1} = lists:keytake(<<"id">>, 1, Props),
     {value, Name, Props2} = lists:keytake(<<"name">>, 1, Props1),
     %% TODO: don't split into tags, just emit the necessary stuff
-    {struct, [ID, Name, 
+    {struct, [ID, Name,
               {tags, {struct, [{K, V} || {K, V} <- Props2, V /= null]}}
              ]}.
-    
