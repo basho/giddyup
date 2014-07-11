@@ -8,7 +8,8 @@
                   stdlib,
                   lager,
                   epgsql,
-                  webmachine
+                  webmachine,
+                  erlcloud
                  ]},
   %% {included_applications, [poolboy]},
   {mod, { giddyup_app, []}},

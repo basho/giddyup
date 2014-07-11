@@ -27,7 +27,8 @@
          scorecard_exists/1,
          %% matrix/1,
          full_matrix/1,
-         artifacts/1
+         artifacts/1,
+         create_artifact/3
         ]).
 
 %%---------------------
@@ -79,6 +80,9 @@ full_matrix(ScorecardID) ->
 artifacts(TestResultID) ->
     ?QUERY(artifacts_q(), [TestResultID]).
 
+create_artifact(TestResultID, URL, CType) ->
+    ?QUERY(artifact_i(), [TestResultID, URL, CType]).
+
 %%---------------------
 %% Query statement defs
 %%---------------------
@@ -88,10 +92,10 @@ artifacts(TestResultID) ->
 %%     "VALUES ($1, $2, $3, $4, NOW(), NOW()) "
 %%     "RETURNING id".
 
-%% artifact_i() ->
-%%     "INSERT INTO artifacts (test_result_id, url, content_type, created_at, updated_at) "
-%%     "VALUES ($1, $2, $3, NOW(), NOW()) "
-%%     "RETURNING id".
+artifact_i() ->
+    "INSERT INTO artifacts (test_result_id, url, content_type, created_at, updated_at) "
+    "VALUES ($1, $2, $3, NOW(), NOW()) "
+    "RETURNING id".
 
 projects_q() ->
     "SELECT id, name FROM projects".

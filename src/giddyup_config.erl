@@ -5,7 +5,9 @@
 -export([db_params/0,
          extract_env/0,
          pool_args/0,
-         web_config/0]).
+         web_config/0,
+         s3_config/0,
+         auth/0]).
 
 db_params() ->
     {ok, {postgres, UserPass, Host, Port, Path, _}} = application:get_env(giddyup, db_url),
@@ -33,9 +35,17 @@ extract_env() ->
                              {db_url, element(2, http_uri:parse(DB, ?SCHEME_DEFAULTS))},
                              {user, AuthUser},
                              {password, AuthPass},
-                             {s3, {S3_AKID, S3_SECRET, S3_HOST, S3_BUCKET}}]],
+                             {s3, {erlcloud_s3:new(S3_AKID, S3_SECRET, S3_HOST), S3_BUCKET}}]],
     ok.
 
+s3_config() ->
+    {ok, Val} = application:get_env(giddyup, s3),
+    Val.
+
+auth() ->
+    {ok, User} = application:get_env(giddyup, user),
+    {ok, Pass} = application:get_env(giddyup, pass),
+    {User, Pass}.
 
 pool_args() ->
     [{name, {local, giddyup_sql}},
@@ -71,6 +81,7 @@ spec_name(Scheme, Ip, Port) ->
 
 dispatch() ->
     lists:flatten([
+                   giddyup_wm_artifact:routes(),
                    giddyup_wm_artifacts:routes(),
                    giddyup_wm_matrix:routes(),
                    giddyup_wm_scorecards:routes(),
