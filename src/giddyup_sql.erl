@@ -138,7 +138,7 @@ test_result_i() ->
     "VALUES ($1, $2, $3, $4, $5, NOW(), NOW())".
 
 artifact_i() ->
-    "INSERT INTO artifacts (id, test_result_id, url, content_type, created_at, updated_at) "
+    "INSERT INTO artifacts (test_result_id, url, content_type, created_at, updated_at) "
     "VALUES ($1, $2, $3, NOW(), NOW()) "
     "RETURNING id".
 

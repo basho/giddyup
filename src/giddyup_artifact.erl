@@ -19,7 +19,7 @@ key_for(ResultID, Segments) ->
 
 upload(Key, CType, Content) ->
     {Config, Bucket} = giddyup_config:s3_config(),
-    erlcloud:put_object(Bucket, Key, Content,
+    erlcloud_s3:put_object(Bucket, Key, Content,
                         [{return_response, true}, {acl, public_read}],
                         [{"content-type", CType}], Config).
 

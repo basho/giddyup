@@ -77,11 +77,11 @@ create_path(RD, #context{id=TestResultID, ctype=CType}=Context) ->
     URL = giddyup_artifact:url_for(TestResultID, Segments),
     Key = giddyup_artifact:key_for(TestResultID, Segments),
     case giddyup_sql:create_artifact(TestResultID, URL, CType) of
-        {ok, _, [{ID}]} ->
+        {ok, _, _, [{ID}]} ->
             {"/artifacts/" ++ integer_to_list(ID),
              RD, Context#context{artifact={ID, URL, CType}, key=Key}};
-        _ ->
-            {{halt, 500}, RD, Context}
+        Err ->
+            {{error, Err}, RD, Context}
     end.
 
 accept_file(RD, #context{key=Key, ctype=CType}=Context) ->
@@ -90,10 +90,13 @@ accept_file(RD, #context{key=Key, ctype=CType}=Context) ->
         {true, RD, Context}
     catch
         error:{aws_error,Err} ->
+            lager:debug("AWS upload failed: ~p", [Err]),
             {{halt, 502},
              wrq:set_resp_header("content-type", "text/plain",
-                                 wrq:set_resp_body(RD, io_lib:format("AWS upload failed:~n~p", [Err]))),
-             Context}
+                                 wrq:set_resp_body(io_lib:format("AWS upload failed:~n~p", [Err]), RD)),
+             Context};
+        Class:Why ->
+            {{error, {Class,Why}}, RD, Context}
     end.
 
 to_file(RD, #context{artifact={_ID, URL, _CType}}=Context) ->
