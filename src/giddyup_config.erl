@@ -44,7 +44,7 @@ s3_config() ->
 
 auth() ->
     {ok, User} = application:get_env(giddyup, user),
-    {ok, Pass} = application:get_env(giddyup, pass),
+    {ok, Pass} = application:get_env(giddyup, password),
     {User, Pass}.
 
 pool_args() ->

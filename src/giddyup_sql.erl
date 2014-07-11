@@ -108,17 +108,19 @@ create_scorecard(ProjectID, Version0) ->
 
 try_create_scorecard(ProjectID, Version) ->
     transaction(
-      fun(C) ->
-              case pgsql:equery(C, scorecard_by_version_q(), [ProjectID, Version]) of
-                  {ok, _, []} ->
-                      pgsql:equery(C, scorecard_i(), [ProjectID, Version]);
-                  Result ->
-                      Result
-              end
+      fun(C) -> try_create_scorecard1(C, ProjectID, Version)
       end).
 
+try_create_scorecard1(C, ProjectID, Version) ->
+    case pgsql:equery(C, scorecard_by_version_q(), [ProjectID, Version]) of
+        {ok, _, []} ->
+            pgsql:equery(C, scorecard_i(), [ProjectID, Version]);
+        Result ->
+            Result
+    end.
+
 transaction(Fun) ->
-    poolboy:transaction(fun(C) -> pgsql:transaction(C, Fun) end).
+    poolboy:transaction(?MODULE, fun(C) -> pgsql:with_transaction(C, Fun) end).
 
 %%---------------------
 %% Utilities
@@ -133,7 +135,7 @@ extract_column_names(Columns) ->
 
 test_result_i() ->
     "INSERT INTO test_results (id, test_id, scorecard_id, long_version, status, created_at, updated_at) "
-    "VALUES ($1, $2, $3, $4, NOW(), NOW())".
+    "VALUES ($1, $2, $3, $4, $5, NOW(), NOW())".
 
 artifact_i() ->
     "INSERT INTO artifacts (id, test_result_id, url, content_type, created_at, updated_at) "
@@ -192,7 +194,7 @@ artifacts_q() ->
     "ORDER BY created_at DESC".
 
 scorecard_by_version_q() ->
-    "SELECT id FROM scorecards WHERE project_id = $1 AND version = $2".
+    "SELECT id FROM scorecards WHERE project_id = $1 AND name = $2".
 
 scorecard_i() ->
-    "INSERT INTO scorecards (project_id, version) VALUES ($1, $2) RETURNING id".
+    "INSERT INTO scorecards (project_id, name) VALUES ($1, $2) RETURNING id".

@@ -47,13 +47,21 @@ accept_json(RD, #context{test_result=ID}=Context) ->
     try
         JSON = mochijson2:decode(wrq:req_body(RD)),
         TestID = kvc:path(id, JSON),
-        Status = kvc:path(status, JSON),
+        Status = coerce_status(kvc:path(status, JSON)),
         Version = kvc:path(version, JSON),
         {ok, _, [{ProjectID, _ProjectName}]} = giddyup_sql:project_exists(kvc:path(project, JSON)),
-        {ok, _, [{ScorecardID}]} = giddyup_sql:create_scorecard(ProjectID, Version),
-        {ok, _, _} = giddyup_sql:create_test_result(ID, TestID, ScorecardID, Version, Status),
+        ScorecardID = case giddyup_sql:create_scorecard(ProjectID, Version) of
+                          {ok, _, _, [{Created}]} -> Created;
+                          {ok, _, [{Found}]} -> Found
+                      end,          
+        {ok, 1} = giddyup_sql:create_test_result(ID, TestID, ScorecardID, Version, Status),
         {true, RD, Context}
     catch
         Class:Why ->
+            lager:error("Test result could not be created: ~p:~p~n~p", [Class, Why, erlang:get_stacktrace()]),
             {{error, {Class, Why}}, RD, Context}
     end.
+
+coerce_status(true) -> true;
+coerce_status("pass") -> true;
+coerce_status(_) -> false.
