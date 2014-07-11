@@ -46,10 +46,10 @@ create_path(RD, Context) ->
 accept_json(RD, #context{test_result=ID}=Context) ->
     try
         JSON = mochijson2:decode(wrq:req_body(RD)),
-        TestID = kvc:value(id, JSON),
-        Status = kvc:value(status, JSON),
-        Version = kvc:value(version, JSON),
-        {ok, _, [{ProjectID, _ProjectName}]} = giddyup_sql:project_exists(kvc:value(project, JSON)),
+        TestID = kvc:path(id, JSON),
+        Status = kvc:path(status, JSON),
+        Version = kvc:path(version, JSON),
+        {ok, _, [{ProjectID, _ProjectName}]} = giddyup_sql:project_exists(kvc:path(project, JSON)),
         {ok, _, [{ScorecardID}]} = giddyup_sql:create_scorecard(ProjectID, Version),
         {ok, _, _} = giddyup_sql:create_test_result(ID, TestID, ScorecardID, Version, Status),
         {true, RD, Context}
