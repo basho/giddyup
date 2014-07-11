@@ -47,7 +47,7 @@ content_types_provided(RD, #context{method=create}=Context) ->
 content_types_provided(RD, #context{method=fetch}=Context) ->
     {CType, NewContext} = get_artifact_ctype(Context),
     {[{"application/json", to_json},
-      {CType, to_file}], RD, NewContext}.
+      {binary_to_list(CType), to_file}], RD, NewContext}.
 
 
 content_types_accepted(RD, Context) ->
@@ -97,8 +97,8 @@ accept_file(RD, #context{key=Key, ctype=CType}=Context) ->
     end.
 
 to_file(RD, #context{artifact={_ID, URL, _CType}}=Context) ->
-    {ibrowse_req_id, ReqID} = giddyup_artifact:stream_download(URL),
-    {{stream, {<<>>, stream_s3_body(ReqID)}}, RD, Context}.
+    {ibrowse_req_id, ReqID} = giddyup_artifact:stream_download(binary_to_list(URL)),
+    {{stream, stream_s3_body(ReqID)}, RD, Context}.
 
 to_json(RD, #context{artifact={ID, URL, CType}}=Context) ->
     {mochijson2:encode({struct, [
