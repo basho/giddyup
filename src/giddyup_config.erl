@@ -1,6 +1,7 @@
 %% @doc Helpers for extracting app configuration.
 -module(giddyup_config).
--define(SCHEME_DEFAULTS, [{scheme_defaults, [{postgres, 5432}]}]).
+-define(SCHEME_DEFAULTS, [{scheme_defaults, [{postgres, 5432},
+                                             {postgresql, 5432}]}]).
 
 -export([db_params/0,
          extract_env/0,
