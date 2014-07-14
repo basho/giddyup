@@ -9,3 +9,7 @@ log/
 priv/www/javascripts
 priv/www/stylesheets
 .rebar/
+priv/assets/build
+**/*.min.css
+tmp/
+node_modules/
