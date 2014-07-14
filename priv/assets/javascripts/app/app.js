@@ -38,6 +38,28 @@ var Nav = React.createClass({
     }
 });
 
+var Main = React.createClass({
+  render: function(){
+    var showing = this.props.showing;
+    if(showing.scorecard_id){
+        var project, scorecard;
+        GiddyUp.fetchProjects(function(projects){
+            project = GiddyUp.projectsById[showing.project_id];
+            GiddyUp.fetchScorecards(project, function(scorecards){
+                scorecard = project.scorecardsById[showing.scorecard_id];
+            });
+        });
+        if(project && scorecard){
+            return (<Matrix scorecard={scorecard} />);
+        } else {
+            return <div />;
+        }
+    } else {
+      return <div />;
+    }
+  }
+});
+
 var App = React.createClass({
     render: function(){
         return (
@@ -45,6 +67,7 @@ var App = React.createClass({
                   <Nav showing={this.props.showing} />
                   <Help content={Help[this.props.help]} />
                   <Loading queue={this.props.loading} />
+                  <Main showing={this.props.showing} />
                 </div>
         );
     }

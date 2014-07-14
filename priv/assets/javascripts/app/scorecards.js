@@ -151,6 +151,10 @@ var parseVersion = function(scorecard){
     }
 };
 
+var indexScorecards = function(scorecards){
+    return scorecards.reduce(function(acc, s){ acc[s.id] = s; return acc;}, {});
+};
+
 GiddyUp.fetchScorecards = function(project, cb){
     if(cb === undefined || cb === null){
         cb = function(){};
@@ -168,6 +172,7 @@ GiddyUp.fetchScorecards = function(project, cb){
                 id: GiddyUp.nextGuid()
              }}).
             done(function(result){
+                project.scorecardsById = indexScorecards(result['scorecards'])
                 project.scorecards =
                     groupScorecards(result['scorecards']);
                 cb(project.scorecards);
