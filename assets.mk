@@ -45,7 +45,7 @@ CSS := ${SRCCSS}/bootstrap.css ${SRCCSS}/application.css
 MINCSS := $(patsubst ${SRCCSS}/%.css,${GENCSS}/%.min.css,${CSS})
 
 # Copy concatenated/minified CSS to public folder
-priv/www/stylesheets/%.css: ${GENCSS}/%.css
+${OUTCSS}/%.css: ${GENCSS}/%.css
 	@echo "Copy $< to $@"
 	@cp $< $@
 
@@ -55,9 +55,9 @@ ${GENCSS}/application.css: ${MINCSS}
 	@cat $+ > $@
 
 # Generate minified CSS from plain CSS
-${GENCSS}/%.min.css: ${SRCCSS}/%.css
-	@echo "Minify: $<"
-	@node_modules/.bin/minify --output $@ $<
+${GENCSS}/%.min.css: ${MINIFY} ${SRCCSS}/%.css
+	@echo "Minify: $(lastword $^)"
+	@node_modules/.bin/minify --output $@ $(lastword $^)
 
 #---------------------------
 # Javascripts
