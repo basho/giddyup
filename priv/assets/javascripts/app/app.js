@@ -59,12 +59,13 @@ GiddyUp.render = function() {
     });
 };
 
-require('polyfills');
-require('help');
-require('loading');
-require('projects');
-require('scorecards');
-require('raf');
-require('routes');
+minispade.require('polyfills');
+minispade.require('help');
+minispade.require('loading');
+minispade.require('projects');
+minispade.require('scorecards');
+minispade.require('matrix');
+minispade.require('raf');
+minispade.require('routes');
 
 routie.navigateToHash();

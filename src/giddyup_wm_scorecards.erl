@@ -1,6 +1,6 @@
 %% @doc Lists scorecards for the selected project
 -module(giddyup_wm_scorecards).
--compile({inline, [encode_scorecard/1]}).
+-compile({inline, [encode_scorecard/2]}).
 
 -export([init/1,
          routes/0,
@@ -27,9 +27,9 @@ resource_exists(RD, Context) ->
             {false, RD, Context}
     end.
 
-to_json(RD, #context{scorecards=S}=Context) ->
-    JSON = {struct,[{scorecards, [ encode_scorecard(Card) || Card <- S]}]},
+to_json(RD, #context{scorecards=S, project=Project}=Context) ->
+    JSON = {struct,[{scorecards, [ encode_scorecard(Card, Project) || Card <- S]}]},
     {mochijson2:encode(JSON), RD, Context}.
     
-encode_scorecard({ID, Name}) ->
-    {struct, [{id, ID}, {name, Name}]}.
+encode_scorecard({ID, Name}, Project) ->
+    {struct, [{id, ID}, {name, Name}, {project, list_to_binary(Project)}]}.

@@ -1,5 +1,4 @@
 /** @jsx React.DOM */
-
 ScorecardsNav = React.createClass({
     getInitialState: function(){
         return { scorecards: {} };
@@ -160,10 +159,9 @@ GiddyUp.fetchScorecards = function(project, cb){
         cb(project.scorecards);
     } else {
         $.ajax({
-            type: "POST",  // No request splitting, yay
+            type: "GET",
             dataType: "json",
-            url:"/scorecards",
-            data:{ids: project.scorecard_ids},
+            url:"/projects/"+project.name+"/scorecards",
             context:{
                 helpText: "Scorecards for '" +
                     project.name + "'",
@@ -174,6 +172,6 @@ GiddyUp.fetchScorecards = function(project, cb){
                     groupScorecards(result['scorecards']);
                 cb(project.scorecards);
                 GiddyUp.render();
-            }).fail(function(){ console.log(arguments) });
+            }).fail(function(){ console.log(arguments); });
     }
 };

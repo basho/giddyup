@@ -83,19 +83,13 @@ VENDOR_JS := es5-sham.js \
 	     routie.js
 
 # Minified vendor JS files
-VENDOR_MIN := $(patsubst %.js,${GENJS}/vendor/%.min.js,${VENDOR_JS})
+VENDOR_SRC := $(patsubst %.js,${SRCJS}/vendor/%.js,${VENDOR_JS})
 
 # All application source JS files
 APP_SRC := $(shell find ${SRCJS}/app -name "*.js")
 
 # Minified application JS files
-APP_MIN := $(patsubst ${SRCJS}/%.js,${GENJS}/%.min.js,${APP_SRC})
-
-# Source maps for application and vendor files
-MAPS := $(filter-out %.js,$(call sourcemap,${APP_MIN} ${VENDOR_MIN}))
-
-# Output source maps
-SOURCE_MAPS := $(patsubst ${GENJS}%,${OUTJS}%,${MAPS})
+APP_SPADE := $(patsubst ${SRCJS}/%.js,${GENJS}/%.spade.js,${APP_SRC})
 
 debugjs:
 	@echo "ASSETS: ${ASSETS}"
@@ -106,39 +100,25 @@ ${OUTJS}/%.js: ${GENJS}/%.js
 	@cp $< $@
 
 # Copies source maps to the output directory
-${OUTJS}/%.map: ${GENJS}/%.map
+${OUTJS}/%.js.map: ${GENJS}/%.js.map
 	@echo "Copy $< to $@"
 	@cp $< $@
 
 # Concatenates all minified application sources to a single file.
-${GENJS}/application.js: ${APP_MIN}
-	@echo "Concatenate: $+"
-	@echo "" > $@
-	@for i in "$+"; do awk '{ print } END { print "\n\n" }' $$i >> $@; done
+${GENJS}/application.js.map ${GENJS}/application.js: ${UGLIFY} ${APP_SPADE}
+	@echo "Uglify application.js"
+	@${UGLIFY} ${APP_SPADE} --source-map ${GENJS}/application.js.map -p $(words $(subst /, ,${GENJS})) \
+	    --source-map-include-sources \
+            --source-map-url /javascripts/application.js.map \
+	    --output ${GENJS}/application.js
 
 # Concatenates all minified vendor sources to a single file.
-${GENJS}/vendor.js: ${VENDOR_MIN}
-	@echo "Concatenate: $+"
-	@echo "" > $@
-	@for i in "$+"; do awk '{ print } END { print "\n\n" }' $$i >> $@; done
-
-# Generates minified JS from vendor sources.
-${GENJS}/vendor/%.map ${GENJS}/vendor/%.min.js: ${UGLIFY} ${GENJS}/vendor ${SRCJS}/vendor/%.js
-	@echo "Uglify: $(lastword $^)"
-	@${UGLIFY} $(lastword $^) --source-map $(call sourcemap,$(lastword $@)) \
-	    -p $(words $(subst /, ,${GENJS})) \
+${GENJS}/vendor.js.map ${GENJS}/vendor.js: ${VENDOR_SRC}
+	@echo "Uglify vendor.js"
+	@${UGLIFY} ${VENDOR_SRC} --source-map ${GENJS}/vendor.js.map -p $(words $(subst /, ,${GENJS})) \
 	    --source-map-include-sources \
-	    --source-map-url /javascripts$(subst ${GENJS},,$(call sourcemap,$(lastword $@))) \
-	    --output $(lastword $@)
-
-# Minified Minispade-wrapped JS files
-%.map %.min.js: ${UGLIFY} %.spade.js
-	@echo "Uglify: $(lastword $^)"
-	@${UGLIFY} $(lastword $^) --source-map $(call sourcemap,$(lastword $@)) \
-	    -p $(words $(subst /, ,${GENJS})) \
-	    --source-map-include-sources \
-	    --source-map-url /javascripts$(subst ${GENJS},,$(call sourcemap,$(lastword $@))) \
-	    --output $(lastword $@)
+            --source-map-url /javascripts/vendor.js.map \
+	    --output ${GENJS}/vendor.js
 
 # Wrap app modules in minispade
 %.spade.js: %.js
@@ -159,8 +139,9 @@ ${GENJS}/app/%.js: ${JSX} ${GENJS}/app ${SRCJS}/app/%.js
 # Target asset files, concatenated and minified.
 ASSETS := priv/www/stylesheets/application.css \
 	  priv/www/javascripts/vendor.js \
+	  priv/www/javascripts/vendor.js.map \
 	  priv/www/javascripts/application.js \
-          ${SOURCE_MAPS}
+	  priv/www/javascripts/application.js.map \
 
 # These are fake targets
 .PHONY: assets clean_assets
