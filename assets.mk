@@ -126,6 +126,8 @@ ${GENJS}/vendor.js: ${VENDOR_MIN}
 ${GENJS}/vendor/%.map ${GENJS}/vendor/%.min.js: ${UGLIFY} ${GENJS}/vendor ${SRCJS}/vendor/%.js
 	@echo "Uglify: $(lastword $^)"
 	@${UGLIFY} $(lastword $^) --source-map $(call sourcemap,$(lastword $@)) \
+	    -p $(words $(subst /, ,${GENJS})) \
+	    --source-map-include-sources \
 	    --source-map-url /javascripts$(subst ${GENJS},,$(call sourcemap,$(lastword $@))) \
 	    --output $(lastword $@)
 
@@ -133,6 +135,8 @@ ${GENJS}/vendor/%.map ${GENJS}/vendor/%.min.js: ${UGLIFY} ${GENJS}/vendor ${SRCJ
 %.map %.min.js: ${UGLIFY} %.spade.js
 	@echo "Uglify: $(lastword $^)"
 	@${UGLIFY} $(lastword $^) --source-map $(call sourcemap,$(lastword $@)) \
+	    -p $(words $(subst /, ,${GENJS})) \
+	    --source-map-include-sources \
 	    --source-map-url /javascripts$(subst ${GENJS},,$(call sourcemap,$(lastword $@))) \
 	    --output $(lastword $@)
 
