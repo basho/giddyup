@@ -119,7 +119,6 @@ ${GENJS}/vendor/%.min.js: ${MINIFY} ${GENJS}/vendor ${SRCJS}/vendor/%.js
 ${GENJS}/app/%.js: ${JSX} ${GENJS}/app ${SRCJS}/app/%.js
 	@echo "JSX: $(filter %.js,$^)"
 	@node_modules/.bin/jsx --no-cache-dir $(dir $(lastword $^)) $(@D)
-	@for i in "$@"; do test -f $i || (echo "ERROR: $i wasn't created by jsx" && exit 1); done
 
 #---------------------------
 # Top-level targets
