@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "devDependencies": {
     "minifier": "^0.6.0",
-    "react-tools": "~0.10.0"
+    "react-tools": "~0.10.0",
+    "uglify-js": "2.4.15"
   }
 }
