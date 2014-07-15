@@ -91,9 +91,6 @@ APP_SRC := $(shell find ${SRCJS}/app -name "*.js")
 # Minified application JS files
 APP_SPADE := $(patsubst ${SRCJS}/%.js,${GENJS}/%.spade.js,${APP_SRC})
 
-debugjs:
-	@echo "ASSETS: ${ASSETS}"
-
 # Copies concatenated/minified JS to the output directory
 ${OUTJS}/%.js: ${GENJS}/%.js
 	@echo "Copy $< to $@"
@@ -153,6 +150,13 @@ assets: ${JSTOOLS} ${GENDIRS} ${ASSETS}
 # Adds clean_assets
 clean: clean_assets
 
+# Cleans generated assets
 clean_assets:
 	@echo "Removing generated assets:"
 	@rm -rfv ${ASSETS} ${GENDIRS}
+
+# If fswatch is installed, watches for changes in the files and then
+# runs clean_assets and assets targets.
+auto: clean_assets assets
+	@fswatch -e '#' -l 3 priv/assets/javascripts priv/assets/stylesheets | \
+		xargs -n1 -I{} ${MAKE} clean_assets assets
