@@ -42,15 +42,23 @@ var Main = React.createClass({
   render: function(){
     var showing = this.props.showing;
     if(showing.scorecard_id){
-        var project, scorecard;
+        var project, scorecard, test;
         GiddyUp.fetchProjects(function(projects){
             project = GiddyUp.projectsById[showing.project_id];
             GiddyUp.fetchScorecards(project, function(scorecards){
                 scorecard = project.scorecardsById[showing.scorecard_id];
+                if(showing.test_instance_id){
+                    test = scorecard.testsById[showing.test_instance_id];
+                }
             });
         });
         if(project && scorecard){
-            return (<Matrix scorecard={scorecard} />);
+            if(test){
+                return (<Results scorecard={scorecard}
+                        showing={showing} test={test} />);
+            } else {
+                return (<Matrix scorecard={scorecard} />);
+            }
         } else {
             return <div />;
         }
@@ -88,6 +96,7 @@ minispade.require('loading');
 minispade.require('projects');
 minispade.require('scorecards');
 minispade.require('matrix');
+minispade.require('results');
 minispade.require('raf');
 minispade.require('routes');
 

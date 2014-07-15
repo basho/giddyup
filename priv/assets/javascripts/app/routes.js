@@ -5,6 +5,18 @@ routie.navigateToHash = function(){
         window.location.hash = "#/";
 };
 
+friendlyTestUrl = function(scorecard, test) {
+    var parts = [scorecard.id, test.id, test.name, test.platform];
+    if(test.backend){ parts.push(test.backend); }
+    if(test.upgrade_version){ parts.push(test.upgrade_version); }
+    return encodeURIComponent(parts.join('-'));
+};
+
+extractTestId = function(segment){
+  segment = decodeURIComponent(segment);
+  return segment.split('-')[1];
+};
+
 routie({
     'projects /': function(p){
         // Go to root
@@ -30,7 +42,7 @@ routie({
         // Replace the matrix view with the master/detail view of test
         // results
         GiddyUp.showing = {project_id: p, scorecard_id: s,
-                           test_instance_id: ti};
+                           test_instance_id: extractTestId(ti)};
         GiddyUp.help = 'test_instance';
         GiddyUp.render();
     },
@@ -38,7 +50,7 @@ routie({
         // Load the artifacts for the test result and display them in
         // the list
         GiddyUp.showing = {project_id: p, scorecard_id: s,
-                           test_instance_id: ti,
+                           test_instance_id: extractTestId(ti),
                            test_result_id: tr};
         GiddyUp.help = 'test_result';
         GiddyUp.render();
@@ -46,7 +58,7 @@ routie({
     'artifact /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id/artifacts/:artifact_id': function(p,s,ti,tr,a){
         // Load the artifact body
         GiddyUp.showing = {project_id: p, scorecard_id: s,
-                           test_instance_id: ti,
+                           test_instance_id: extractTestId(ti),
                            test_result_id: tr,
                            artifact_id: a};
         GiddyUp.help = 'artifact';

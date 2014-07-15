@@ -17,13 +17,21 @@ GiddyUp.fetchMatrix = function(scorecard, cb) {
                     + " " + scorecard.name + "'"
             }}).done(function(result){
                 scorecard.platforms = extractPlatforms(result['tests']);
-                scorecard.tests = groupMatrix(result['tests'], scorecard.platforms);
+                scorecard.tests = groupMatrix(result['tests'],
+                                              scorecard.platforms);
+                scorecard.testsById = indexTests(result['tests']);
                 cb(scorecard);
                 GiddyUp.render();
             }).fail(function(){ console.log(arguments); });
     }
 };
 
+var indexTests = function(tests){
+    return tests.reduce(function(index, t){
+        index[t.id] = t;
+        return index;
+    }, {});
+};
 
 var extractPlatforms = function(tests){
     return tests.reduce(function(platforms, t){
@@ -211,13 +219,6 @@ var bubbleAbbreviation = function(test){
         return 'U';
     else
         return parts.join('');
-};
-
-var friendlyTestUrl = function(scorecard, test) {
-    var parts = [scorecard.id, test.id, test.name, test.platform];
-    if(test.backend){ parts.push(test.backend); }
-    if(test.upgrade_version){ parts.push(test.upgrade_version); }
-    return encodeURIComponent(parts.join('-'));
 };
 
 MatrixBubble = React.createClass({
