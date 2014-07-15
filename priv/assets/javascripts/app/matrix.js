@@ -9,6 +9,7 @@ GiddyUp.fetchMatrix = function(scorecard, cb) {
         $.ajax({
             type: "GET",
             dataType: "json",
+            cache: false,
             url: "/scorecards/"+scorecard.id.toString()+"/matrix",
             context:{
                 id: GiddyUp.nextGuid(),
@@ -60,13 +61,13 @@ Matrix = React.createClass({
     },
     render: function() {
         return (this.state.loaded) ? (
-            <table className="table table-striped">
+            <table className="table table-striped" key={this.props.scorecard.id}>
                 <MatrixHeader platforms={this.props.scorecard.platforms} />
                 <MatrixBody scorecard={this.props.scorecard}
                     platforms={this.props.scorecard.platforms}
                     tests={this.props.scorecard.tests} />
             </table>
-        ) : (<table className="table table-striped"></table>);
+        ) : (<table className="table table-striped" key={this.props.scorecard.id}></table>);
     },
     loadMatrix: function(scorecard) {
         var self = this;
@@ -115,8 +116,8 @@ MatrixCell = React.createClass({
     render: function() {
         var props = this.props,
             bubbles = props.bubbles.map(function(b){
-            return (<MatrixBubble key={b.id} test={b}
-                         scorecard={props.scorecard} />);
+                return (<MatrixBubble key={b.id} test={b}
+                                      scorecard={props.scorecard} />);
             });
         return (<td>{bubbles}</td>);
     }
@@ -138,7 +139,12 @@ var bubbleBackgroundStyle = function(test){
         gradient += ", " + color + " " + (stepSize * (idx+1)) + "%";
       });
       gradient += ")";
-      return {backgroundImage: gradient};
+      var fgradient = ["-moz-", "-ms-", "-o-", "-webkit-", ""].map(
+          function(prefix){ return "background-image: " + prefix +
+                            gradient; }).join("; ");
+      // ugly hack because React or DOM doesn't allow multiple
+      // elements of the same style
+      return {background: "inherit; " + fgradient};
     } else {
       return {};
     }
@@ -222,11 +228,10 @@ MatrixBubble = React.createClass({
                 scorecard_id: this.props.scorecard.id,
                 test_instance_id: friendlyId}));
         return (<div>
-                <span
-                className={bubbleClassName(this.props.test)}
-                style={bubbleBackgroundStyle(this.props.test)}>
-                <a href={url}>{bubbleAbbreviation(this.props.test)}</a>
-                </span>
+                  <span className={bubbleClassName(this.props.test)}
+                        style={bubbleBackgroundStyle(this.props.test)}>
+                     <a href={url}>{bubbleAbbreviation(this.props.test)}</a>
+                  </span>
                 </div>);
     }
 });
