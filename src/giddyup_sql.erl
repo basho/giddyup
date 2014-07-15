@@ -185,7 +185,7 @@ full_matrix_q() ->
     "   AND projects_tests.test_id = tests.id "
     "   AND (tests.min_version IS NULL OR tests.min_version <= scorecards.name) "
     "   AND (tests.max_version IS NULL OR tests.max_version >= scorecards.name) "
-    "ORDER BY tests.name, platform, backend, upgrade_version, test_results.created_at DESC".
+    "ORDER BY tests.name, platform, backend, upgrade_version, tests.id, test_results.created_at DESC".
 
 artifacts_q() ->
     "SELECT id, url, content_type, created_at "
