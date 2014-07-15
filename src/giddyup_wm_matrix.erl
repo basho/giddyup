@@ -50,21 +50,21 @@ expand_matrix(M) ->
 %%    the accumulated results.
 %%
 %% These are implemented by the following three clauses, respectively.
-fold_matrix({TestID, Name, Platform, Backend, Upgrade, ResultID, Status, LongVersion, CreatedAt},
+fold_matrix({TestID, Name, Platform, Backend, Upgrade, MultiConfig, ResultID, Status, LongVersion, CreatedAt},
             {undefined, _, _, Tree}) ->
     {TestID,
      add_result(ResultID, Status, LongVersion, CreatedAt, []),
-     create_entry(TestID, Name, Platform, Backend, Upgrade),
+     create_entry(TestID, Name, Platform, Backend, Upgrade, MultiConfig),
      Tree};
 
-fold_matrix({TestID, Name, Platform, Backend, Upgrade, ResultID, Status, LongVersion, CreatedAt},
+fold_matrix({TestID, Name, Platform, Backend, Upgrade, MultiConfig, ResultID, Status, LongVersion, CreatedAt},
             {LastID, LastResults, LastEntry, Tree}) when TestID /= LastID ->
     {TestID,
      add_result(ResultID, Status, LongVersion, CreatedAt, []),
-     create_entry(TestID, Name, Platform, Backend, Upgrade),
+     create_entry(TestID, Name, Platform, Backend, Upgrade, MultiConfig),
      [complete_entry(LastEntry, LastResults)|Tree]};
 
-fold_matrix({TestID, _Name, _Platform, _Backend, _Upgrade, ResultID, Status, LongVersion, CreatedAt},
+fold_matrix({TestID, _Name, _Platform, _Backend, _Upgrade, _MultiConfig, ResultID, Status, LongVersion, CreatedAt},
             {TestID, LastResults, LastEntry, Tree}) ->
     {TestID,
      add_result(ResultID, Status, LongVersion, CreatedAt, LastResults),
@@ -79,9 +79,9 @@ add_result(ID, Status, Version, Created, List) ->
                {long_version, Version},
                {created_at, giddyup:isotime(Created)}]}|List].
 
-create_entry(ID, N, P, B, U) ->
+create_entry(ID, N, P, B, U, M) ->
     [{id, ID}, {name, N}, {platform, P}] ++
-    [ {K, V} || {K, V} <- [{backend, B}, {upgrade_version, U}],
+    [ {K, V} || {K, V} <- [{backend, B}, {upgrade_version, U}, {multi_config, M}],
                 V /= null ].
 
 complete_entry(Props, Results) ->

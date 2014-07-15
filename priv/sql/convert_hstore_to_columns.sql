@@ -6,7 +6,8 @@ ADD COLUMN platform character varying(255) NOT NULL DEFAULT 'default',
 ADD COLUMN backend character varying(255),
 ADD COLUMN min_version character varying(255),
 ADD COLUMN max_version character varying(255),
-ADD COLUMN upgrade_version character varying(255);
+ADD COLUMN upgrade_version character varying(255),
+ADD COLUMN multi_config character varying(255);
 
 -- Now convert the hstore into actual columns
 UPDATE tests
@@ -14,7 +15,8 @@ SET platform = tags->'platform',
     backend = tags->'backend',
     min_version = tags->'min_version',
     max_version = tags->'max_version',
-    upgrade_version = tags->'upgrade_version';
+    upgrade_version = tags->'upgrade_version',
+    multi_config = tags->'multi_config';
 
 -- Now drop the hstore column
 ALTER TABLE tests DROP COLUMN tags;

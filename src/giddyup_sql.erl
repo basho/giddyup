@@ -176,7 +176,7 @@ suite_q() ->
 %%     "ORDER BY name, platform, backend, upgrade_version".
 
 full_matrix_q() ->
-    "SELECT tests.id AS test_id, tests.name, platform, backend, upgrade_version, "
+    "SELECT tests.id AS test_id, tests.name, platform, backend, upgrade_version, multi_config"
     "       test_results.id AS result_id, status, long_version, test_results.created_at "
     "FROM scorecards, projects_tests, tests LEFT OUTER JOIN test_results "
     "   ON (tests.id = test_results.test_id AND test_results.scorecard_id = $1) "
@@ -185,7 +185,7 @@ full_matrix_q() ->
     "   AND projects_tests.test_id = tests.id "
     "   AND (tests.min_version IS NULL OR tests.min_version <= scorecards.name) "
     "   AND (tests.max_version IS NULL OR tests.max_version >= scorecards.name) "
-    "ORDER BY tests.name, platform, backend, upgrade_version, tests.id, test_results.created_at DESC".
+    "ORDER BY tests.name, platform, backend, upgrade_version, multi_config, tests.id, test_results.created_at DESC".
 
 artifacts_q() ->
     "SELECT id, url, content_type, created_at "
