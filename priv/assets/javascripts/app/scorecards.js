@@ -80,7 +80,7 @@ ScorecardNavGroup = React.createClass({
             return (<ScorecardNavLink
                     showing={this.props.showing}
                     scorecard={this.props.scorecards[0]}
-                    solo={true} />);
+                    />);
         } else {
             var self = this;
             var classname = this.className();
@@ -90,7 +90,7 @@ ScorecardNavGroup = React.createClass({
                         <ScorecardNavLink scorecard={s}
                         key={s.id}
                         showing={self.props.showing}
-                        solo={false} />);
+                        />);
             });
             return (<li className={classname}>
                     <a href="#" className="dropdown-toggle"
@@ -106,8 +106,8 @@ ScorecardNavGroup = React.createClass({
 
 ScorecardNavLink = React.createClass({
     render: function(){
-        var active = (this.props.solo && this.props.showing.scorecard_id ==
-                      this.props.scorecard.id),
+        var active = (this.props.showing.scorecard_id ==
+                      this.props.scorecard.id.toString()),
             url = '#' + routie.lookup('scorecard', {
                 scorecard_id: this.props.scorecard.id,
                 project_id: this.props.scorecard.project
