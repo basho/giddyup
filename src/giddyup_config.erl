@@ -51,8 +51,8 @@ auth() ->
 pool_args() ->
     [{name, {local, giddyup_sql}},
      {worker_module, giddyup_sql},
-     {size, 5},
-     {max_overflow, 5}].
+     {size, 10},
+     {max_overflow, 0}].
 
 env_or_default(Key, Default) ->
     case os:getenv(Key) of
