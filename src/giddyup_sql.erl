@@ -176,7 +176,7 @@ suite_q() ->
 %%     "ORDER BY name, platform, backend, upgrade_version".
 
 full_matrix_q() ->
-    "SELECT tests.id AS test_id, tests.name, platform, backend, upgrade_version, multi_config"
+    "SELECT tests.id AS test_id, tests.name, platform, backend, upgrade_version, multi_config, "
     "       test_results.id AS result_id, status, long_version, test_results.created_at "
     "FROM scorecards, projects_tests, tests LEFT OUTER JOIN test_results "
     "   ON (tests.id = test_results.test_id AND test_results.scorecard_id = $1) "
