@@ -38,26 +38,3 @@ ProjectNavLink = React.createClass({
                 </li>);
     }
 });
-
-
-GiddyUp.fetchProjects = function(cb){
-  if(cb === undefined || cb === null){
-      cb = function(){};
-  }
-  if(GiddyUp.projects.length > 0){
-    cb(GiddyUp.projects);
-  } else {
-    $.ajax({
-        dataType: "json",
-        url: "/projects",
-        context: {id: GiddyUp.nextGuid(), helpText: "Projects"}
-     }).done(function(result){
-        var projects = result['projects'].sort(GiddyUp.sortBy('name'));
-        GiddyUp.projects = projects;
-        projects.forEach(function(p){
-            GiddyUp.projectsById[p.name] = p;
-        });
-        cb(projects);
-    });
-  }
-};

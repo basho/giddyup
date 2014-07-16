@@ -23,16 +23,3 @@ Loading = React.createClass({
         );
     }
 });
-
-
-$(document).ajaxSend(function(event, jqXHR, settings){
-    GiddyUp.activeAjax.push(settings.context);
-    GiddyUp.render();
-});
-
-$(document).ajaxComplete(function(event, jqXHR, settings){
-    GiddyUp.activeAjax.splice(
-            GiddyUp.activeAjax.indexOf(settings.context),
-            1);
-    GiddyUp.render();
-});

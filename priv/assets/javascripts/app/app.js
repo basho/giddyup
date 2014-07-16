@@ -91,12 +91,14 @@ GiddyUp.render = function() {
 };
 
 minispade.require('polyfills');
+minispade.require('ajax');
 minispade.require('help');
 minispade.require('loading');
 minispade.require('projects');
 minispade.require('scorecards');
 minispade.require('matrix');
 minispade.require('results');
+minispade.require('artifacts');
 minispade.require('raf');
 minispade.require('routes');
 
