@@ -72,21 +72,21 @@ resource_exists(RD, #context{artifact=undefined}=Context) ->
 resource_exists(RD, #context{artifact={_,_,_}}=Context) ->
     {true, RD, Context}.
 
-create_path(RD, #context{id=TestResultID, ctype=CType}=Context) ->
-    Segments = wrq:path_tokens(RD),
-    URL = giddyup_artifact:url_for(TestResultID, Segments),
-    Key = giddyup_artifact:key_for(TestResultID, Segments),
-    case giddyup_sql:create_artifact(TestResultID, URL, CType) of
-        {ok, _, _, [{ID}]} ->
-            {"/artifacts/" ++ integer_to_list(ID),
-             RD, Context#context{artifact={ID, URL, CType}, key=Key}};
+create_path(RD, Context) ->
+    case giddyup_sql:next_id("artifacts") of
+        {ok, _, [{ID}]} ->
+            {"/artifacts/" ++ integer_to_list(ID), RD, Context#context{artifact=ID}};
         Err ->
             {{error, Err}, RD, Context}
     end.
 
-accept_file(RD, #context{key=Key, ctype=CType}=Context) ->
+accept_file(RD, #context{id=TestResultID, ctype=CType, artifact=ID}=Context) ->
     try
+        Segments = wrq:path_tokens(RD),
+        URL = giddyup_artifact:url_for(TestResultID, Segments),
+        Key = giddyup_artifact:key_for(TestResultID, Segments),
         {_H, _B} = giddyup_artifact:upload(Key, CType, wrq:req_body(RD)),
+        {ok, _} = giddyup_sql:create_artifact(ID, TestResultID, URL, CType),
         {true, RD, Context}
     catch
         error:{aws_error,Err} ->

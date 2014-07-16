@@ -28,7 +28,7 @@
 
 -export([
          artifacts/1,
-         create_artifact/3,
+         create_artifact/4,
          create_scorecard/2,
          create_test_result/5,
          full_matrix/1,
@@ -93,8 +93,8 @@ next_id(Table) when is_list(Table) ->
     SeqName = Table ++ "_id_seq",
     ?QUERY("SELECT nextval($1)", [SeqName]).
 
-create_artifact(TestResultID, URL, CType) ->
-    ?QUERY(artifact_i(), [TestResultID, URL, CType]).
+create_artifact(ID, TestResultID, URL, CType) ->
+    ?QUERY(artifact_i(), [ID, TestResultID, URL, CType]).
 
 create_test_result(ID, TID, SID, V, St) ->
     ?QUERY(test_result_i(), [ID, TID, SID, V, St]).
@@ -138,9 +138,8 @@ test_result_i() ->
     "VALUES ($1, $2, $3, $4, $5, NOW(), NOW())".
 
 artifact_i() ->
-    "INSERT INTO artifacts (test_result_id, url, content_type, created_at, updated_at) "
-    "VALUES ($1, $2, $3, NOW(), NOW()) "
-    "RETURNING id".
+    "INSERT INTO artifacts (id, test_result_id, url, content_type, created_at, updated_at) "
+    "VALUES ($1, $2, $3, $4, NOW(), NOW())".
 
 projects_q() ->
     "SELECT id, name FROM projects".

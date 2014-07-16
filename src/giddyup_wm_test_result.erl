@@ -63,5 +63,8 @@ accept_json(RD, #context{test_result=ID}=Context) ->
     end.
 
 coerce_status(true) -> true;
+coerce_status("true") -> true;
+coerce_status(<<"true">>) -> true;
 coerce_status("pass") -> true;
+coerce_status(<<"pass">>) -> true;
 coerce_status(_) -> false.
