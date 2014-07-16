@@ -3,7 +3,7 @@ var GiddyUp = window.GiddyUp = {
     projects: [],
     projectsById: {},
     showing: {},
-    activeAjax: [],
+    activeAjax: {},
     guid: 0
 };
 

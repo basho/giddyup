@@ -2,17 +2,25 @@
  * Global Ajax Handlers
  */
 
-$(document).ajaxSend(function(event, jqXHR, settings){
-    GiddyUp.activeAjax.push(settings.context);
-    GiddyUp.render();
-});
+var normalizeRequestURL = function(url){
+    return url.split("?")[0];
+};
 
-$(document).ajaxComplete(function(event, jqXHR, settings){
-    GiddyUp.activeAjax.splice(
-            GiddyUp.activeAjax.indexOf(settings.context),
-            1);
+var recordRequest = function(event, jqXHR, settings){
+    var url = normalizeRequestURL(settings.url);
+    GiddyUp.activeAjax[url] = settings.context;
     GiddyUp.render();
-});
+};
+
+var removeRequest = function(event, jqXHR, settings){
+    var url = normalizeRequestURL(settings.url);
+    delete GiddyUp.activeAjax[url];
+    GiddyUp.render();
+};
+
+$(document).ajaxSend(recordRequest);
+$(document).ajaxComplete(removeRequest);
+$(document).ajaxError(removeRequest);
 
 /*
  * Utility functions for massaging received data
@@ -50,15 +58,10 @@ var parseVersion = function(scorecard){
     }
 };
 
-var indexScorecards = function(scorecards){
-    return scorecards.reduce(function(acc, s){ acc[s.id] = s; return acc;}, {});
-};
-
-
-var indexTests = function(tests){
-    return tests.reduce(function(index, t){
-        index[t.id] = t;
-        return index;
+var indexOnId = function(collection){
+    return collection.reduce(function(acc, item){
+        acc[item.id] = item;
+        return acc;
     }, {});
 };
 
@@ -88,129 +91,117 @@ var groupMatrix = function(tests, platforms) {
  * Fetchers
  */
 GiddyUp.fetchProjects = function(cb){
-  if(cb === undefined || cb === null){
-      cb = function(){};
-  }
-  if(GiddyUp.projects.length > 0){
-    cb(GiddyUp.projects);
-  } else {
-    $.ajax({
-        dataType: "json",
+    GiddyUp.fetch({
         url: "/projects",
-        context: {id: GiddyUp.nextGuid(), helpText: "Projects list"}
-     }).done(function(result){
-        var projects = result['projects'].sort(GiddyUp.sortBy('name'));
-        GiddyUp.projects = projects;
-        projects.forEach(function(p){
-            GiddyUp.projectsById[p.name] = p;
-        });
-        cb(projects);
-    });
-  }
+        predicate: (GiddyUp.projects.length > 0),
+        shortcut: GiddyUp.projects,
+        helpText: "Projects list",
+        processor: function(result){
+            var projects = result['projects'].sort(GiddyUp.sortBy('name'));
+            GiddyUp.projects = projects;
+            projects.forEach(function(p){
+                GiddyUp.projectsById[p.name] = p;
+            });
+            return projects;
+        }
+    }, cb);
 };
 
 GiddyUp.fetchScorecards = function(project, cb){
-    if(cb === undefined || cb === null){
-        cb = function(){};
-    }
-    if('scorecards' in project){
-        cb(project.scorecards);
-    } else {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url:"/projects/"+project.name+"/scorecards",
-            context:{
-                helpText: "Scorecards for '" +
-                    project.name + "'",
-                id: GiddyUp.nextGuid()
-             }}).
-            done(function(result){
-                project.scorecardsById = indexScorecards(result['scorecards'])
-                project.scorecards =
-                    groupScorecards(result['scorecards']);
-                cb(project.scorecards);
-                GiddyUp.render();
-            }).fail(function(){ console.log(arguments); });
-    }
+    GiddyUp.fetch({
+        url: "/projects/"+project.name+"/scorecards",
+        predicate: ('scorecards' in project),
+        shortcut: project.scorecards,
+        helpText: "Scorecards for '" + project.name + "'",
+        processor: function(result){
+            project.scorecardsById = indexOnId(result['scorecards']);
+            project.scorecards = groupScorecards(result['scorecards']);
+            return project.scorecards;
+        }
+    }, cb);
 };
 
 GiddyUp.fetchMatrix = function(scorecard, cb) {
-    if(cb === undefined || cb === null){
-        cb = function(){};
-    }
-    if('tests' in scorecard){
-        cb(scorecard);
-    } else {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            cache: false,
-            url: "/scorecards/"+scorecard.id.toString()+"/matrix",
-            context:{
-                id: GiddyUp.nextGuid(),
-                helpText: "Test matrix for '" + scorecard.project + ""
-                    + " " + scorecard.name + "'"
-            }}).done(function(result){
-                scorecard.platforms = extractPlatforms(result['tests']);
-                scorecard.tests = groupMatrix(result['tests'],
-                                              scorecard.platforms);
-                scorecard.testsById = indexTests(result['tests']);
-                cb(scorecard);
-                GiddyUp.render();
-            }).fail(function(){ console.log(arguments); });
-    }
+    GiddyUp.fetch({
+        url: "/scorecards/"+scorecard.id.toString()+"/matrix",
+        predicate: ('tests' in scorecard),
+        shortcut: scorecard,
+        helpText: "Test matrix for '" + scorecard.project + " " + scorecard.name + "'",
+        processor: function(result){
+            scorecard.platforms = extractPlatforms(result['tests']);
+            scorecard.tests = groupMatrix(result['tests'],
+                                          scorecard.platforms);
+            scorecard.testsById = indexOnId(result['tests']);
+            return scorecard;
+        }
+    }, cb);
 };
 
 GiddyUp.fetchArtifacts = function(test_result, cb){
-    if(cb === undefined || cb === null){
-        cb = function(){};
-    }
-    if('artifacts' in test_result){
-        cb(test_result.artifacts);
-    } else {
-        $.ajax({
-            type: "GET",
-            dataType: "json",
-            url:"/test_results/"+test_result.id+"/artifacts",
-            context:{
-                helpText: "Artifacts for result " + test_result.id,
-                id: GiddyUp.nextGuid()
-             }}).
-            done(function(result){
-                test_result.artifacts =
-                    result['artifacts'].sort(GiddyUp.sortBy('id'));
-                test_result.artifactsById = {};
-                test_result.artifacts.forEach(function(a){
-                    test_result.artifactsById[a.id.toString()] = a;
-                });
-                cb(test_result.artifacts);
-                GiddyUp.render();
-            }).fail(function(){ console.log(arguments); });
-    }
+    GiddyUp.fetch({
+        url: "/test_results/"+test_result.id+"/artifacts",
+        predicate: ('artifacts' in test_result),
+        shortcut: test_result.artifacts,
+        helpText: "Artifacts for result " + test_result.id,
+        processor: function(result){
+            test_result.artifacts = result['artifacts'].sort(GiddyUp.sortBy('id'));
+            test_result.artifactsById = indexOnId(test_result.artifacts);
+            return test_result.artifacts;
+        }
+    }, cb);
 };
 
 GiddyUp.fetchArtifactContents = function(artifact, cb) {
-    if(cb === undefined || cb === null){
-        cb = function(){};
-    }
-    if('contents' in artifact){
-        cb(artifact.contents);
-    } else {
-        $.ajax({
-            type: "GET",
+    GiddyUp.fetch({
+        url: "/artifacts/"+artifact.id,
+        predicate: ('contents' in artifact),
+        shortcut: artifact.contents,
+        helpText: "Contents of artifact " + artifact.id,
+        processor: function(result){
+            artifact.contents = result;
+            return result;
+        },
+        ajax: {
             cache: false,
             accepts: {"text": artifact.content_type},
-            url:"/artifacts/"+artifact.id,
-            dataType: "text",
-            context:{
-                helpText: "Contents of artifact " + artifact.id,
-                id: GiddyUp.nextGuid()
-             }}).
-            done(function(result){
-                artifact.contents = result;
-                cb(result);
-                GiddyUp.render();
-            }).fail(function(){ console.log(arguments); });
+            dataType: "text"
+        }
+    }, cb);
+};
+
+GiddyUp.fetch = function(options, cb) {
+    var url = options.url,
+        predicate = options.predicate,
+        shortcut = options.shortcut,
+        helpText = options.helpText,
+        processor = options.processor,
+        ajaxOptions = options.ajax || {},
+        callback = cb || $.noop,
+        requestOptions = {
+            type: "GET",
+            dataType: "json",
+            url: url,
+            context: {
+                id: GiddyUp.nextGuid(),
+                helpText: helpText,
+                callbacks: [callback]
+            }
+        },
+        active = GiddyUp.activeAjax[url];
+
+    if(predicate){
+        callback(shortcut);
+    } else if (active) {
+        active.callbacks.push(callback);
+    } else {
+        var option;
+        for(option in ajaxOptions){
+            requestOptions[option] = ajaxOptions[option];
+        }
+        $.ajax(requestOptions).done(function(result){
+            var param = processor(result);
+            this.callbacks.forEach(function(deferred){ deferred(param); });
+        });
+        GiddyUp.render();
     }
 };
