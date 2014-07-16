@@ -140,9 +140,9 @@ pre.unabridged {
   border: 1px solid #b5d4e2;
 }
 
-.nav-list > .active > a > [class^="icon-"] {
-  background-image: url("../img/glyphicons-halflings.png");
-}
+/* .nav-list > .active > a > [class^="icon-"] { */
+/*   background-image: url("/images/glyphicons-halflings.png") ! important; */
+/* } */
 
 .scorecards {
   border-top: 0;
