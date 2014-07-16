@@ -86,7 +86,7 @@ VENDOR_JS := es5-sham.js \
 VENDOR_SRC := $(patsubst %.js,${SRCJS}/vendor/%.js,${VENDOR_JS})
 
 # All application source JS files
-APP_SRC := $(shell find ${SRCJS}/app -name "*.js")
+APP_SRC := $(shell find ${SRCJS}/app -name "*.js" -not -name ".\#*")
 
 # Minified application JS files
 APP_SPADE := $(patsubst ${SRCJS}/%.js,${GENJS}/%.spade.js,${APP_SRC})
