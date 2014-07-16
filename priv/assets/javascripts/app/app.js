@@ -20,7 +20,7 @@ GiddyUp.sortBy = function(prop) {
     };
 };
 
-var Nav = React.createClass({
+Nav = React.createClass({
     render: function(){
         var children = [<ProjectsNav key="projects"
                         showing={this.props.showing} />];
@@ -38,37 +38,61 @@ var Nav = React.createClass({
     }
 });
 
-var Main = React.createClass({
+Main = React.createClass({
+  getInitialState: function(){
+    return {
+        project: undefined,
+        scorecard: undefined,
+        test: undefined
+    };
+  },
+  componentDidMount: function(){
+      this.loadData(this.props.showing);
+  },
+  componentWillReceiveProps: function(nextProps){
+      if(nextProps.showing !== this.props.showing){
+          this.loadData(nextProps.showing);
+      }
+  },
+  loadData: function(showing){
+      var self = this,
+          project, scorecard, test;
+      GiddyUp.fetchProjects(function(projects){
+          project = GiddyUp.projectsById[showing.project_id];
+          if(project){
+              GiddyUp.fetchScorecards(project, function(scorecards){
+                  scorecard = project.scorecardsById[showing.scorecard_id];
+                  if(showing.test_instance_id && scorecard.testsById){
+                      test = scorecard.testsById[showing.test_instance_id];
+                  }
+                  var newState = {project: project,
+                                 scorecard: scorecard,
+                                 test: test};
+                  self.setState(newState);
+              });
+          }
+      });
+  },
   render: function(){
-    var showing = this.props.showing;
-    if(showing.scorecard_id){
-        var project, scorecard, test;
-        GiddyUp.fetchProjects(function(projects){
-            project = GiddyUp.projectsById[showing.project_id];
-            GiddyUp.fetchScorecards(project, function(scorecards){
-                scorecard = project.scorecardsById[showing.scorecard_id];
-                if(showing.test_instance_id && scorecard.testsById){
-                    test = scorecard.testsById[showing.test_instance_id];
-                }
-            });
-        });
-        if(project && scorecard){
-            if(test){
-                return (<Results scorecard={scorecard}
-                        showing={showing} test={test} />);
-            } else {
-                return (<Matrix scorecard={scorecard} />);
-            }
-        } else {
-            return <div />;
-        }
-    } else {
-      return <div />;
-    }
+      var showing = this.props.showing;
+      var project = this.state.project,
+          scorecard = this.state.scorecard,
+          test = this.state.test;
+      console.log(["Main render", showing, project, scorecard, test]);
+      if(project && scorecard){
+          if(test){
+              return (<Results scorecard={scorecard}
+                      showing={showing} test={test} />);
+          } else {
+              return (<Matrix scorecard={scorecard} />);
+          }
+      } else {
+          return <div />;
+      }
   }
 });
 
-var App = React.createClass({
+App = React.createClass({
     render: function(){
         return (
                 <div className="container-fluid">

@@ -203,7 +203,7 @@ GiddyUp.fetch = function(options, cb) {
         $.ajax(requestOptions).done(function(result){
             var param = processor(result);
             this.callbacks.forEach(function(deferred){ deferred(param); });
-        });
-        GiddyUp.render();
+        }).fail(function(){ console.log(arguments) });
+        GiddyUp.render(); // Render the loading box
     }
 };

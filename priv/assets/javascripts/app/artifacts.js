@@ -30,7 +30,7 @@ ArtifactList = React.createClass({
                                    self.setState({ loaded: true });
                                });
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
         if(this.props.active){
             this.loadArtifacts();
         }
@@ -140,7 +140,7 @@ ArtifactElement = React.createClass({
     getInitialState: function(){
         return { text: undefined };
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
         var artifact = this.props.artifact;
         this.loadContents(artifact);
     },
@@ -166,7 +166,7 @@ ArtifactElement = React.createClass({
         if(major === 'image'){
             return <img src={artifact.url} />;
         } else if (major === 'text') {
-            if(this.state.text){
+            if(this.state.text !== undefined){
                 return <pre className="unabridged">{this.state.text}</pre>;
             } else {
                 return <pre className="unabridged">Loading...</pre>;

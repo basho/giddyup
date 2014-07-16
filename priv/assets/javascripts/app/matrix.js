@@ -3,7 +3,7 @@ Matrix = React.createClass({
     getInitialState: function(){
         return {loaded: false};
     },
-    componentWillMount: function(){
+    componentDidMount: function(){
         this.loadMatrix(this.props.scorecard);
     },
     componentWillReceiveProps: function(nextProps) {

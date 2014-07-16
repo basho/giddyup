@@ -3,7 +3,7 @@ ScorecardsNav = React.createClass({
     getInitialState: function(){
         return { scorecards: {} };
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
         var self = this;
         GiddyUp.fetchScorecards(
             this.props.project,

@@ -4,7 +4,7 @@ ProjectsNav = React.createClass({
     getInitialState: function(){
         return { projects: GiddyUp.projects };
     },
-    componentDidMount: function(){
+    componentWillMount: function(){
         var self = this;
         GiddyUp.fetchProjects(function(projects){
             self.setState({
