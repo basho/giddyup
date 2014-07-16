@@ -1,4 +1,20 @@
 /** @jsx React.DOM **/
+var shortPath = function(url){
+  // We want to extract the shortest meaningful path from the given
+  // URL. For now we assume the file will either be named "ID.log"
+  // where ID is a number, or "ID/some/deep/path/to/tehfile.bmp". For
+  // the former, just return the full thing, for the latter, strip off
+  // the ID prefix.
+  if(url === undefined || url === null)
+    return '';
+
+  var path = url.split("/").slice(3);
+  if(path[0].match("^[0-9]+$"))
+    return path.slice(1).join("/");
+  else
+    return path.join('/');
+};
+
 ArtifactList = React.createClass({
     getInitialState: function(){
         return { loaded: false };
