@@ -60,6 +60,7 @@ var parseVersion = function(scorecard){
 
 var indexOnId = function(collection){
     return collection.reduce(function(acc, item){
+        acc[item.id.toString()] = item;
         acc[item.id] = item;
         return acc;
     }, {});
@@ -81,6 +82,7 @@ var groupMatrix = function(tests, platforms) {
                 matrix[t.name][p] = [];
             });
         };
+        t.resultsById = indexOnId(t.test_results);
         matrix[t.name][t.platform].push(t);
         return matrix;
     }, {});

@@ -47,7 +47,7 @@ var Main = React.createClass({
             project = GiddyUp.projectsById[showing.project_id];
             GiddyUp.fetchScorecards(project, function(scorecards){
                 scorecard = project.scorecardsById[showing.scorecard_id];
-                if(showing.test_instance_id){
+                if(showing.test_instance_id && scorecard.testsById){
                     test = scorecard.testsById[showing.test_instance_id];
                 }
             });

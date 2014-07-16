@@ -22,13 +22,16 @@ routie({
         // Go to root
         GiddyUp.showing = {};
         GiddyUp.help = 'projects';
-        GiddyUp.render();
+        GiddyUp.fetchProjects(GiddyUp.render);
     },
     'project /projects/:project_id': function(p){
         // Load scorecards, display scorecard nav
         GiddyUp.showing = {project_id: p};
         GiddyUp.help = 'project';
-        GiddyUp.render();
+        GiddyUp.fetchProjects(function(){
+            var project = GiddyUp.projectsById[p];
+            GiddyUp.fetchScorecards(project, GiddyUp.render);
+        });
     },
     'scorecard /projects/:project_id/scorecards/:scorecard_id': function(p,s){
         // Check if scorecard's matrix is loaded, if not render the
@@ -36,7 +39,12 @@ routie({
         // computed, render the matrix.
         GiddyUp.showing = {project_id: p, scorecard_id: s};
         GiddyUp.help = 'scorecard';
-        GiddyUp.render();
+        GiddyUp.fetchProjects(function(){
+            var project = GiddyUp.projectsById[p];
+            GiddyUp.fetchScorecards(project, function(scorecards){
+                GiddyUp.fetchMatrix(project.scorecardsById[s], GiddyUp.render);
+            });
+        });
     },
     'test_instance /projects/:project_id/scorecards/:scorecard_id/:test_instance_id': function(p,s,ti){
         // Replace the matrix view with the master/detail view of test
@@ -44,24 +52,49 @@ routie({
         GiddyUp.showing = {project_id: p, scorecard_id: s,
                            test_instance_id: extractTestId(ti)};
         GiddyUp.help = 'test_instance';
-        GiddyUp.render();
+        GiddyUp.fetchProjects(function(){
+            var project = GiddyUp.projectsById[p];
+            GiddyUp.fetchScorecards(project, function(scorecards){
+                GiddyUp.fetchMatrix(project.scorecardsById[s], GiddyUp.render);
+            });
+        });
     },
     'test_result /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id': function(p,s,ti,tr){
         // Load the artifacts for the test result and display them in
         // the list
+        ti = extractTestId(ti);
         GiddyUp.showing = {project_id: p, scorecard_id: s,
-                           test_instance_id: extractTestId(ti),
+                           test_instance_id: ti,
                            test_result_id: tr};
         GiddyUp.help = 'test_result';
-        GiddyUp.render();
+        GiddyUp.fetchProjects(function(){
+            var project = GiddyUp.projectsById[p];
+            GiddyUp.fetchScorecards(project, function(scorecards){
+                GiddyUp.fetchMatrix(project.scorecardsById[s], function(scorecard){
+                    GiddyUp.fetchArtifacts(scorecard.testsById[ti].resultsById[tr], GiddyUp.render);
+                });
+            });
+        });
     },
     'artifact /projects/:project_id/scorecards/:scorecard_id/:test_instance_id/:test_result_id/artifacts/:artifact_id': function(p,s,ti,tr,a){
         // Load the artifact body
+        ti = extractTestId(ti);
         GiddyUp.showing = {project_id: p, scorecard_id: s,
-                           test_instance_id: extractTestId(ti),
+                           test_instance_id: ti,
                            test_result_id: tr,
                            artifact_id: a};
         GiddyUp.help = 'artifact';
+        GiddyUp.fetchProjects(function(){
+            var project = GiddyUp.projectsById[p];
+            GiddyUp.fetchScorecards(project, function(scorecards){
+                GiddyUp.fetchMatrix(project.scorecardsById[s], function(scorecard){
+                    GiddyUp.fetchArtifacts(scorecard.testsById[ti].resultsById[tr],function(artifacts){
+                        GiddyUp.fetchArtifactContents(scorecard.testsById[ti].resultsById[tr].artifactsById[a], 
+                                                      GiddyUp.render);
+                    });
+                });
+            });
+        });
         GiddyUp.render();
     }
 });
