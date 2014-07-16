@@ -108,4 +108,3 @@ TestResult = React.createClass({
                 </li>);
     }
 });
-

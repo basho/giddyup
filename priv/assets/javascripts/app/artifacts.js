@@ -15,6 +15,10 @@ var shortPath = function(url){
     return path.join('/');
 };
 
+var parseContentType = function(ctype){
+    return ctype.toString().split(";")[0].trim().split("/");
+};
+
 ArtifactList = React.createClass({
     getInitialState: function(){
         return { loaded: false };
@@ -80,7 +84,7 @@ ArtifactLink = React.createClass({
 MediaIcon = React.createClass({
     render: function(){
         var ctype = this.props.ctype,
-            type = ctype.toString().split(";")[0].trim().split("/"),
+            type = parseContentType(ctype),
             major = type[0],
             minor = type[1],
             icon;
@@ -101,12 +105,77 @@ MediaIcon = React.createClass({
 });
 
 ArtifactDisplay = React.createClass({
+    findArtifact: function(test, test_result_id, artifact_id){
+        var test_result = undefined,
+            artifact = undefined;
+        test.test_results.forEach(function(tr){
+            if(tr.id.toString() === test_result_id){
+                test_result = tr;
+            }
+        });
+        if(test_result && test_result.artifactsById){
+            artifact = test_result.artifactsById[artifact_id];
+        }
+        return artifact;
+    },
     render: function(){
-        var showing = this.props.showing;
-        if(!showing.artifact_id){
-            return (<div className="span9 well">Select a test artifact to view its contents.</div>);
+        var showing = this.props.showing,
+            artifact;
+        if(showing.artifact_id){
+            artifact = this.findArtifact(this.props.test,
+                                         showing.test_result_id,
+                                         showing.artifact_id);
+            if(artifact === undefined || artifact === null){
+                return <div className="span9 well">Loading...</div>
+            } else {
+                return (<div className="span9"><ArtifactElement artifact={artifact} /></div>);
+            }
         } else {
-            return (<div className="span9">durrrr</div>);
+            return (<div className="span9 well">Select a test artifact to view its contents.</div>);
+        }
+    }
+});
+
+ArtifactElement = React.createClass({
+    getInitialState: function(){
+        return { text: undefined };
+    },
+    componentDidMount: function(){
+        var artifact = this.props.artifact;
+        this.loadContents(artifact);
+    },
+    componentWillReceiveProps: function(nextProps){
+        if(this.props.artifact !== nextProps.artifact){
+            this.setState({text: undefined});
+            this.loadContents(nextProps.artifact);
+        }
+    },
+    loadContents: function(artifact){
+       var major = parseContentType(artifact.content_type)[0],
+           self = this;
+        if(major === 'text') {
+            GiddyUp.fetchArtifactContents(artifact, function(t){
+                self.setState({ text: t });
+            });
+        }
+    },
+    render: function(){
+        var artifact = this.props.artifact,
+            major = parseContentType(artifact.content_type)[0];
+
+        if(major === 'image'){
+            return <img src={artifact.url} />;
+        } else if (major === 'text') {
+            if(this.state.text){
+                return <pre className="unabridged">{this.state.text}</pre>;
+            } else {
+                return <pre className="unabridged">Loading...</pre>;
+            }
+        } else {
+            return (<p>
+                    <i className="icon-download"/>
+                    <a target="_blank" href={artifact.url}>Download this artifact</a>
+                    </p>);
         }
     }
 });

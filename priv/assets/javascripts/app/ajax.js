@@ -189,3 +189,28 @@ GiddyUp.fetchArtifacts = function(test_result, cb){
             }).fail(function(){ console.log(arguments); });
     }
 };
+
+GiddyUp.fetchArtifactContents = function(artifact, cb) {
+    if(cb === undefined || cb === null){
+        cb = function(){};
+    }
+    if('contents' in artifact){
+        cb(artifact.contents);
+    } else {
+        $.ajax({
+            type: "GET",
+            cache: false,
+            accepts: {"text": artifact.content_type},
+            url:"/artifacts/"+artifact.id,
+            dataType: "text",
+            context:{
+                helpText: "Contents of artifact " + artifact.id,
+                id: GiddyUp.nextGuid()
+             }}).
+            done(function(result){
+                artifact.contents = result;
+                cb(result);
+                GiddyUp.render();
+            }).fail(function(){ console.log(arguments); });
+    }
+};
