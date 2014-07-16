@@ -78,7 +78,6 @@ Main = React.createClass({
       var project = this.state.project,
           scorecard = this.state.scorecard,
           test = this.state.test;
-      console.log(["Main render", showing, project, scorecard, test]);
       if(project && scorecard){
           if(test){
               return (<Results scorecard={scorecard}
