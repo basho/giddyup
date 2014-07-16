@@ -59,7 +59,7 @@ Main = React.createClass({
           project, scorecard, test;
       GiddyUp.fetchProjects(function(projects){
           project = GiddyUp.projectsById[showing.project_id];
-          if(project){
+          if(showing.project_id && project){
               GiddyUp.fetchScorecards(project, function(scorecards){
                   scorecard = project.scorecardsById[showing.scorecard_id];
                   if(showing.test_instance_id && scorecard.testsById){
@@ -70,6 +70,10 @@ Main = React.createClass({
                                  test: test};
                   self.setState(newState);
               });
+          } else {
+              self.setState({project: project,
+                             scorecard: scorecard,
+                             test: test});
           }
       });
   },
