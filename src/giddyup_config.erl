@@ -89,5 +89,6 @@ dispatch() ->
                    giddyup_wm_scorecards:routes(),
                    giddyup_wm_suite:routes(),
                    giddyup_wm_projects:routes(),
+                   giddyup_wm_coverage:routes(),
                    giddyup_wm_asset:routes()
                   ]).
