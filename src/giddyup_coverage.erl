@@ -9,6 +9,14 @@ generate_html(Version, Platform, ProjectNames) when is_list(Platform) ->
     generate_html(Version, list_to_binary(Platform), ProjectNames);
 
 generate_html(Version, Platform, ProjectNames) ->
+    PathsToAdd = case os:getenv("RIAK_LIB_PATH") of
+        false ->
+            [];
+        RiakPath ->
+            Files = filename:join([RiakPath, "*", "ebin"]),
+            filelib:wildcard(Files)
+    end,
+    code:add_pathsz(PathsToAdd),
     ProjectIdNames = pair_project_ids(ProjectNames),
     AllScorecardIdNames = gather_scorecards(ProjectIdNames),
     ScorecardIdNames = lists:filter(fun({_Id, ScorecardName}) ->
@@ -17,40 +25,45 @@ generate_html(Version, Platform, ProjectNames) ->
     cover:start(),
     prepare(ScorecardIdNames, Platform, Version),
 
-    {ok, ProjectDirs} = file:list_dir(filename:join("tmp", Version)),
+    {ok, ProjectDirs} = file:list_dir(filename:join(["tmp", "coverage", Version])),
+
+    TopDirWorker = spawn_analyze(filename:join(["tmp", "coverage", Version])),
+
     Workers = lists:map(fun(Project) ->
-                case filelib:is_dir(filename:join(["tmp", Version, Project])) of
+                case filelib:is_dir(filename:join(["tmp", "coverage", Version, Project])) of
                     true ->
-                        {ok, Tests} = file:list_dir(filename:join(["tmp", Version, Project])),
+                        {ok, Tests} = file:list_dir(filename:join(["tmp", "coverage", Version, Project])),
+                        lager:debug("number of tests found for ~s: ~p", [Project, length(Tests)]),
                         W0 = lists:map(fun(Test) ->
-                                    case filelib:is_dir(filename:join(["tmp", Version, Project, Test])) of
+                                    case filelib:is_dir(filename:join(["tmp", "coverage", Version, Project, Test])) of
                                         true ->
-                                            spawn_analyze(filename:join(["tmp", Version, Project, Test]));
+                                            spawn_analyze(filename:join(["tmp", "coverage", Version, Project, Test]));
                                         false ->
                                             []
                                     end
                             end, Tests),
-                        [spawn_analyze(filename:join(["tmp", Version, Project])) | W0];
+                        [spawn_analyze(filename:join(["tmp", "coverage", Version, Project])) | W0];
                     false ->
+                        lager:debug("no tests found for ~s at vsn ~p", [Project, Version]),
                         []
                 end
-        end, ProjectDirs) ++ [spawn_analyze(filename:join(["tmp", Version]))],
+        end, ProjectDirs),
 
-    wait_for_workers(lists:flatten(Workers)),
+    wait_for_workers([TopDirWorker | lists:flatten(Workers)]),
 
     ok.
 
 
 cover_analysis(GzBody, Version, PName, TestName, URL, Seen) ->
-    file:delete(filename:join(["tmp", Version, PName, TestName, "no_cover"])),
-    file:delete(filename:join(["tmp", Version, PName, TestName, "failed"])),
+    file:delete(filename:join(["tmp", "coverage", Version, PName, TestName, "no_cover"])),
+    file:delete(filename:join(["tmp", "coverage", Version, PName, TestName, "failed"])),
     Body = zlib:gunzip(GzBody),
     Name = case binary:split(lists:last(binary:split(URL, <<"/">>, [global])), <<".gz">>, [trim]) of
         [<<"eunit.coverdata">>=N] ->
             list_to_binary([TestName, "-", N]);
         [N] -> N
     end,
-    CoverFileName = filename:join(["tmp", Version, PName, TestName, Name]),
+    CoverFileName = filename:join(["tmp", "coverage", Version, PName, TestName, Name]),
     lager:info("processing ~p", [TestName]),
     filelib:ensure_dir(CoverFileName),
     file:write_file(CoverFileName, Body),
@@ -58,8 +71,9 @@ cover_analysis(GzBody, Version, PName, TestName, URL, Seen) ->
     W = [begin
         case is_good(M) of
             true ->
-                cover:async_analyse_to_file(M, binary_to_list(filename:join(["tmp", Version, PName, TestName, atom_to_list(M) ++ ".cover.txt"])));
+                cover:async_analyse_to_file(M, binary_to_list(filename:join(["tmp", "coverage", Version, PName, TestName, atom_to_list(M) ++ ".cover.txt"])));
             false ->
+                lager:debug("module ~s was not good for cover analysis", [M]),
                 []
         end
     end || M <- cover:imported_modules()],
@@ -92,69 +106,68 @@ sync_stream_artifacts_wait(ReqId, OldStatus, OldHeaders, OldBody) ->
     end.
 
 prepare(ScorecardIDNames, _Platform, Version) ->
-    filelib:ensure_dir(filename:join(["tmp", Version, "wtf"])),
+    filelib:ensure_dir(filename:join(["tmp", "coverage", Version, "wtf"])),
     lists:map(fun({SID, PName}) ->
-                %case giddyup_sql:q("SELECT test_results.id, status, tests.name, tests.backend, tests.upgrade_version FROM test_results INNER JOIN tests ON (test_results.test_id = tests.id) WHERE tests.platform=$1 AND scorecard_id=$2 ORDER BY status DESC", [SID, Platform]) of
-                case giddyup_sql:full_matrix(SID) of
-                    %{{select, 0}, []} -> ok;
-                    %{{select, _N}, Results} ->
-                    {ok, _ColumnInfo, Results} ->
-                        ProjectIndexName = filename:join(["tmp", Version, PName, "index.html"]),
-                        filelib:ensure_dir(ProjectIndexName),
-                        %lists:foldl(fun({TestResultID, Status, TestName0, Backend, UpgradeVersion}, Seen) ->
-                        lists:foldl(fun({_TestID, TestName0, _SomePlatform, Backend, UpgradeVersion, _MultiConf, TestResultID, Status, _LongVersion, _CreatedAt}, Seen) ->
-                                        TestName = list_to_binary(string:join([binary_to_list(T) || T <- [TestName0, Backend, UpgradeVersion], T /= null], "-")),
-                                        lager:info("Testname ~p ->? ~p", [TestName0, TestName]),
-                                        case lists:member(TestName, Seen) of
-                                            false ->
-                                                case Status of
-                                                    true ->
-                                                        %% get the URL of the coverdata
-                                                        case giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultID]) of
-                                                            %{{select, 1}, [{URL}]} ->
-                                                            {ok, _, [{URL}]} ->
-                                                                %case lhttpc:request(binary_to_list(URL), "GET", [], 60000) of
-                                                                case sync_stream_artifact(URL) of
-                                                                    {ok, {{200, _}, _Headers, GzBody}} ->
-                                                                        cover_analysis(GzBody, Version, PName, TestName, URL, Seen);
-                                                                    SyncRes ->
-                                                                        CoverFileName = filename:join(["tmp", Version, PName, TestName, "no_cover"]),
-                                                                        filelib:ensure_dir(CoverFileName),
-                                                                        file:write_file(CoverFileName, ""),
-                                                                        lager:warning("unable to fetch coverdata for ~p from ~p due to ~p", [TestName, URL, SyncRes]),
-                                                                        Seen
-                                                            end;
-                                                        {{select, 0}, []} ->
-                                                            CoverFileName = filename:join(["tmp", Version, PName, TestName, "no_cover"]),
-                                                            filelib:ensure_dir(CoverFileName),
-                                                            file:write_file(CoverFileName, ""),
-                                                            lager:warning("no coverdata for ~p", [TestName]),
-                                                            Seen
-                                                end;
-                                            false ->
-                                                CoverFileName = filename:join(["tmp", Version, PName, TestName, "failed"]),
-                                                filelib:ensure_dir(CoverFileName),
-                                                file:write_file(CoverFileName, ""),
-                                                lager:warning("~p failed", [TestName]),
-                                                Seen;
-                                            null ->
-                                                lager:info("~p was skipped", [TestName]),
-                                                CoverFileName = filename:join(["tmp", Version, PName, TestName, "failed"]),
-                                                filelib:ensure_dir(CoverFileName),
-                                                file:write_file(CoverFileName, ""),
-                                                Seen
-                                        end;
-                                    true ->
-                                        %% already dealt with this
-                                        Seen
-                                end
-                            end, [], Results)
-                end
-        end, ScorecardIDNames).
+        prepare_scorecard(SID, PName, Version)
+    end, ScorecardIDNames).
+
+prepare_scorecard(SID, PName, Version) ->
+    %case giddyup_sql:q("SELECT test_results.id, status, tests.name, tests.backend, tests.upgrade_version FROM test_results INNER JOIN tests ON (test_results.test_id = tests.id) WHERE tests.platform=$1 AND scorecard_id=$2 ORDER BY status DESC", [SID, Platform]) of
+    {ok, _ColumnInfo, Results} = giddyup_sql:full_matrix(SID),
+    ProjectIndexName = filename:join(["tmp", "coverage", Version, PName, "index.html"]),
+    filelib:ensure_dir(ProjectIndexName),
+    %lists:foldl(fun({TestResultID, Status, TestName0, Backend, UpgradeVersion}, Seen) ->
+    lists:foldl(fun(TestResult, Seen) ->
+        maybe_prepare_test(TestResult, Seen, PName, Version)
+    end, [], Results).
+
+maybe_prepare_test({_TestID, TestName0, _SomePlatform, Backend, UpgradeVersion, _MultiConf, TestResultID, Status, _LongVersion, _CreatedAt}, Seen, PName, Version) ->
+    TestName = list_to_binary(string:join([binary_to_list(T) || T <- [TestName0, Backend, UpgradeVersion], T /= null], "-")),
+    lager:info("Testname ~p ->? ~p", [TestName0, TestName]),
+    BeenSeen = lists:member(TestName, Seen),
+    case {BeenSeen, Status} of
+        {true, _} ->
+            Seen;
+        {false, false} ->
+            CoverFileName = filename:join(["tmp", "coverage", Version, PName, TestName, "failed"]),
+            filelib:ensure_dir(CoverFileName),
+            file:write_file(CoverFileName, ""),
+            lager:warning("~p failed", [TestName]),
+            Seen;
+        {false, null} ->
+            lager:info("~p was skipped", [TestName]),
+            CoverFileName = filename:join(["tmp", "coverage", Version, PName, TestName, "failed"]),
+            filelib:ensure_dir(CoverFileName),
+            file:write_file(CoverFileName, ""),
+            Seen;
+        {false, true} ->
+            %% get the URL of the coverdata
+            case giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultID]) of
+                %{{select, 1}, [{URL}]} ->
+                {ok, _, [{URL}]} ->
+                    %case lhttpc:request(binary_to_list(URL), "GET", [], 60000) of
+                    case sync_stream_artifact(URL) of
+                        {ok, {{200, _}, _Headers, GzBody}} ->
+                            cover_analysis(GzBody, Version, PName, TestName, URL, Seen);
+                        SyncRes ->
+                            CoverFileName = filename:join(["tmp", "coverage", Version, PName, TestName, "no_cover"]),
+                            filelib:ensure_dir(CoverFileName),
+                            file:write_file(CoverFileName, ""),
+                            lager:warning("unable to fetch coverdata for ~p from ~p due to ~p", [TestName, URL, SyncRes]),
+                            Seen
+                    end;
+                {{select, 0}, []} ->
+                    CoverFileName = filename:join(["tmp", "coverage", Version, PName, TestName, "no_cover"]),
+                    filelib:ensure_dir(CoverFileName),
+                    file:write_file(CoverFileName, ""),
+                    lager:warning("no coverdata for ~p", [TestName]),
+                    Seen
+            end
+    end.
 
 gather_scorecards(ProjectIdNames) ->
-    NotFlat = lists:foldl(fun({_ProjectId, ProjectName}, Acc) ->
-        case giddyup_sql:scorecards(ProjectName) of
+NotFlat = lists:foldl(fun({_ProjectId, ProjectName}, Acc) ->
+case giddyup_sql:scorecards(ProjectName) of
             {ok, _ColumnInfo, Scorecards} ->
                 [Scorecards | Acc];
             _ ->
@@ -177,10 +190,12 @@ spawn_analyze(Dir) ->
     spawn(fun() -> analyze(Dir) end).
 
 analyze(Dir) ->
+    lager:debug("running analysis on ~s", [Dir]),
     {ok, F} = file:open(filename:join(Dir, "index.html"), [write]),
     Sub = spawn(fun() ->
                 %lager:info("subdirs for ~p are ~p", [Dir, SubDirs]),
                 CoverFiles = filelib:fold_files(Dir, ".*.cover.txt", true, fun(E, A) -> [E|A] end, []),
+                lager:debug("coverfiles found in ~s: ~p", [Dir, CoverFiles]),
                 CD = calculate_coverage(CoverFiles),
 
                 Workers = [spawn(fun() -> write_cover_file(Dir, M, lists:flatten(D)) end) || {M, D} <- CD],
@@ -206,7 +221,8 @@ analyze(Dir) ->
                                     Total = percent(TotalCovered, TotalCovered + TotalNotCovered),
                                     file:write(F, ["<tr><td></td><td></td></tr><tr><td>Total</td><td>", integer_to_list(Total), "%</td></tr>"]),
                                     file:write(F, "</table>");
-                                (_) ->
+                                ({App,_}) ->
+                                    lager:debug("Skipping ~p due to no modules", [App]),
                                     ok
                             end, CData),
                         %lager:info("found ~p coverdata files for ~p", [length(CoverData), Dir]),
@@ -259,7 +275,8 @@ summarize(Dir, F) ->
                     file:write(F, ["<tr><td>",filename:basename(Dir), "</td><td>test failed</td></tr>"]);
                 {_, true} ->
                     file:write(F, ["<tr><td>",filename:basename(Dir), "</td><td>no coverage</td></tr>"]);
-                _ ->
+                IsRegulars ->
+                    lager:warning("Coverfiles ~p not valid in ~s: ~p", [CoverFiles, Dir, IsRegulars]),
                     file:write(F, ["<tr><td>",filename:basename(Dir), "</td><td>unknown</td></tr>"])
             end;
         _ ->
@@ -283,6 +300,9 @@ read_cover_data(File) ->
                 end
         end, {1, dict:new()}, Lines),
     {Mod, dict:to_list(Res)}.
+
+write_cover_file(Dir, Mod, CD) when is_binary(Mod) ->
+    write_cover_file(Dir, binary_to_list(Mod), CD);
 
 write_cover_file(Dir, Mod, CD) ->
     {ok, F} = file:open(filename:join([Dir, Mod++".html"]), [write]),
@@ -358,9 +378,12 @@ mod_src(M) ->
                 true ->
                     proplists:get_value(source, Props);
                 false ->
+                    lager:debug("could not find source for ~s", [M]),
                     undefined
             end
-    catch _:_ -> undefined
+    catch _:_ ->
+        lager:debug("Could not load module ~s", [M]),
+        undefined
     end.
 
 is_good(M) ->
@@ -371,14 +394,41 @@ is_good(M) ->
             true
     end.
 
-wait_for_workers(Workers) ->
-    case lists:all(fun(Pid) -> not erlang:is_process_alive(Pid) end, Workers) of
-        true -> ok;
-        false ->
-            %lager:info("waiting for workers: ~p remain", [length(lists:filter(fun erlang:is_process_alive/1, Workers))]),
-            timer:sleep(1000),
-            wait_for_workers(Workers)
+wait_for_workers([]) ->
+    ok;
+
+wait_for_workers(Workers) when is_list(Workers) ->
+    MonPids = lists:map(fun(Pid) ->
+        MonRef = erlang:monitor(process, Pid),
+        {MonRef, Pid}
+    end, Workers),
+    Set = sets:from_list(MonPids),
+    wait_for_workers(Set);
+
+wait_for_workers(Set) ->
+    Element = receive
+        {'DOWN', Mon, process, Pid, Normal} when Normal == normal; Normal == noproc ->
+            {Mon, Pid};
+        {'DOWN', Mon, process, Pid, Why} ->
+            lager:info("~p exited due to ~p", [Pid, Why]),
+            {Mon, Pid}
+    end,
+    Set2 = sets:del_element(Element, Set),
+    case sets:size(Set2) of
+        0 ->
+            ok;
+        _ ->
+            wait_for_workers(Set2)
     end.
+
+%wait_for_workers(Workers) ->
+%    case lists:all(fun(Pid) -> not erlang:is_process_alive(Pid) end, Workers) of
+%        true -> ok;
+%        false ->
+%            %lager:info("waiting for workers: ~p remain", [length(lists:filter(fun erlang:is_process_alive/1, Workers))]),
+%            timer:sleep(1000),
+%            wait_for_workers(Workers)
+%    end.
 
 percent(0, 0) -> 0;
 percent(Part, All) ->
