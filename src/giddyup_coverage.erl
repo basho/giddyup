@@ -13,8 +13,7 @@ generate_html(Version, Platform, ProjectNames) ->
         false ->
             [];
         RiakPath ->
-            Files = filename:join([RiakPath, "*", "ebin"]),
-            filelib:wildcard(Files)
+            generate_ebin_paths(RiakPath)
     end,
     code:add_pathsz(PathsToAdd),
     ProjectIdNames = pair_project_ids(ProjectNames),
@@ -53,6 +52,12 @@ generate_html(Version, Platform, ProjectNames) ->
 
     ok.
 
+generate_ebin_paths(UnsplitPath) ->
+    Paths = string:tokens(UnsplitPath, ":"),
+    lists:foldl(fun(Path, Acc) ->
+        Files = filename:join([Path, "*", "ebin"]),
+        Acc ++ filelib:wildcard(Files)
+    end, [], Paths).
 
 cover_analysis(GzBody, Version, PName, TestName, URL, Seen) ->
     file:delete(filename:join(["tmp", "coverage", Version, PName, TestName, "no_cover"])),
@@ -187,7 +192,8 @@ pair_project_ids(ProjectNames) ->
     end, [], ProjectNames).
 
 spawn_analyze(Dir) ->
-    spawn(fun() -> analyze(Dir) end).
+    %spawn(fun() -> analyze(Dir) end).
+    analyze(Dir).
 
 analyze(Dir) ->
     lager:debug("running analysis on ~s", [Dir]),
@@ -204,7 +210,7 @@ analyze(Dir) ->
 
                 CData = lists:map(fun({App, Mods}) ->
                             {App, [begin
-                                            {Run, NotRun} = lists:partition(fun({_, {_, Calls}}) -> Calls > 0 end, coalesce(lists:flatten(proplists:get_value(atom_to_list(M), CD)))),
+                                            {Run, NotRun} = lists:partition(fun({_, {_, Calls}}) -> Calls > 0 end, coalesce(lists:flatten(proplists:get_value(list_to_binary(atom_to_list(M)), CD)))),
                                             {M, percent(length(Run), length(Run)+length(NotRun)), {length(Run), length(NotRun)}}
                                     end || M <- Mods]}
                     end, Modules),
@@ -244,8 +250,9 @@ analyze(Dir) ->
             file:write(F, "<h1>Aggregate coverage</h1><table>")
     end,
     Sub ! lieutenant_green,
-    wait_for_workers([Sub]),
-    ok.
+    Sub.
+    %wait_for_workers([Sub]),
+    %ok.
 
 coalesce([]) -> [];
 coalesce(CD0) ->
@@ -346,7 +353,7 @@ write_cover_file(Dir, Mod, CD) ->
                             [] ->
                                 file:write(F, ["<p class='notrun'>", Line, "</p>"]);
                             _ ->
-                                file:write(F, ["<p class='run'><span class='hint  hint--top' data-hint='Covered by: ", string:join([M++"&nbsp;("++integer_to_list(CC)++"&nbsp;calls)" || {M, CC} <- Calls], ", "), "'>", Line, "</span></p>"])
+                                file:write(F, ["<p class='run'><span class='hint  hint--top' data-hint='Covered by: ", string:join([binary_to_list(M)++"&nbsp;("++integer_to_list(CC)++"&nbsp;calls)" || {M, CC} <- Calls], ", "), "'>", Line, "</span></p>"])
                         end
                 end,
                 Number + 1
@@ -362,7 +369,7 @@ calculate_coverage(CoverFiles) ->
     lists:keysort(1, dict:to_list(Res)).
 
 coverage_modules(CD) ->
-    lists:sort([list_to_atom(M) || {M, _} <- CD]).
+    lists:sort([list_to_atom(binary_to_list(M)) || {M, _} <- CD]).
 
 total_coverage(CD) ->
     {A, B} = lists:foldl(fun({_Module, CD2}, {Covered, NotCovered}) ->
