@@ -1,7 +1,7 @@
 %% @doc After coverage report generated, this resource shoves it out.
 -module(giddyup_wm_coverage).
 
--record(context, {file}).
+-record(context, {file, test_result}).
 
 -export([
     init/1,
@@ -13,16 +13,16 @@
 -include("giddyup_wm_auth.hrl").
 
 routes() ->
-    [{["coverage", project, '*'], ?MODULE, []}].
+    [{["test_results", id, "coverage", '*'], ?MODULE, []}].
 
 init(_) ->
     {ok, #context{}}.
 
 resource_exists(RD, Context) ->
-    Project = wrq:path_info(project, RD),
+    TestResId = wrq:path_info(id, RD),
     TailPath = wrq:disp_path(RD),
-    LocalPath = filename:join(["tmp", "coverage", Project, TailPath]),
-    lager:debug("coverage resource - Project: ~s, TailPath: ~p; LocalPath: ~p", [Project, TailPath, LocalPath]),
+    LocalPath = filename:join(["tmp", "coverage", TestResId, TailPath]),
+    lager:debug("coverage resource - TestResId: ~s, TailPath: ~p; LocalPath: ~p", [TestResId, TailPath, LocalPath]),
     {Boolean, File} = case filelib:is_dir(LocalPath) of
         true ->
             {true, filename:join(LocalPath, "index.html")};
