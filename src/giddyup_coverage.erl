@@ -167,7 +167,7 @@ analyze(Dir) ->
                         %% ok safe to write to the HTML file now
                         lists:foreach(fun({App, Mods}) when Mods /= [] ->
                                     file:write(F, ["<h2>", App,"/<h2><table>"]),
-                                    [file:write(F, "<tr><td><a href=\""++atom_to_list(M) ++ ".html\">" ++atom_to_list(M) ++ "</a></td><td>" ++ integer_to_list(Percent) ++ "%</td></tr>") || {M, Percent, _} <- lists:keysort(2, Mods)],
+                                    [file:write(F, "<tr><td><a href=\"coverage/"++atom_to_list(M) ++ ".html\">" ++atom_to_list(M) ++ "</a></td><td>" ++ integer_to_list(Percent) ++ "%</td></tr>") || {M, Percent, _} <- lists:keysort(2, Mods)],
                                     {TotalCovered, TotalNotCovered} = lists:foldl(fun({_, _, {Cov, NotCov}}, {T1, T2}) ->
                                                 {T1+Cov, T2+NotCov}
                                         end, {0, 0}, Mods),
@@ -231,7 +231,7 @@ summarize(Dir, F) ->
                     file:write(F, ["<tr><td>",filename:basename(Dir), "</td><td>unknown</td></tr>"])
             end;
         _ ->
-            file:write(F, ["<tr><td><a href=\"./", filename:basename(Dir), "\">", filename:basename(Dir), "</a></td><td>"]),
+            file:write(F, ["<tr><td><a href=\"./coverage/", filename:basename(Dir), "\">", filename:basename(Dir), "</a></td><td>"]),
             file:write(F, [total_coverage(calculate_coverage(CoverFiles)), "</td></tr>"])
     end.
 
