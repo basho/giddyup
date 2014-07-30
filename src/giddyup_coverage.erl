@@ -1,35 +1,35 @@
 -module(giddyup_coverage).
 
--export([generate_html/1]).
+-export([generate_test_result_html/1]).
 
--define(www_dir(TestResId), filename:join(["tmp", "coverage", integer_to_list(TestResId)])).
+-define(test_result_www_dir(TestResId), filename:join(["tmp", "coverage", "test_results", integer_to_list(TestResId)])).
 
-generate_html(TestResultId) ->
+generate_test_result_html(TestResultId) ->
     MaybeCoverArtifact = giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultId]),
-    generate_html(TestResultId, MaybeCoverArtifact).
+    generate_test_result_html(TestResultId, MaybeCoverArtifact).
 
-generate_html(TestResultId, {ok, _, [{URL}]}) ->
+generate_test_result_html(TestResultId, {ok, _, [{URL}]}) ->
     MaybeStreamedData = sync_stream_artifact(URL),
-    generate_html(TestResultId, URL, MaybeStreamedData);
+    generate_test_result_html(TestResultId, URL, MaybeStreamedData);
 
-generate_html(_TestResultId, {ok, _, []}) ->
+generate_test_result_html(_TestResultId, {ok, _, []}) ->
     {error, no_coverdata};
 
-generate_html(_TestResultId, Wut) ->
+generate_test_result_html(_TestResultId, Wut) ->
     Wut.
 
-generate_html(TestResultId, URL, {ok, {{200, _}, _Headers, GzBody}}) ->
+generate_test_result_html(TestResultId, URL, {ok, {{200, _}, _Headers, GzBody}}) ->
     ok = prepare_dirs(TestResultId),
     {ok, _CoverPid} = prepare_cover(),
     cover_analysis(GzBody, TestResultId, URL),
     cover:stop(),
-    analyze(?www_dir(TestResultId));
+    analyze(?test_result_www_dir(TestResultId));
 
-generate_html(_TestResultId, _URL, Wut) ->
+generate_test_result_html(_TestResultId, _URL, Wut) ->
     Wut.
 
 prepare_dirs(TestResultId) ->
-    ok = filelib:ensure_dir(?www_dir(TestResultId)).
+    ok = filelib:ensure_dir(?test_result_www_dir(TestResultId)).
 
 prepare_cover() ->
     PathsToAdd = case os:getenv("RIAK_LIB_PATH") of
@@ -45,14 +45,14 @@ prepare_cover() ->
 cover_analysis(GzBody, TestResId, URL) ->
     Body = zlib:gunzip(GzBody),
     [Name] = binary:split(lists:last(binary:split(URL, <<"/">>, [global])), <<".gz">>, [trim]),
-    CoverFileName = filename:join([?www_dir(TestResId), Name]),
+    CoverFileName = filename:join([?test_result_www_dir(TestResId), Name]),
     filelib:ensure_dir(CoverFileName),
     file:write_file(CoverFileName, Body),
     cover:import(CoverFileName),
     W = lists:map(fun(M) ->
         case is_good(M) of
             true ->
-                WriteToFile = filename:join([?www_dir(TestResId), atom_to_list(M) ++ ".cover.txt"]),
+                WriteToFile = filename:join([?test_result_www_dir(TestResId), atom_to_list(M) ++ ".cover.txt"]),
                 cover:async_analyse_to_file(M, WriteToFile);
             false ->
                 lager:debug("module ~s was not good for cover analysis", [M]),

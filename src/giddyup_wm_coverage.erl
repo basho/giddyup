@@ -21,7 +21,7 @@ init(_) ->
 resource_exists(RD, Context) ->
     TestResId = wrq:path_info(id, RD),
     TailPath = wrq:disp_path(RD),
-    LocalPath = filename:join(["tmp", "coverage", TestResId, TailPath]),
+    LocalPath = filename:join(["tmp", "coverage", "test_results", TestResId, TailPath]),
     lager:debug("coverage resource - TestResId: ~s, TailPath: ~p; LocalPath: ~p", [TestResId, TailPath, LocalPath]),
     {Boolean, File} = case filelib:is_dir(LocalPath) of
         true ->
