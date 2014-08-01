@@ -1,8 +1,9 @@
 -module(giddyup_coverage).
 
--export([generate_test_result_html/1]).
+-export([generate_test_result_html/1, generate_scorecard_html/2]).
 
 -define(test_result_www_dir(TestResId), filename:join(["tmp", "coverage", "test_results", integer_to_list(TestResId)])).
+-define(scorecard_www_dir(ScorecardId, Platform), filename:join(["tmp", "coverage", "scorecards", maybe_to_list(ScorecardId), maybe_to_list(Platform)])).
 
 generate_test_result_html(TestResultId) ->
     MaybeCoverArtifact = giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultId]),
@@ -27,6 +28,37 @@ generate_test_result_html(TestResultId, URL, {ok, {{200, _}, _Headers, GzBody}})
 
 generate_test_result_html(_TestResultId, _URL, Wut) ->
     Wut.
+
+generate_scorecard_html(ScorecardId, PlatformStr) ->
+    {ok, _ColumnInfo, Rows} = giddyup_sql:q(
+        "SELECT
+            artifacts.url as url,
+            test_results.id as test_result_id
+        FROM
+            artifacts LEFT OUTER JOIN
+                test_results ON test_results.id = artifacts.test_result_id
+            LEFT OUTER JOIN
+                tests ON tests.id = test_results.test_id
+        WHERE
+            tests.platform = $1
+            AND test_results.scorecard_id = $2
+            AND artifacts.url LIKE '%coverdata%'
+        ",
+    [PlatformStr, ScorecardId]),
+    ok = lists:foreach(fun({Url, TestResId}) ->
+        prepare_cover(),
+        prepare_dirs(TestResId),
+        {ok, {{200, _}, _Headers, GzBody}} = sync_stream_artifact(Url),
+        cover_analysis(GzBody, TestResId, Url),
+        cover:stop(),
+        analyze(?test_result_www_dir(TestResId))
+    end, Rows),
+    CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
+        Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
+        Files = filelib:wildcard(Wildcard),
+        Files ++ Acc
+    end, [], Rows),
+    analyze(CoverFiles, ?scorecard_www_dir(ScorecardId, PlatformStr)).
 
 prepare_dirs(TestResultId) ->
     ok = filelib:ensure_dir(?test_result_www_dir(TestResultId)).
@@ -142,14 +174,20 @@ wait_for_workers(Set) ->
 
 analyze(Dir) ->
     lager:debug("running analysis on ~s", [Dir]),
-    {ok, F} = file:open(filename:join(Dir, "index.html"), [write]),
+    CoverFiles = filelib:fold_files(Dir, ".*.cover.txt", true, fun(Fname, Acc) -> [Fname | Acc] end, []),
+    analyze(CoverFiles, Dir).
+
+analyze(CoverFiles, OutputDir) ->
+    lager:debug("output directory: ~s", [OutputDir]),
+    OutputIndex = filename:join(OutputDir, "index.html"),
+    ok = filelib:ensure_dir(OutputIndex),
+    {ok, F} = file:open(OutputIndex, [write]),
     Sub = spawn(fun() ->
                 %lager:info("subdirs for ~p are ~p", [Dir, SubDirs]),
-                CoverFiles = filelib:fold_files(Dir, ".*.cover.txt", true, fun(E, A) -> [E|A] end, []),
-                lager:debug("coverfiles found in ~s: ~p", [Dir, CoverFiles]),
+                lager:debug("coverfiles given: ~p", [CoverFiles]),
                 CD = calculate_coverage(CoverFiles),
 
-                Workers = [spawn(fun() -> write_cover_file(Dir, M, lists:flatten(D)) end) || {M, D} <- CD],
+                Workers = [spawn(fun() -> write_cover_file(OutputDir, M, lists:flatten(D)) end) || {M, D} <- CD],
 
                 Modules = group_by_app(coverage_modules(CD)),
 
@@ -183,10 +221,8 @@ analyze(Dir) ->
                 wait_for_workers(Workers)
         end),
 
-    SubDirs = case file:list_dir(Dir) of
-        {ok, Dirs} ->
-            [filename:join([Dir, D]) || D <- Dirs, filelib:is_dir(filename:join(Dir, D))]
-    end,
+    {ok, FilesInOutputDir} = file:list_dir(OutputDir),
+    SubDirs = [filename:join([OutputDir, D]) || D <- FilesInOutputDir, filelib:is_dir(filename:join(OutputDir, D))],
     file:write(F, "<h1>Individual coverage</h1><table>"),
     case SubDirs of
         [] -> ok;
@@ -332,4 +368,12 @@ group_by_app(Modules) ->
                 dict:append(App, M, Dict)
         end, dict:new(), Modules))).
 
+maybe_to_list(Bin) when is_binary(Bin) ->
+    binary_to_list(Bin);
+
+maybe_to_list(Int) when is_integer(Int) ->
+    integer_to_list(Int);
+
+maybe_to_list(List) when is_list(List) ->
+    List.
 
