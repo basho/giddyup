@@ -10,28 +10,21 @@
 -define(scorecard_www_dir(ScorecardId, Platform), filename:join(["tmp", "coverage", "scorecards", maybe_to_list(ScorecardId), maybe_to_list(Platform)])).
 
 generate_test_result_html(TestResultId) ->
-    MaybeCoverArtifact = giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultId]),
-    generate_test_result_html(TestResultId, MaybeCoverArtifact).
+    {ok, _, [{URL}]} = giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultId]),
+    generate_test_result_html(TestResultId, URL).
 
-generate_test_result_html(TestResultId, {ok, _, [{URL}]}) ->
-    MaybeStreamedData = sync_stream_artifact(URL),
-    generate_test_result_html(TestResultId, URL, MaybeStreamedData);
-
-generate_test_result_html(_TestResultId, {ok, _, []}) ->
-    {error, no_coverdata};
-
-generate_test_result_html(_TestResultId, Wut) ->
-    Wut.
-
-generate_test_result_html(TestResultId, URL, {ok, {{200, _}, _Headers, GzBody}}) ->
+generate_test_result_html(TestResultId, URL) ->
+    {ok, {{200, _}, _Headers, GzBody}} = sync_stream_artifact(URL),
     ok = prepare_dirs(TestResultId),
     {ok, _CoverPid} = prepare_cover(),
     cover_analysis(GzBody, TestResultId, URL),
     cover:stop(),
-    analyze(?test_result_www_dir(TestResultId));
+    analyze(?test_result_www_dir(TestResultId)).
 
-generate_test_result_html(_TestResultId, _URL, Wut) ->
-    Wut.
+generate_test_results_html(UrlTestIdList) ->
+    lists:foreach(fun({Url, TestResultId}) ->
+        generate_test_result_html(TestResultId, Url)
+    end, UrlTestIdList).
 
 generate_scorecard_html(ScorecardId, PlatformStr) ->
     {ok, _ColumnInfo, Rows} = giddyup_sql:q(
@@ -49,14 +42,7 @@ generate_scorecard_html(ScorecardId, PlatformStr) ->
             AND artifacts.url LIKE '%coverdata%'
         ",
     [PlatformStr, ScorecardId]),
-    ok = lists:foreach(fun({Url, TestResId}) ->
-        prepare_cover(),
-        prepare_dirs(TestResId),
-        {ok, {{200, _}, _Headers, GzBody}} = sync_stream_artifact(Url),
-        cover_analysis(GzBody, TestResId, Url),
-        cover:stop(),
-        analyze(?test_result_www_dir(TestResId))
-    end, Rows),
+    generate_test_results_html(Rows),
     CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
         Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
         Files = filelib:wildcard(Wildcard),
@@ -77,14 +63,7 @@ generate_scorecard_html(ScorecardId) ->
             AND artifacts.url LIKE '%coverdata%'
         ",
     [ScorecardId]),
-    ok = lists:foreach(fun({Url, TestResId}) ->
-        prepare_cover(),
-        prepare_dirs(TestResId),
-        {ok, {{200, _}, _Headers, GzBody}} = sync_stream_artifact(Url),
-        cover_analysis(GzBody, TestResId, Url),
-        cover:stop(),
-        analyze(?test_result_www_dir(TestResId))
-    end, Rows),
+    generate_test_results_html(Rows),
     CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
         Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
         Files = filelib:wildcard(Wildcard),
