@@ -34,7 +34,7 @@ MatrixHeader = React.createClass({
         var scorecardId = this.props.scorecard.id;
         var headers = this.props.platforms.map(function(p){return (<th key={p}><a href={"/scorecards/" + scorecardId + "/" + p + "/coverage"}>{p}</a></th>); });
         return (<thead>
-                <th></th>
+                <th><a href={"/scorecards/" + scorecardId + "/coverage"}>Combined Coverage</a></th>
                 {headers}
                 </thead>);
     }

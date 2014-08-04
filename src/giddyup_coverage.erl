@@ -1,6 +1,10 @@
 -module(giddyup_coverage).
 
--export([generate_test_result_html/1, generate_scorecard_html/2]).
+-export([
+    generate_test_result_html/1,
+    generate_scorecard_html/2,
+    generate_scorecard_html/1
+]).
 
 -define(test_result_www_dir(TestResId), filename:join(["tmp", "coverage", "test_results", integer_to_list(TestResId)])).
 -define(scorecard_www_dir(ScorecardId, Platform), filename:join(["tmp", "coverage", "scorecards", maybe_to_list(ScorecardId), maybe_to_list(Platform)])).
@@ -59,6 +63,34 @@ generate_scorecard_html(ScorecardId, PlatformStr) ->
         Files ++ Acc
     end, [], Rows),
     analyze(CoverFiles, ?scorecard_www_dir(ScorecardId, PlatformStr)).
+
+generate_scorecard_html(ScorecardId) ->
+    {ok, _ColumnInfo, Rows} = giddyup_sql:q(
+        "SELECT
+            artifacts.url as url,
+            test_results.id as test_result_id
+        FROM
+            artifacts LEFT OUTER JOIN
+                test_results ON test_results.id = artifacts.test_result_id
+        WHERE
+            test_results.scorecard_id = $1
+            AND artifacts.url LIKE '%coverdata%'
+        ",
+    [ScorecardId]),
+    ok = lists:foreach(fun({Url, TestResId}) ->
+        prepare_cover(),
+        prepare_dirs(TestResId),
+        {ok, {{200, _}, _Headers, GzBody}} = sync_stream_artifact(Url),
+        cover_analysis(GzBody, TestResId, Url),
+        cover:stop(),
+        analyze(?test_result_www_dir(TestResId))
+    end, Rows),
+    CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
+        Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
+        Files = filelib:wildcard(Wildcard),
+        Files ++ Acc
+    end, [], Rows),
+    analyze(CoverFiles, ?scorecard_www_dir(ScorecardId, "all")).
 
 prepare_dirs(TestResultId) ->
     ok = filelib:ensure_dir(?test_result_www_dir(TestResultId)).

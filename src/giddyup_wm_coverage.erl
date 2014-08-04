@@ -14,6 +14,7 @@
 
 routes() ->
     [{["test_results", id, "coverage", '*'], ?MODULE, test_results},
+     {["scorecards", id, "coverage", '*'], ?MODULE, scorecard},
      {["scorecards", id, platform, "coverage", '*'], ?MODULE, scorecard}].
 
 init(Mode) ->
@@ -39,7 +40,12 @@ resource_exists(RD, #context{mode = test_results} = Context) ->
 
 resource_exists(RD, #context{mode = scorecard} = Context) ->
     ScorecardId = wrq:path_info(id, RD),
-    Platform = wrq:path_info(platform, RD),
+    Platform = case wrq:path_info(platform, RD) of
+        undefined ->
+            "all";
+        ElsePlatform ->
+            ElsePlatform
+    end,
     TailPath = wrq:disp_path(RD),
     LocalPath = filename:join(["tmp", "coverage", "scorecards", ScorecardId, Platform, TailPath]),
     {Boolean, File} = case filelib:is_dir(LocalPath) of
