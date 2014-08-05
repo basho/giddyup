@@ -21,9 +21,18 @@ generate_test_result_html(TestResultId, URL) ->
     cover:stop(),
     analyze(?test_result_www_dir(TestResultId)).
 
+maybe_generate_test_result_html(TestResultId, URL) ->
+    IndexFile = filename:join([?test_result_www_dir(TestResultId), "index.html"]),
+    case filelib:is_file(IndexFile) of
+        true ->
+            ok;
+        false ->
+            generate_test_result_html(TestResultId, URL)
+    end.
+
 generate_test_results_html(UrlTestIdList) ->
     lists:foreach(fun({Url, TestResultId}) ->
-        generate_test_result_html(TestResultId, Url)
+        maybe_generate_test_result_html(TestResultId, Url)
     end, UrlTestIdList).
 
 generate_scorecard_html(ScorecardId, PlatformStr) ->
