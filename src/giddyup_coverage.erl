@@ -28,7 +28,7 @@
 %% @doc Generate (or re-generate) the static html coverage report for a
 %% single test result.
 generate_test_result_html(TestResultId) ->
-    {ok, _, [{URL}]} = giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultId]),
+    {ok, _, [{URL}]} = giddyup_sql:test_result_coverage(TestResultId),
     generate_test_result_html(TestResultId, URL).
 
 generate_test_result_html(TestResultId, URL) ->
@@ -57,21 +57,7 @@ generate_test_results_html(UrlTestIdList) ->
 %% scorecard, but only for the given platform. This will generate the
 %% static html for any test results needed, but will not re-generate them.
 generate_scorecard_html(ScorecardId, PlatformStr) ->
-    {ok, _ColumnInfo, Rows} = giddyup_sql:q(
-        "SELECT
-            artifacts.url as url,
-            test_results.id as test_result_id
-        FROM
-            artifacts LEFT OUTER JOIN
-                test_results ON test_results.id = artifacts.test_result_id
-            LEFT OUTER JOIN
-                tests ON tests.id = test_results.test_id
-        WHERE
-            tests.platform = $1
-            AND test_results.scorecard_id = $2
-            AND artifacts.url LIKE '%coverdata%'
-        ",
-    [PlatformStr, ScorecardId]),
+    {ok, _ColumnInfo, Rows} = giddyup_sql:scorecard_coverage(ScorecardId, PlatformStr),
     generate_test_results_html(Rows),
     CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
         Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
@@ -84,18 +70,7 @@ generate_scorecard_html(ScorecardId, PlatformStr) ->
 %% all tests on all platforms for the given scorecard. This will generate
 %% the static html for any test results that do not exist.
 generate_scorecard_html(ScorecardId) ->
-    {ok, _ColumnInfo, Rows} = giddyup_sql:q(
-        "SELECT
-            artifacts.url as url,
-            test_results.id as test_result_id
-        FROM
-            artifacts LEFT OUTER JOIN
-                test_results ON test_results.id = artifacts.test_result_id
-        WHERE
-            test_results.scorecard_id = $1
-            AND artifacts.url LIKE '%coverdata%'
-        ",
-    [ScorecardId]),
+    {ok, _ColumnInfo, Rows} = giddyup_sql:scorecard_coverage(ScorecardId),
     generate_test_results_html(Rows),
     CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
         Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
