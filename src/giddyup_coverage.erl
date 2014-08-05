@@ -1,3 +1,19 @@
+%% @doc Generate coverage reports from riak_test cover data. Riak_test can
+%% run tests with cover compiled modules and upload the results as an
+%% artifact to giddyup. This module generates static html for coverage for
+%% a single test result, all test results for a scorecard, and all test
+%% results for a single platform on a scorecard. This is achieved by
+%% downloading the cover data and using the erlang cover application to
+%% combine them.
+%%
+%% This means that this module needs access not only to the riak source,
+%% but also the compiled modules. It will dynamically add the modules as
+%% needed, but it does need to know where riak is. The os environment
+%% varialbe RIAK_LIB_PATH should point to the lib dir in a riak release.
+%%
+%% All coverage data and generate html scripts are stored in the
+%% 'tmp/coverage' directory.
+
 -module(giddyup_coverage).
 
 -export([
@@ -9,6 +25,8 @@
 -define(test_result_www_dir(TestResId), filename:join(["tmp", "coverage", "test_results", integer_to_list(TestResId)])).
 -define(scorecard_www_dir(ScorecardId, Platform), filename:join(["tmp", "coverage", "scorecards", maybe_to_list(ScorecardId), maybe_to_list(Platform)])).
 
+%% @doc Generate (or re-generate) the static html coverage report for a
+%% single test result.
 generate_test_result_html(TestResultId) ->
     {ok, _, [{URL}]} = giddyup_sql:q("SELECT url FROM artifacts WHERE test_result_id=$1 AND url LIKE '%coverdata%'", [TestResultId]),
     generate_test_result_html(TestResultId, URL).
@@ -35,6 +53,9 @@ generate_test_results_html(UrlTestIdList) ->
         maybe_generate_test_result_html(TestResultId, Url)
     end, UrlTestIdList).
 
+%% @doc Generate (or re-generate) the static html coverage report for a
+%% scorecard, but only for the given platform. This will generate the
+%% static html for any test results needed, but will not re-generate them.
 generate_scorecard_html(ScorecardId, PlatformStr) ->
     {ok, _ColumnInfo, Rows} = giddyup_sql:q(
         "SELECT
@@ -59,6 +80,9 @@ generate_scorecard_html(ScorecardId, PlatformStr) ->
     end, [], Rows),
     analyze(CoverFiles, ?scorecard_www_dir(ScorecardId, PlatformStr)).
 
+%% @doc Generate (or re-generate) the static html coverage report for
+%% all tests on all platforms for the given scorecard. This will generate
+%% the static html for any test results that do not exist.
 generate_scorecard_html(ScorecardId) ->
     {ok, _ColumnInfo, Rows} = giddyup_sql:q(
         "SELECT
