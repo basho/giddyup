@@ -83,12 +83,7 @@ prepare_dirs(TestResultId) ->
     ok = filelib:ensure_dir(?test_result_www_dir(TestResultId)).
 
 prepare_cover() ->
-    PathsToAdd = case os:getenv("RIAK_LIB_PATH") of
-        false ->
-            [];
-        RiakPath ->
-            generate_ebin_paths(RiakPath)
-    end,
+    PathsToAdd = giddyup_config:riak_ebins(),
     code:add_pathsz(PathsToAdd),
     cover:stop(),
     cover:start().
@@ -133,13 +128,6 @@ sync_stream_artifacts_wait(ReqId, OldStatus, OldHeaders, OldBody) ->
         60000 ->
             {error, timeout}
     end.
-
-generate_ebin_paths(UnsplitPath) ->
-    Paths = string:tokens(UnsplitPath, ":"),
-    lists:foldl(fun(Path, Acc) ->
-        Files = filename:join([Path, "*", "ebin"]),
-        Acc ++ filelib:wildcard(Files)
-    end, [], Paths).
 
 mod_src(M) ->
     try M:module_info(compile) of

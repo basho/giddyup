@@ -8,7 +8,8 @@
          pool_args/0,
          web_config/0,
          s3_config/0,
-         auth/0]).
+         auth/0,
+         riak_ebins/0]).
 
 db_params() ->
     {ok, {postgres, UserPass, Host, Port, Path, _}} = application:get_env(giddyup, db_url),
@@ -30,13 +31,15 @@ extract_env() ->
     S3_BUCKET = env_or_default("S3_BUCKET", "basho-giddyup-dev"),
     S3_SECRET = os:getenv("S3_SECRET"),
     S3_HOST = env_or_default("S3_HOST", "s3.amazonaws.com"),
+    Riak_ebins = generate_ebin_paths(env_or_default("RIAK_LIB_PATH", "")),
     _ = [ application:set_env(giddyup, Key, Value) ||
             {Key, Value} <- [{http_ip, IP},
                              {http_port, list_to_integer(Port)},
                              {db_url, element(2, http_uri:parse(DB, ?SCHEME_DEFAULTS))},
                              {user, AuthUser},
                              {password, AuthPass},
-                             {s3, {erlcloud_s3:new(S3_AKID, S3_SECRET, S3_HOST), S3_BUCKET}}]],
+                             {s3, {erlcloud_s3:new(S3_AKID, S3_SECRET, S3_HOST), S3_BUCKET}},
+                             {riak_ebins, Riak_ebins}]],
     ok.
 
 s3_config() ->
@@ -53,6 +56,10 @@ pool_args() ->
      {worker_module, giddyup_sql},
      {size, 10},
      {max_overflow, 0}].
+
+riak_ebins() ->
+    {ok, Ebins} = application:get_env(giddyup, riak_ebins),
+    Ebins.
 
 env_or_default(Key, Default) ->
     case os:getenv(Key) of
@@ -92,3 +99,11 @@ dispatch() ->
                    giddyup_wm_coverage:routes(),
                    giddyup_wm_asset:routes()
                   ]).
+
+generate_ebin_paths(UnsplitPath) ->
+    Paths = string:tokens(UnsplitPath, ":"),
+    lists:foldl(fun(Path, Acc) ->
+        Files = filename:join([Path, "*", "ebin"]),
+        Acc ++ filelib:wildcard(Files)
+    end, [], Paths).
+
