@@ -25,4 +25,7 @@ clean:
 distclean: clean
 	${REBAR} delete-deps
 
+script: compile
+	${REBAR} escriptize
+
 include assets.mk

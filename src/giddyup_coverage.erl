@@ -28,8 +28,14 @@
 %% @doc Generate (or re-generate) the static html coverage report for a
 %% single test result.
 generate_test_result_html(TestResultId) ->
-    {ok, _, [{URL}]} = giddyup_sql:test_result_coverage(TestResultId),
-    generate_test_result_html(TestResultId, URL).
+    SqlRes = giddyup_sql:test_result_coverage(TestResultId),
+    generate_test_result_html(TestResultId, SqlRes).
+
+generate_test_result_html(_TestResultId, {ok, _, []}) ->
+    {error, no_test_result};
+
+generate_test_result_html(TestResultId, {ok, _, [{URL}]}) ->
+    generate_test_result_html(TestResultId, URL);
 
 generate_test_result_html(TestResultId, URL) ->
     {ok, {{200, _}, _Headers, GzBody}} = sync_stream_artifact(URL),

@@ -1,0 +1,129 @@
+%% @doc This is the CLI interface to generate coverage reports for giddyup.
+%% It wraps up the logic needed to query, update, and generate coverage
+%% reports for giddyup in a stand-alone script so that the reports can be
+%% generated using the same resources as what generated the orignal 
+%% coverage data.
+%%
+%% To clarify, when using {@link giddyup_cover/generate_test_result_html/1}
+%% directly, it is required that whatever riak is in given libs directory
+%% is the same as what was used to generate the inital coverage data. This
+%% means to generate coverage reports, riak would need to be installed on
+%% whatever machine is running giddyup, and it would need to be the exactly
+%% correct versions with the correct directories. This is, frankly, silly.
+%%
+%% This script is intened to be run on the machine that generated the
+%% coverage data. This means the riak version should already be correct,
+%% already has a reliable disk (since giddyup is meant to not depend on
+%% that).
+
+-module('giddyup-cover').
+-export([main/1]).
+
+-define(cli_options, [
+    {help, $h, "help", undefined, "Display usage information"},
+    {test_result, $t, "test-result", integer, "Generate html for a test result"},
+    {scorecard, $s, "scorecard", integer, "Generate html for a scorecard"},
+    {platform, $p, "platform", string, "Limit scorecard results to the given platform"},
+    {dry_run, $d, "dry-run", {boolean, false}, "Do not upload results to S3"}
+]).
+
+main(Args) ->
+    {ok, {Options, _Rest}} = getopt:parse(?cli_options, Args),
+    case proplists:get_value(help, Options) of
+        true ->
+            display_help(),
+            halt();
+        _ ->
+            ok
+    end,
+    check_tmp_dir(),
+    lager:start(),
+    ok = giddyup_config:extract_env(),
+    io:format("All env: ~p~n", [application:get_all_env(giddyup)]),
+    {ok, _Poolboy} = start_sql_pool(),
+    _ = ssl:start(),
+    _ = application:start(ibrowse),
+    TestIds = proplists:get_all_values(test_result, Options),
+    Scorecards = proplists:get_all_values(scorecard, Options),
+    PlatformLimits = case proplists:get_all_values(platform, Options) of
+        [] -> none;
+        Plats -> Plats
+    end,
+    TestResGen = lists:map(fun giddyup_coverage:generate_test_result_html/1, TestIds),
+    ScoreCardGen = case PlatformLimits of
+        none ->
+            lists:map(fun giddyup_coverage:generate_scorecard_html/1, Scorecards);
+        _ ->
+            ScorecardPlatPairs = [{ScorecardId, Platform} || ScorecardId <- Scorecards, Platform <- PlatformLimits],
+            lists:map(fun({ScorecardId, Platform}) ->
+                giddyup_coverage:generate_scorecard_html(ScorecardId, Platform)
+            end, ScorecardPlatPairs)
+    end,
+    ok = wait_for_exits([TestResGen, ScoreCardGen]),
+    case proplists:get_value(dry_run, Options) of
+        true ->
+            ok;
+        false ->
+            upload_coverage_dir()
+    end.
+
+check_tmp_dir() ->
+    Dir = filename:join(["tmp", "coverage", "plunk"]),
+    case filelib:ensure_dir(Dir) of
+        ok ->
+            ok;
+        Else ->
+            io:format("Could not create tmp directory ~s: ~p", [Dir, Else]),
+            halt(1)
+    end.
+
+start_sql_pool() ->
+    Spec = poolboy:child_spec(giddyup_sql, giddyup_config:pool_args(), giddyup_config:db_params()),
+    {_SpecId, {Module, Function, PoolboyArgs}, _Durability, _KillTime, _Role, _Modules} = Spec,
+    erlang:apply(Module, Function, PoolboyArgs).
+
+wait_for_exits([]) ->
+    ok;
+
+wait_for_exits([Head | Tail]) when is_list(Head) ->
+    wait_for_exits(Head),
+    wait_for_exits(Tail);
+
+wait_for_exits([Pid | Tail]) when is_pid(Pid) ->
+    Mon = erlang:monitor(process, Pid),
+    receive
+        {'DOWN', Mon, process, Pid, _Why} ->
+            wait_for_exits(Tail)
+    end;
+
+wait_for_exits([NotPid | Tail]) ->
+    io:format("Error: ~p~n", [NotPid]),
+    wait_for_exits(Tail).
+
+upload_coverage_dir() ->
+    
+display_help() ->
+    HelpText =
+"Generates coverage report html based on the coverage data uploaded to "
+"giddyup for the given test results. The source code and compiled modules "
+"need to be available to this script in order to work properly. Also, the "
+"versions on the local machine should match those used to generate the "
+"coverage data.\n"
+"\n"
+"Much of the configuration needed to make this work is taken from the "
+"OS environment. Specifically the database access, S3 access, giddyup "
+"upload authorization, and where the riak lib directory is.\n"
+"\n"
+"OS enviroment variables are:\n"
+"    DATABASE_URL\n"
+"    S3_AKID\n"
+"    S3_BUCKET\n"
+"    S3_SECRET\n"
+"    AUTH_USER\n"
+"    AUTH_PASSWORD\n"
+"    RIAK_LIB_PATH\n"
+"\n"
+"Note that when doing a scorecard, all test restult coverage reports are "
+"generated as well.\n",
+    ok = getopt:usage(?cli_options, "giddyup-cover"),
+    io:format("~s", [HelpText]).
