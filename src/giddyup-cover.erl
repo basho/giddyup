@@ -39,7 +39,6 @@ main(Args) ->
     check_tmp_dir(),
     lager:start(),
     ok = giddyup_config:extract_env(),
-    io:format("All env: ~p~n", [application:get_all_env(giddyup)]),
     {ok, _Poolboy} = start_sql_pool(),
     _ = ssl:start(),
     _ = application:start(ibrowse),
@@ -64,8 +63,57 @@ main(Args) ->
         true ->
             ok;
         false ->
-            upload_coverage_dir()
+            upload_test_result_files(TestIds),
+            upload_scorecard_files(Scorecards, PlatformLimits)
     end.
+
+upload_test_result_files(TestIds) when is_list(TestIds) ->
+    lists:foreach(fun upload_test_result_files/1, TestIds);
+
+upload_test_result_files(TestResultId) ->
+    IdStr = integer_to_list(TestResultId),
+    WildcardStr = filename:join(["tmp", "coverage", "test_results", IdStr, "*.html"]),
+    Files = filelib:wildcard(WildcardStr),
+    lists:map(fun(PrefixedFile) ->
+        "tmp/" ++ File = PrefixedFile,
+        {ok, Bin} = file:read_file(PrefixedFile),
+        io:format("upload ~s to ~s~n", [PrefixedFile, File]),
+        giddyup_artifact:upload(File, "text/html", Bin)
+    end, Files).
+
+upload_scorecard_files(ScorecardIds, PlatformLimits) when is_list(ScorecardIds) ->
+    lists:foreach(fun(ScorecardId) ->
+        upload_scorecard_files(ScorecardId, PlatformLimits)
+    end, ScorecardIds);
+
+upload_scorecard_files(ScorecardId, none) ->
+    WildcardStr = filename:join(["tmp", "coverage", "scorecards", integer_to_list(ScorecardId), "all", "*.html"]),
+    LocalFiles = filelib:wildcard(WildcardStr),
+    KeyFilePairs = lists:map(fun(LocalFile) ->
+        ["tmp", "coverage", "scorecards", IdStr, "all", ActualFile] = filename:split(LocalFile),
+        Key = filename:join(["coverage", "scorecards", IdStr, ActualFile]),
+        {Key, LocalFile}
+    end, LocalFiles),
+    lists:foreach(fun({Key, File}) ->
+        {ok, Bin} = file:read_file(File),
+        io:format("upload ~s to ~s~n", [File, Key]),
+        giddyup_artifact:upload(Key, "text/html", Bin)
+    end, KeyFilePairs);
+
+upload_scorecard_files(ScorecardId, [Platform | _Tail] = Platforms) when is_list(Platform) ->
+    lists:foreach(fun(PlatformName) ->
+        upload_scorecard_files(ScorecardId, PlatformName)
+    end, Platforms);
+
+upload_scorecard_files(ScorecardId, PlatformName) ->
+    WildcardStr = filename:join(["tmp", "coverage", "scorecards", integer_to_list(ScorecardId), PlatformName, "*.html"]),
+    LocalFiles = filelib:wildcard(WildcardStr),
+    lists:foreach(fun(LocalFile) ->
+        "tmp/" ++ Key = LocalFile,
+        {ok, Bin} = file:read_file(LocalFile),
+        io:format("upload ~s to ~s~n", [LocalFile, Key]),
+        giddyup_artifact:upload(Key, "text/html", Bin)
+    end, LocalFiles).
 
 check_tmp_dir() ->
     Dir = filename:join(["tmp", "coverage", "plunk"]),
@@ -100,8 +148,6 @@ wait_for_exits([NotPid | Tail]) ->
     io:format("Error: ~p~n", [NotPid]),
     wait_for_exits(Tail).
 
-upload_coverage_dir() ->
-    
 display_help() ->
     HelpText =
 "Generates coverage report html based on the coverage data uploaded to "
