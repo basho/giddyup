@@ -2,15 +2,19 @@
 -module(giddyup_artifact).
 -include_lib("erlcloud/include/erlcloud_aws.hrl").
 
--export([url_for/2,
+-export([url_for/1,
+         url_for/2,
          key_for/2,
          upload/3,
          stream_download/1]).
 
 url_for(ResultID, Segments) ->
+    Key = key_for(ResultID, Segments),
+    url_for(Key).
+
+url_for(Key) ->
     {#aws_config{s3_host=Host,
                  s3_port=Port}, Bucket} = giddyup_config:s3_config(),
-    Key = key_for(ResultID, Segments),
     Scheme = case Port of
                  443 -> "https";
                  _ -> "http"
