@@ -18,8 +18,11 @@
 
 -export([
     generate_test_result_html/1,
-    generate_scorecard_html/2,
-    generate_scorecard_html/1
+    generate_test_result_html/2,
+    generate_scorecard_platform_html/2,
+    generate_scorecard_platform_html/3,
+    generate_scorecard_html/1,
+    generate_scorecard_html/2
 ]).
 
 -define(test_result_www_dir(TestResId), filename:join(["tmp", "coverage", "test_results", integer_to_list(TestResId)])).
@@ -62,8 +65,11 @@ generate_test_results_html(UrlTestIdList) ->
 %% @doc Generate (or re-generate) the static html coverage report for a
 %% scorecard, but only for the given platform. This will generate the
 %% static html for any test results needed, but will not re-generate them.
-generate_scorecard_html(ScorecardId, PlatformStr) ->
+generate_scorecard_platform_html(ScorecardId, PlatformStr) ->
     {ok, _ColumnInfo, Rows} = giddyup_sql:scorecard_coverage(ScorecardId, PlatformStr),
+    generate_scorecard_platform_html(ScorecardId, PlatformStr, Rows).
+
+generate_scorecard_platform_html(ScorecardId, PlatformStr, Rows) ->
     generate_test_results_html(Rows),
     CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
         Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),
@@ -77,6 +83,9 @@ generate_scorecard_html(ScorecardId, PlatformStr) ->
 %% the static html for any test results that do not exist.
 generate_scorecard_html(ScorecardId) ->
     {ok, _ColumnInfo, Rows} = giddyup_sql:scorecard_coverage(ScorecardId),
+    generate_scorecard_html(ScorecardId, Rows).
+
+generate_scorecard_html(ScorecardId, Rows) ->
     generate_test_results_html(Rows),
     CoverFiles = lists:foldl(fun({_Url, TestResId}, Acc) ->
         Wildcard = filename:join([?test_result_www_dir(TestResId), "*.cover.txt"]),

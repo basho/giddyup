@@ -9,7 +9,8 @@
          web_config/0,
          s3_config/0,
          auth/0,
-         riak_ebins/0]).
+         riak_ebins/0,
+         giddyup_url/0]).
 
 db_params() ->
     {ok, {postgres, UserPass, Host, Port, Path, _}} = application:get_env(giddyup, db_url),
@@ -31,7 +32,13 @@ extract_env() ->
     S3_BUCKET = env_or_default("S3_BUCKET", "basho-giddyup-dev"),
     S3_SECRET = os:getenv("S3_SECRET"),
     S3_HOST = env_or_default("S3_HOST", "s3.amazonaws.com"),
+    % next 2 used primarily by the coverge report script
     Riak_ebins = generate_ebin_paths(env_or_default("RIAK_LIB_PATH", "")),
+    % this is a different config from the IP/Port above so that if the
+    % script that uses this config is running some other service that
+    % happens to have the same name, it doesn't conflict. Also, hostnames
+    % are nicer than ip's when talking to a webservice.
+    GiddyupUrl = env_or_default("GIDDYUP_URL", "http://localhost:5000"),
     _ = [ application:set_env(giddyup, Key, Value) ||
             {Key, Value} <- [{http_ip, IP},
                              {http_port, list_to_integer(Port)},
@@ -39,7 +46,8 @@ extract_env() ->
                              {user, AuthUser},
                              {password, AuthPass},
                              {s3, {erlcloud_s3:new(S3_AKID, S3_SECRET, S3_HOST), S3_BUCKET}},
-                             {riak_ebins, Riak_ebins}]],
+                             {riak_ebins, Riak_ebins},
+                             {giddyup_url, GiddyupUrl}]],
     ok.
 
 s3_config() ->
@@ -60,6 +68,10 @@ pool_args() ->
 riak_ebins() ->
     {ok, Ebins} = application:get_env(giddyup, riak_ebins),
     Ebins.
+
+giddyup_url() ->
+    {ok, Val} = application:get_env(giddyup, giddyup_url),
+    Val.
 
 env_or_default(Key, Default) ->
     case os:getenv(Key) of

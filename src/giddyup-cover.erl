@@ -39,7 +39,7 @@ main(Args) ->
     check_tmp_dir(),
     lager:start(),
     ok = giddyup_config:extract_env(),
-    {ok, _Poolboy} = start_sql_pool(),
+    %{ok, _Poolboy} = start_sql_pool(),
     _ = ssl:start(),
     _ = application:start(ibrowse),
     TestIds = proplists:get_all_values(test_result, Options),
@@ -48,14 +48,14 @@ main(Args) ->
         [] -> none;
         Plats -> Plats
     end,
-    TestResGen = lists:map(fun giddyup_coverage:generate_test_result_html/1, TestIds),
+    TestResGen = lists:map(fun generate_test_result_html/1, TestIds),
     ScoreCardGen = case PlatformLimits of
         none ->
-            lists:map(fun giddyup_coverage:generate_scorecard_html/1, Scorecards);
+            lists:map(fun generate_scorecard_html/1, Scorecards);
         _ ->
             ScorecardPlatPairs = [{ScorecardId, Platform} || ScorecardId <- Scorecards, Platform <- PlatformLimits],
             lists:map(fun({ScorecardId, Platform}) ->
-                giddyup_coverage:generate_scorecard_html(ScorecardId, Platform)
+                generate_scorecard_platform_html(ScorecardId, Platform)
             end, ScorecardPlatPairs)
     end,
     ok = wait_for_exits([TestResGen, ScoreCardGen]),
@@ -66,6 +66,45 @@ main(Args) ->
             upload_test_result_files(TestIds),
             upload_scorecard_files(Scorecards, PlatformLimits)
     end.
+
+generate_test_result_html(TestResultId) ->
+    {ok, "200", _Heads, Binary} = giddyup_fetch(["test_results", TestResultId, "coverdata"]),
+    [{struct,Props}] = mochijson2:decode(Binary),
+    CoverUrl = proplists:get_value(<<"s3_url">>, Props),
+    giddyup_coverage:generate_test_result_html(TestResultId, CoverUrl).
+
+generate_scorecard_html(ScorecardId) ->
+    {ok, "200", _Heads, Binary} = giddyup_fetch(["scorecards", ScorecardId, "coverdata"]),
+    Json = mochijson2:decode(Binary),
+    UrlTestIdPairs = lists:map(fun({struct, Props}) ->
+        Id = proplists:get_value(<<"test_result_id">>, Props),
+        Url = proplists:get_value(<<"s3_url">>, Props),
+        {Url, Id}
+    end, Json),
+    giddyup_coverage:generate_scorecard_html(ScorecardId, UrlTestIdPairs).
+
+generate_scorecard_platform_html(ScorecardId, Platform) ->
+    {ok, "200", _Heads, Binary} = giddyup_fetch(["scorecards", ScorecardId, Platform, "coverdata"]),
+    Json = mochijson2:decode(Binary),
+    UrlTestIdPairs = lists:map(fun({struct, Props}) ->
+        Id = proplists:get_value(<<"test_result_id">>, Props),
+        Url = proplists:get_value(<<"s3_url">>, Props),
+        {Url, Id}
+    end, Json),
+    giddyup_coverage:generate_scorecard_platform_html(ScorecardId, Platform, UrlTestIdPairs).
+
+giddyup_fetch(PathParts) ->
+    Path = lists:map(fun
+        (Str) when is_list(Str) ->
+            Str;
+        (Bin) when is_binary(Bin) ->
+            binary_to_list(Bin);
+        (Int) when is_integer(Int) ->
+            integer_to_list(Int)
+    end, PathParts),
+    Host = giddyup_config:giddyup_url(),
+    Url = Host ++ "/" ++ filename:join(Path),
+    ibrowse:send_req(Url, [{"accept", "application/json; text/html"}], get).
 
 upload_test_result_files(TestIds) when is_list(TestIds) ->
     lists:foreach(fun upload_test_result_files/1, TestIds);
@@ -125,10 +164,10 @@ check_tmp_dir() ->
             halt(1)
     end.
 
-start_sql_pool() ->
-    Spec = poolboy:child_spec(giddyup_sql, giddyup_config:pool_args(), giddyup_config:db_params()),
-    {_SpecId, {Module, Function, PoolboyArgs}, _Durability, _KillTime, _Role, _Modules} = Spec,
-    erlang:apply(Module, Function, PoolboyArgs).
+%start_sql_pool() ->
+%    Spec = poolboy:child_spec(giddyup_sql, giddyup_config:pool_args(), giddyup_config:db_params()),
+%    {_SpecId, {Module, Function, PoolboyArgs}, _Durability, _KillTime, _Role, _Modules} = Spec,
+%    erlang:apply(Module, Function, PoolboyArgs).
 
 wait_for_exits([]) ->
     ok;
@@ -162,6 +201,7 @@ display_help() ->
 "\n"
 "OS enviroment variables are:\n"
 "    DATABASE_URL\n"
+"    GIDDYUP_URL\n"
 "    S3_AKID\n"
 "    S3_BUCKET\n"
 "    S3_SECRET\n"
