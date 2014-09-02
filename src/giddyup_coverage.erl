@@ -76,6 +76,9 @@ generate_scorecard_platform_html(ScorecardId, PlatformStr, Rows) ->
         Files = filelib:wildcard(Wildcard),
         Files ++ Acc
     end, [], Rows),
+    % if all the test results were generated already, the ebin paths
+    % don't get added, so try to add them now.
+    _ = prepare_cover(),
     analyze(CoverFiles, ?scorecard_www_dir(ScorecardId, PlatformStr)).
 
 %% @doc Generate (or re-generate) the static html coverage report for
@@ -92,6 +95,9 @@ generate_scorecard_html(ScorecardId, Rows) ->
         Files = filelib:wildcard(Wildcard),
         Files ++ Acc
     end, [], Rows),
+    % if all the test results were generated already, the ebin paths
+    % don't get added, so try to add them now.
+    _ = prepare_cover(),
     analyze(CoverFiles, ?scorecard_www_dir(ScorecardId, "all")).
 
 prepare_dirs(TestResultId) ->
