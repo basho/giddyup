@@ -38,6 +38,7 @@ main(Args) ->
     end,
     check_tmp_dir(),
     lager:start(),
+    ok = verify_env_vars_exist(),
     ok = giddyup_config:extract_env(),
     %{ok, _Poolboy} = start_sql_pool(),
     _ = ssl:start(),
@@ -186,6 +187,23 @@ wait_for_exits([Pid | Tail]) when is_pid(Pid) ->
 wait_for_exits([NotPid | Tail]) ->
     io:format("Error: ~p~n", [NotPid]),
     wait_for_exits(Tail).
+
+verify_env_vars_exist() ->
+    EnvNames = ["GIDDYUP_URL", "S3_AKID", "S3_BUCKET", "S3_SECRET", "RIAK_LIB_PATH"],
+    AllSet = lists:all(fun(Name) ->
+        case os:getenv(Name) of
+            false -> false;
+            _ -> true
+        end
+    end, EnvNames),
+    if
+        AllSet ->
+            ok;
+        true ->
+            display_help(),
+            io:format("\nOne or more env varables was not set!\n"),
+            halt(1)
+    end.
 
 display_help() ->
     HelpText =
