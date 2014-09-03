@@ -4,7 +4,7 @@ APP := giddyup
 DIALYZER_APPS = kernel stdlib sasl erts ssl tools os_mon runtime_tools crypto inets \
 		xmerl public_key asn1 mnesia eunit syntax_tools compiler
 
-all: compile
+all: compile script
 
 .PHONY: deps compile update-deps clean distclean
 
