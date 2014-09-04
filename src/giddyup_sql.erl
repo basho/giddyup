@@ -12,8 +12,11 @@
                    scorecard_i/0,
                    scorecard_id_q/0,
                    scorecards_q/0,
+                   scorecard_coverage_q/0,
+                   scorecard_coverage_by_platform_q/0,
                    suite_q/0,
-                   test_result_i/0
+                   test_result_i/0,
+                   test_result_coverage_q/0
                   ]}).
 
 -include_lib("epgsql/include/pgsql.hrl").
@@ -39,6 +42,9 @@
          q/2,
          scorecard_exists/1,
          scorecards/1,
+         scorecard_coverage/1,
+         scorecard_coverage/2,
+         test_result_coverage/1,
          suite/3
         ]).
 
@@ -81,6 +87,15 @@ full_matrix(ScorecardID) ->
 
 artifacts(TestResultID) ->
     ?QUERY(artifacts_q(), [TestResultID]).
+
+test_result_coverage(TestResultId) ->
+    ?QUERY(test_result_coverage_q(), [TestResultId]).
+
+scorecard_coverage(ScorecardId) ->
+    ?QUERY(scorecard_coverage_q(), [ScorecardId]).
+
+scorecard_coverage(ScorecardId, Platform) ->
+    ?QUERY(scorecard_coverage_by_platform_q(), [Platform, ScorecardId]).
 
 %%-----------------------------------------
 %% Riak Test endpoints - suites and results
@@ -197,3 +212,25 @@ scorecard_by_version_q() ->
 
 scorecard_i() ->
     "INSERT INTO scorecards (project_id, name) VALUES ($1, $2) RETURNING id".
+
+scorecard_coverage_q() ->
+    "SELECT artifacts.url as url, test_results.id as test_result_id "
+    "FROM artifacts LEFT OUTER JOIN test_results "
+    "   ON test_results.id = artifacts.test_result_id "
+    "WHERE test_results.scorecard_id = $1 "
+    "   AND artifacts.url LIKE '%coverdata%'".
+
+scorecard_coverage_by_platform_q() ->
+    "SELECT artifacts.url as url, test_results.id as test_result_id "
+    "FROM artifacts LEFT OUTER JOIN test_results "
+    "   ON test_results.id = artifacts.test_result_id LEFT OUTER JOIN tests "
+    "       ON tests.id = test_results.test_id "
+    "WHERE tests.platform = $1 "
+    "   AND test_results.scorecard_id = $2 "
+    "   AND artifacts.url LIKE '%coverdata%'".
+
+test_result_coverage_q() ->
+    "SELECT url "
+    "FROM artifacts "
+    "WHERE test_result_id=$1 "
+    "   AND url LIKE '%coverdata%'".

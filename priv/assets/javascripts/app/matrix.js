@@ -15,7 +15,8 @@ Matrix = React.createClass({
     render: function() {
         return (this.state.loaded) ? (
             <table className="table table-striped" key={this.props.scorecard.id}>
-                <MatrixHeader platforms={this.props.scorecard.platforms} />
+                <MatrixHeader platforms={this.props.scorecard.platforms}
+                              scorecard={this.props.scorecard} />
                 <MatrixBody scorecard={this.props.scorecard}
                     platforms={this.props.scorecard.platforms}
                     tests={this.props.scorecard.tests} />
@@ -30,9 +31,10 @@ Matrix = React.createClass({
 
 MatrixHeader = React.createClass({
     render: function(){
-        var headers = this.props.platforms.map(function(p){return (<th key={p}>{p}</th>); });
+        var scorecardId = this.props.scorecard.id;
+        var headers = this.props.platforms.map(function(p){return (<th key={p}><a href={"/scorecards/" + scorecardId + "/" + p + "/coverage"}>{p}</a></th>); });
         return (<thead>
-                <th></th>
+                <th><a href={"/scorecards/" + scorecardId + "/coverage"}>Combined Coverage</a></th>
                 {headers}
                 </thead>);
     }

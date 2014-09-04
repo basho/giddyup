@@ -13,3 +13,4 @@ priv/assets/build
 **/*.min.css
 tmp/
 node_modules/
+giddyup-cover

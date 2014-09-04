@@ -44,13 +44,16 @@ ArtifactList = React.createClass({
             loaded = this.state.loaded,
             showing = this.props.showing,
             artifacts = this.props.test_result.artifacts,
-            friendlyUrl = this.props.friendlyUrl;
+            friendlyUrl = this.props.friendlyUrl,
+            coverageUrl = '/test_results/' + this.props.test_result.id + '/coverage';
         if(active && loaded){
             var list = artifacts.map(function(a){
                 return <ArtifactLink showing={showing}
                         key={a.id} artifact={a} friendlyUrl={friendlyUrl}/>;
             });
-            return <ul className="nav nav-list">{list}</ul>;
+            return <ul className="nav nav-list">
+                    <li><a href={coverageUrl}>Coverage</a></li>
+                    {list}</ul>;
         } else {
             return <span />;
         }
