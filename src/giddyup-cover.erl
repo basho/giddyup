@@ -201,7 +201,7 @@ verify_env_vars_exist() ->
             ok;
         true ->
             display_help(),
-            io:format("\nOne or more env varables was not set!\n"),
+            io:format("\nOne or more env variables was not set!\n"),
             halt(1)
     end.
 
