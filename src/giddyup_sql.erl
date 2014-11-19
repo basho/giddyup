@@ -171,12 +171,12 @@ scorecard_id_q() ->
     "SELECT 't'::bool FROM scorecards WHERE scorecards.id = $1".
 
 suite_q() ->
-    "SELECT tests.* FROM tests, projects_tests "
-    "WHERE tests.id = projects_tests.test_id"
-    "   AND projects_tests.project_id = $1"
+    "SELECT tests.id, tests.name, tests.platform, tests.backend, tests.upgrade_version, tests.multi_config "
+    "FROM tests INNER JOIN projects_tests ON tests.id = projects_tests.test_id "
+    "WHERE projects_tests.project_id = $1"
     "   AND platform = $2"
-    "   AND (tests.min_version IS NULL OR tests.min_version <= $3)"
-    "   AND (tests.max_version IS NULL OR tests.max_version >= $3) "
+    "   AND (tests.min_version_a IS NULL OR tests.min_version_a <= to_version($3))"
+    "   AND (tests.max_version_a IS NULL OR tests.max_version_a >= to_version($3)) "
     "ORDER BY name, backend, upgrade_version".
 
 %% matrix_q() ->
@@ -197,8 +197,8 @@ full_matrix_q() ->
     "WHERE scorecards.id = $1 "
     "   AND projects_tests.project_id = scorecards.project_id "
     "   AND projects_tests.test_id = tests.id "
-    "   AND (tests.min_version IS NULL OR tests.min_version <= scorecards.name) "
-    "   AND (tests.max_version IS NULL OR tests.max_version >= scorecards.name) "
+    "   AND (tests.min_version_a IS NULL OR (to_version(scorecards.name) IS NULL OR tests.min_version_a <= to_version(scorecards.name))) "
+    "   AND (tests.max_version_a IS NULL OR (to_version(scorecards.name) IS NULL OR tests.max_version_a >= to_version(scorecards.name))) "
     "ORDER BY tests.name, platform, backend, upgrade_version, multi_config, tests.id, test_results.created_at DESC".
 
 artifacts_q() ->
