@@ -1,5 +1,5 @@
 # giddyup
-Visual scorecard for riak_test which updates the [Giddyup](http://giddyup.basho.com) web page.
+Visual scorecard for riak_test which updates the [Giddyup](http://giddyup.basho.com) web page.  It runs as `ubuntu` on `app{1,2,3}.bos1` and lives in `/opt/giddyup`.  Data is stored in PostgreSQL on postgres2.bos1 and in Amazon S3.
 
 ## Configuration
 Here are some configuration parameters set in the `buildbot` environment on `box`:
