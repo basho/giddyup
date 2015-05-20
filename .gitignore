@@ -30,3 +30,7 @@ bin/
 
 # SQL dumps
 *.sql
+
+# Compiler artifacts
+priv/www/javascripts/application.js
+priv/www/javascripts/application.js.map
