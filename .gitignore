@@ -14,3 +14,5 @@ priv/assets/build
 tmp/
 node_modules/
 giddyup-cover
+priv/www/javascripts/application.js
+priv/www/javascripts/application.js.map
