@@ -2,7 +2,7 @@ BEGIN;
 
 -- Update existing tests to 2.0.6
 UPDATE tests SET min_version_a = '{2,0,6}', max_version_a = '{2,0,99}'
- WHERE name = 'repl_aae_fullsync_bt' AND min_version_a = '{2,2,0}'
+ WHERE name = 'repl_aae_fullsync_bt' AND min_version_a = '{2,2,0}';
 
 -- Insert new tests starting at 2.1.2
 WITH t as (INSERT INTO tests (name, platform, min_version_a) VALUES
