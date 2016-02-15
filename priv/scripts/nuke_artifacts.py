@@ -35,23 +35,19 @@ conn = psycopg2.connect(host='127.0.0.1',
                         password=os.environ['GIDDYUP_PASSWORD'])
 cur = conn.cursor()
 
-cur.execute("SELECT url,long_version "
-            "FROM artifacts AS a, test_results AS tr "
-            "WHERE a.test_result_id=tr.id AND "
-            "(tr.scorecard_id IN"
-            " (SELECT id"
-            "  FROM scorecards"
-            "  WHERE name LIKE '1.4.%' AND name <> '1.4.12' OR"
-            "        name IN ('unknown','current')) "
-            " OR (tr.long_version='riak_ee-2.1.2pre2'));")
+cur.execute("SELECT sc.id,url,long_version "
+            "FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst "
+            "WHERE a.test_result_id=tr.id AND tr.test_id=tst.test_id AND tst.project_id=2 AND "
+            "tr.scorecard_id=sc.id AND "
+            "sc.name IN ('riak_ee-ts_pb1','object_ttl_a1','43c71d91e4b92aa053716c7535914467905ab981','0.0.2')")
 while True:
     result = cur.fetchone()
     if result is None:
         break
-    (url, version) = result
+    (card, url, version) = result
     k = boto.s3.key.Key(bucket)
     k.key = url[baselen:]
-    print("Deleting {0} - {1}".format(version, url))
+    print("Deleting {0} - {1} - {2}".format(card, version, url))
     k.delete()
 
 cur.close()
