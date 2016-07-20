@@ -13,11 +13,11 @@ WITH newtests AS (INSERT INTO tests (name, platform, backend) VALUES
     ('ts_simple_describe_table_SUITE','centos-6-64','eleveldb'),
     ('ts_simple_http_security_SUITE','centos-6-64','eleveldb'),
     ('ts_simple_pb_security_SUITE','centos-6-64','eleveldb'),
-    ('yz_entropy_data','centos-6-64','eleveldb'),
-    ('yz_faceted_search','centos-6-64','eleveldb'),
-    ('yz_fuse_upgrade','centos-6-64','eleveldb'),
-    ('yz_solrq_test','centos-6-64','eleveldb'),
-    ('yz_startup_shutdown','centos-6-64','eleveldb')
+    ('yz_entropy_data','centos-6-64',NULL),
+    ('yz_faceted_search','centos-6-64',NULL),
+    ('yz_fuse_upgrade','centos-6-64',NULL),
+    ('yz_solrq_test','centos-6-64',NULL),
+    ('yz_startup_shutdown','centos-6-64',NULL)
 RETURNING id)
 
 -- Patch up the tests/projects
