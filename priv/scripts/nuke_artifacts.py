@@ -7,7 +7,7 @@ import psycopg2
 import boto
 import os
 
-BASE = 'https://basho-giddyup.s3.amazonaws.com/'
+BASE = 'https://giddyup.basho.com.s3.amazonaws.com/'
 baselen = len(BASE)
 
 ENVVARS = ['AWS_ACCESS_KEY_ID',
@@ -24,7 +24,7 @@ for var in ENVVARS:
 #   AWS_ACCESS_KEY_ID - Your AWS Access Key ID
 #   AWS_SECRET_ACCESS_KEY - Your AWS Secret Access Key
 s3conn = boto.connect_s3()
-bucket = s3conn.get_bucket('basho-giddyup')
+bucket = s3conn.get_bucket('giddyup.basho.com')
 
 # Connect to Postgres
 # Set this environment variable:
