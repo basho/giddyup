@@ -35,11 +35,22 @@ conn = psycopg2.connect(host='127.0.0.1',
                         password=os.environ['GIDDYUP_PASSWORD'])
 cur = conn.cursor()
 
-cur.execute("SELECT sc.id,url,long_version "
-            "FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst "
-            "WHERE a.test_result_id=tr.id AND tr.test_id=tst.test_id AND tst.project_id=2 AND "
-            "tr.scorecard_id=sc.id AND "
-            "sc.name IN ('riak_ee-ts_pb1','object_ttl_a1','43c71d91e4b92aa053716c7535914467905ab981','0.0.2')")
+cur.execute("SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst " 
+            "WHERE a.test_result_id = tr.id AND tr.test_id = tst.test_id AND tst.project_id = 1 AND tr.scorecard_id = sc.id AND sc.name = '0.8.0' "
+            "UNION "
+            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst " 
+            "WHERE a.test_result_id = tr.id AND tr.test_id = tst.test_id AND tst.project_id = 7 AND tr.scorecard_id = sc.id "
+            "AND sc.name IN ('0.0.2','0.0.3','0.8.0rc2','0.8.0rc3','0.8.0','0.8.0merged1','0.8.1') "
+            "UNION "
+            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst " 
+            "WHERE a.test_result_id = tr.id AND tr.test_id = tst.test_id AND tst.project_id = 5 AND tr.scorecard_id = sc.id AND sc.project_id = 5 "
+            "UNION "
+            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr " 
+            "WHERE tr.long_version = 'riak_ee-2.2.0-merge1' "
+            "UNION "
+            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr " 
+            "WHERE tr.long_version = 'riak_ee-2.2.0-devtest1'")
+
 while True:
     result = cur.fetchone()
     if result is None:
