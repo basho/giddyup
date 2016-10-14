@@ -45,11 +45,11 @@ cur.execute("SELECT sc.id, url, long_version FROM artifacts AS a, test_results A
             "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst " 
             "WHERE a.test_result_id = tr.id AND tr.test_id = tst.test_id AND tst.project_id = 5 AND tr.scorecard_id = sc.id AND sc.project_id = 5 "
             "UNION "
-            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr " 
-            "WHERE tr.long_version = 'riak_ee-2.2.0-merge1' "
+            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst " 
+            "WHERE a.test_result_id = tr.id AND tr.test_id = tst.test_id AND tr.scorecard_id = sc.id AND tr.long_version = 'riak_ee-2.2.0-merge1' "
             "UNION "
-            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr " 
-            "WHERE tr.long_version = 'riak_ee-2.2.0-devtest1'")
+            "SELECT sc.id, url, long_version FROM artifacts AS a, test_results AS tr, scorecards AS sc, projects_tests AS tst " 
+            "WHERE  a.test_result_id = tr.id AND tr.test_id = tst.test_id AND tr.scorecard_id = sc.id AND tr.long_version = 'riak_ee-2.2.0-devtest1'")
 
 while True:
     result = cur.fetchone()
