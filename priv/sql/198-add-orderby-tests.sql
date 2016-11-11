@@ -1,6 +1,5 @@
 BEGIN;
 WITH newtests as (INSERT INTO tests (name, platform, backend) VALUES
-       ('ts_simple_query_buffers_SUITE','centos-6-64','eleveldb'),
        ('ts_cluster_updowngrade_order_by_SUITE','centos-6-64','eleveldb'),
        ('ts_cluster_updowngrade_group_by_SUITE','centos-6-64','eleveldb')
        RETURNING id)
