@@ -1,6 +1,7 @@
 BEGIN;
 WITH newtests as (INSERT INTO tests (name, platform, backend) VALUES
-       ('ts_cluster_select_desc_SUITE','centos-6-64','eleveldb'),
+
+	   ('ts_cluster_select_desc_SUITE','centos-6-64','eleveldb'),
        ('ts_simple_show_create_table','centos-6-64','eleveldb'),
        ('ts_cluster_updowngrade_order_by_SUITE','centos-6-64','eleveldb'),
        ('ts_cluster_updowngrade_group_by_SUITE','centos-6-64','eleveldb')
