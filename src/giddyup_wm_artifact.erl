@@ -82,11 +82,13 @@ create_path(RD, Context) ->
 
 accept_file(RD, #context{id=TestResultID, ctype=CType, artifact=ID}=Context) ->
     try
-        Segments = wrq:path_tokens(RD),
-        URL = giddyup_artifact:url_for(TestResultID, Segments),
-        Key = giddyup_artifact:key_for(TestResultID, Segments),
-        {_H, _B} = giddyup_artifact:upload(Key, CType, wrq:req_body(RD)),
-        {ok, _} = giddyup_sql:create_artifact(ID, TestResultID, URL, CType),
+        case CType of
+            %% Special handling of compressed websites
+            "binary/tgz-website" ->
+                giddyup_wm_site:accept_site(RD, TestResultID, ID);
+            _ ->
+                upload_artifact(RD, CType, TestResultID, ID)
+        end,
         {true, RD, Context}
     catch
         error:{aws_error,Err} ->
@@ -98,6 +100,13 @@ accept_file(RD, #context{id=TestResultID, ctype=CType, artifact=ID}=Context) ->
         Class:Why ->
             {{error, {Class,Why}}, RD, Context}
     end.
+
+upload_artifact(RD, CType, TestResultID, ID) ->
+    Segments = wrq:path_tokens(RD),
+    URL = giddyup_artifact:url_for(TestResultID, Segments),
+    Key = giddyup_artifact:key_for(TestResultID, Segments),
+    {_H, _B} = giddyup_artifact:upload(Key, CType, wrq:req_body(RD)),
+    {ok, _} = giddyup_sql:create_artifact(ID, TestResultID, URL, CType).
 
 to_file(RD, #context{artifact={_ID, URL, _CType}}=Context) ->
     {ibrowse_req_id, ReqID} = giddyup_artifact:stream_download(binary_to_list(URL)),
