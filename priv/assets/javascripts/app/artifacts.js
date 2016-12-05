@@ -97,6 +97,8 @@ MediaIcon = React.createClass({
         } else if(major === 'text') {
             if(minor === 'csv'){
                 icon = 'icon-th';
+            } else if(minor === 'html'){
+                icon = 'icon-share';
             } else {
                 icon = 'icon-pencil';
             }
@@ -165,14 +167,22 @@ ArtifactElement = React.createClass({
     render: function(){
         var artifact = this.props.artifact,
             major = parseContentType(artifact.content_type)[0];
+            minor = parseContentType(artifact.content_type)[1];
 
         if(major === 'image'){
             return <img src={artifact.url} />;
         } else if (major === 'text') {
-            if(this.state.text !== undefined){
-                return <pre className="unabridged">{this.state.text}</pre>;
+            if(minor === 'html') {
+                return(<p>
+                       <i className="icon-share"/>
+                       <a target="_blank" href={artifact.url}>Follow the link</a>
+                       </p>);
             } else {
-                return <pre className="unabridged">Loading...</pre>;
+                if(this.state.text !== undefined){
+                    return <pre className="unabridged">{this.state.text}</pre>;
+                } else {
+                    return <pre className="unabridged">Loading...</pre>;
+                }
             }
         } else {
             return (<p>
