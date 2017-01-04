@@ -22,13 +22,18 @@
 -author("hazen").
 
 %% API
--export([accept_site/3]).
+-export([accept_site/4]).
 
-accept_site(RD, TestResultID, ArtifactID) ->
+accept_site(Archive, RD, TestResultID, ArtifactID) ->
     [File|_] = wrq:path_tokens(RD),
     [FName|_] = string:tokens(filename:basename(File), "."),
     Tmp = lists:flatten(io_lib:format("/tmp/~s-~p-~p", [FName, TestResultID, ArtifactID])),
-    erl_tar:extract({binary, wrq:req_body(RD)}, [compressed, {cwd, Tmp}]),
+    case Archive of
+        tar ->
+            erl_tar:extract({binary, wrq:req_body(RD)}, [compressed, {cwd, Tmp}]);
+        zip ->
+            zip:extract(wrq:req_body(RD), [{cwd, Tmp}])
+    end,
     UploadFun =
         fun(FileName, Acc) ->
             {ok, Binary} = file:read_file(FileName),

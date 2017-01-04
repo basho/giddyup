@@ -85,7 +85,9 @@ accept_file(RD, #context{id=TestResultID, ctype=CType, artifact=ID}=Context) ->
         case CType of
             %% Special handling of compressed websites
             "binary/tgz-website" ->
-                giddyup_wm_site:accept_site(RD, TestResultID, ID);
+                giddyup_wm_site:accept_site(tar, RD, TestResultID, ID);
+            "binary/zip-website" ->
+                giddyup_wm_site:accept_site(zip, RD, TestResultID, ID);
             _ ->
                 upload_artifact(RD, CType, TestResultID, ID)
         end,
