@@ -1,6 +1,6 @@
 BEGIN;
 WITH newtests as (INSERT INTO tests (name, platform, backend) VALUES
-       ('ts_cluster_table_active_state','centos-6-64','eleveldb'),
+       ('ts_cluster_table_active_state','centos-6-64','eleveldb')
        RETURNING id)
 
 INSERT INTO projects_tests (project_id, test_id)
